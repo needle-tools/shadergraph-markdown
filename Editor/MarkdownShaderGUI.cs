@@ -81,7 +81,8 @@ namespace Needle
             {
                 if(prop.displayName.StartsWith("## ") || prop.displayName.Equals("##", StringComparison.Ordinal))
                 {
-                    if (prop.displayName.Equals("##", StringComparison.Ordinal))
+                    if (prop.displayName.Equals("##", StringComparison.Ordinal)  || 
+                        (prop.displayName.StartsWith("## (", StringComparison.Ordinal) && prop.displayName.EndsWith(")", StringComparison.Ordinal))) // for multiple ## (1) foldout breakers)
                         headerGroups.Add(new HeaderGroup() { name = null });
                     else
                         headerGroups.Add(new HeaderGroup() { name = prop.displayName.Substring(prop.displayName.IndexOf(' ') + 1) });
