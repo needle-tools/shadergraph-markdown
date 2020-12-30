@@ -21,7 +21,7 @@ public static class ShaderGraphPropertyUI
         i = (i + 1) % 100; // only run every 100 frames for now
         if (i != 0) return;
 
-        #if UNITY_2020_2_OR_NEWER
+        #if SHADERGRAPH_10_OR_NEWER
         var shaderGraphAssembly = typeof(UnityEditor.ShaderGraph.PositionControl).Assembly; // does not exist earlier
         #else
         var shaderGraphAssembly = typeof(UnityEditor.ShaderGraph.KeywordDefinition).Assembly; // is internal in 2020.2+

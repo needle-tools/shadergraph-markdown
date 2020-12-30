@@ -1,6 +1,5 @@
 {
     "name": "Needle.ShaderGraph.Markdown",
-    "rootNamespace": "",
     "references": [
         "GUID:3eae0364be2026648bf74846acb8a731",
         "GUID:be0903cd8e1546f498710afdc59db5eb"
@@ -14,6 +13,17 @@
     "precompiledReferences": [],
     "autoReferenced": false,
     "defineConstraints": [],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.shadergraph",
+            "expression": "7.0.0",
+            "define": "SHADERGRAPH_7_OR_NEWER"
+        },
+        {
+            "name": "com.unity.shadergraph",
+            "expression": "10.0.0",
+            "define": "SHADERGRAPH_10_OR_NEWER"
+        }
+    ],
     "noEngineReferences": false
 }

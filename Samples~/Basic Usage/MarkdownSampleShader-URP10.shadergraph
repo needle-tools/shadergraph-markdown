@@ -74,9 +74,6 @@
         },
         {
             "m_Id": "1ac840e98d6f414f8f4e80c6ae10751f"
-        },
-        {
-            "m_Id": "18a5e7bb94434fdc9a87dab436fec2fd"
         }
     ],
     "m_Keywords": [
@@ -228,24 +225,6 @@
     ],
     "m_Value": 0,
     "m_IsEditable": true
-}
-
-{
-    "m_SGVersion": 0,
-    "m_Type": "UnityEditor.ShaderGraph.Internal.BooleanShaderProperty",
-    "m_ObjectId": "18a5e7bb94434fdc9a87dab436fec2fd",
-    "m_Guid": {
-        "m_GuidSerialized": "a7ab1684-e8d6-4986-b511-fa8b9a736818"
-    },
-    "m_Name": "#NOTE The above is a link",
-    "m_DefaultReferenceName": "",
-    "m_OverrideReferenceName": "Boolean_b33b62171e084c9f9c7664243b215c75_9",
-    "m_GeneratePropertyBlock": true,
-    "m_Precision": 0,
-    "overrideHLSLDeclaration": false,
-    "hlslDeclarationOverride": 0,
-    "m_Hidden": false,
-    "m_Value": false
 }
 
 {
