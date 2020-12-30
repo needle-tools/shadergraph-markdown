@@ -1,0 +1,53 @@
+Pill {
+    /* background-color: red; */
+}
+
+#pill #node-border {
+    background-image: none;
+    border-bottom-width: 0;
+    border-top-width: 0;
+    border-left-width: 0;
+    border-right-width: 0;
+}
+
+.__markdown .pill.has-icon #contents #top #icon {
+    display:none;
+}
+
+/*
+.__markdown #pill #contents > #top > #title-label {
+    font-size: 16px;
+    -unity-font-style: italic;
+}
+*/
+
+.__markdown .__markdown_Reference #contents > #top > #title-label {
+    -unity-font-style: italic;
+}
+
+.__markdown .__markdown_Link #contents > #top > #title-label {
+    font-size:11px;
+    color: #5f7aff;
+}
+
+.__markdown .__markdown_Note #contents > #top > #title-label {
+    color: #ffdc30;
+}
+
+.__markdown .__markdown_Drawer #contents > #top > #title-label {
+    -unity-font-style: italic;
+}
+
+.__markdown .__markdown_Header #contents > #top > #title-label {
+    -unity-font-style: bold;
+}
+
+.__markdown .__markdown_Foldout #contents > #top > #title-label {
+    -unity-font-style: bold;
+    font-size: 16px;
+}
+
+.__markdown #contentItem > Label#typeLabel {
+    /* -unity-font-style: italic; */
+    opacity: 0.5;
+}

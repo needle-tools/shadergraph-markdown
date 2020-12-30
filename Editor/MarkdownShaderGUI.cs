@@ -37,6 +37,34 @@ namespace Needle
         private readonly Dictionary<string, MarkdownMaterialPropertyDrawer> drawerCache = new Dictionary<string, MarkdownMaterialPropertyDrawer>();
         private readonly List<MaterialProperty> referencedProperties = new List<MaterialProperty>();
         private readonly List<string> excludedProperties = new List<string>() {"unity_Lightmaps", "unity_LightmapsInd", "unity_ShadowMasks" };
+
+        internal enum MarkdownProperty
+        {
+            None,
+            Reference,
+            Link,
+            Note,
+            Drawer,
+            Header,
+            Foldout
+        }
+
+        internal static MarkdownProperty GetMarkdownType(string display)
+        {
+            if (display.StartsWith("#REF"))
+                return MarkdownProperty.Reference;
+            if (display.StartsWith("#LINK"))
+                return MarkdownProperty.Link;
+            if (display.StartsWith("#NOTE"))
+                return MarkdownProperty.Note;
+            if (display.StartsWith("#DRAWER"))
+                return MarkdownProperty.Drawer;
+            if (display.StartsWith("## ") || display.Equals("##", StringComparison.Ordinal))
+                return MarkdownProperty.Foldout;
+            if (display.StartsWith("### "))
+                return MarkdownProperty.Header;
+            return MarkdownProperty.None;
+        }
         
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
@@ -138,79 +166,69 @@ namespace Needle
                         }
                     }
 
-                    if (display.StartsWith("#LINK"))
+                    switch (GetMarkdownType(display))
                     {
-                        if (!previousPropertyWasDrawn) continue;
-                        var linkText = GetBetween(display, '[', ']');
-                        var linkHref = GetBetween(display, '(', ')');
-                        if (GUILayout.Button(linkText, CenteredGreyMiniLabel)) Application.OpenURL(linkHref);
-                        continue;
-                    }
-
-                    if (display.StartsWith("#NOTE"))
-                    {
-                        if (!previousPropertyWasDrawn) continue;
-                        var noteText = display.Substring(display.IndexOf(' ') + 1);
-                        EditorGUILayout.LabelField(noteText, CenteredGreyMiniLabel);
-                        continue;
-                    }
-
-                    if (display.StartsWith("#DRAWER"))
-                    {
-                        var parts = display.Split(' ');
-                        var objectName = parts[1];
-                        if(!drawerCache.ContainsKey(objectName)) {
-                            var objectPath = AssetDatabase.FindAssets($"t:{nameof(MarkdownMaterialPropertyDrawer)} {objectName}").Select(AssetDatabase.GUIDToAssetPath).FirstOrDefault();
-                            var scriptableObject = AssetDatabase.LoadAssetAtPath<MarkdownMaterialPropertyDrawer>(objectPath);
-                            drawerCache.Add(objectName, scriptableObject);
-                        }
-                        if(drawerCache[objectName])
-                            drawerCache[objectName].OnDrawerGUI(materialEditor, properties);
-                        else
-                            EditorGUILayout.HelpBox("Custom Drawer for property " + objectName + " not found.", MessageType.Error);
-                        continue;
-                    }
-                        
-                    if (display.StartsWith("### "))
-                    {
-                        var labelName = display.Substring(display.IndexOf(' ') + 1);
-                        EditorGUILayout.Space();
-                        EditorGUILayout.LabelField(labelName, EditorStyles.boldLabel);
-                        continue;
-                    }
-                        
-                    if (display.StartsWith("#REF"))
-                    {
-                        var keywordRef = display.Split(' ')[1];
-                        try
-                        {
-                            var keywordProp = FindProperty(keywordRef, properties);
-                            // referencedProperties.Add(keywordProp);
-                            materialEditor.ShaderProperty(keywordProp, keywordProp.displayName);
-                        }
-                        catch (ArgumentException e)
-                        {
-                            EditorGUILayout.HelpBox(e.Message, MessageType.Error);
-                        }
-                    }
-                    else
-                    {
-                        if(referencedProperties.Contains(prop))
-                        {
-                            previousPropertyWasDrawn = false;
+                        case MarkdownProperty.Link:
+                            if (!previousPropertyWasDrawn) continue;
+                            var linkText = GetBetween(display, '[', ']');
+                            var linkHref = GetBetween(display, '(', ')');
+                            if (GUILayout.Button(linkText, CenteredGreyMiniLabel)) Application.OpenURL(linkHref);
                             continue;
-                        }
-
-                        var idx = Shader.PropertyToID(prop.name);
-                        if(targetMat.shader && idx >= 0 && idx < ShaderUtil.GetPropertyCount(targetMat.shader) && ShaderUtil.IsShaderPropertyHidden(targetMat.shader, idx))
+                        case MarkdownProperty.Note:
+                            if (!previousPropertyWasDrawn) continue;
+                            var noteText = display.Substring(display.IndexOf(' ') + 1);
+                            EditorGUILayout.LabelField(noteText, CenteredGreyMiniLabel);
                             continue;
-
-                        // excluded properties
-                        if (excludedProperties.Contains(prop.name))
+                        case MarkdownProperty.Drawer:
+                            var parts = display.Split(' ');
+                            var objectName = parts[1];
+                            if(!drawerCache.ContainsKey(objectName)) {
+                                var objectPath = AssetDatabase.FindAssets($"t:{nameof(MarkdownMaterialPropertyDrawer)} {objectName}").Select(AssetDatabase.GUIDToAssetPath).FirstOrDefault();
+                                var scriptableObject = AssetDatabase.LoadAssetAtPath<MarkdownMaterialPropertyDrawer>(objectPath);
+                                drawerCache.Add(objectName, scriptableObject);
+                            }
+                            if(drawerCache[objectName])
+                                drawerCache[objectName].OnDrawerGUI(materialEditor, properties);
+                            else
+                                EditorGUILayout.HelpBox("Custom Drawer for property " + objectName + " not found.", MessageType.Error);
                             continue;
+                        case MarkdownProperty.Header:
+                            var labelName = display.Substring(display.IndexOf(' ') + 1);
+                            EditorGUILayout.Space();
+                            EditorGUILayout.LabelField(labelName, EditorStyles.boldLabel);
+                            continue;
+                        case MarkdownProperty.Reference:
+                            var keywordRef = display.Split(' ')[1];
+                            try
+                            {
+                                var keywordProp = FindProperty(keywordRef, properties);
+                                // referencedProperties.Add(keywordProp);
+                                materialEditor.ShaderProperty(keywordProp, keywordProp.displayName);
+                            }
+                            catch (ArgumentException e)
+                            {
+                                EditorGUILayout.HelpBox(e.Message, MessageType.Error);
+                            }
+                            continue;
+                        case MarkdownProperty.None:
+                        default:
+                            if(referencedProperties.Contains(prop))
+                            {
+                                previousPropertyWasDrawn = false;
+                                continue;
+                            }
+
+                            var idx = Shader.PropertyToID(prop.name);
+                            if(targetMat.shader && idx >= 0 && idx < ShaderUtil.GetPropertyCount(targetMat.shader) && ShaderUtil.IsShaderPropertyHidden(targetMat.shader, idx))
+                                continue;
+
+                            // excluded properties
+                            if (excludedProperties.Contains(prop.name))
+                                continue;
                         
-                        materialEditor.ShaderProperty(prop, display);
-                        previousPropertyWasDrawn = true;
+                            materialEditor.ShaderProperty(prop, display);
+                            previousPropertyWasDrawn = true;
+                            break;
                     }
                 }    
                 EditorGUILayout.Space();
