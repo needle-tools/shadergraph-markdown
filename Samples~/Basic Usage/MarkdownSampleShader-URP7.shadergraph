@@ -118,6 +118,12 @@
             "typeInfo": {
                 "fullName": "UnityEditor.ShaderGraph.Internal.BooleanShaderProperty"
             },
+            "JSONnodeData": "{\n    \"m_Guid\": {\n        \"m_GuidSerialized\": \"60a1c1f9-185e-4bbe-a6f2-01f1aa6fbfe9\"\n    },\n    \"m_Name\": \"#DRAWER GradientGenerator [_SOME_ENUM_KEYWORD_GRADIENT]\",\n    \"m_DefaultReferenceName\": \"Boolean_E7CFC5A4\",\n    \"m_OverrideReferenceName\": \"\",\n    \"m_GeneratePropertyBlock\": true,\n    \"m_Precision\": 0,\n    \"m_GPUInstanced\": false,\n    \"m_Hidden\": false,\n    \"m_Value\": false\n}"
+        },
+        {
+            "typeInfo": {
+                "fullName": "UnityEditor.ShaderGraph.Internal.BooleanShaderProperty"
+            },
             "JSONnodeData": "{\n    \"m_Guid\": {\n        \"m_GuidSerialized\": \"c0cfb715-78ba-4ee2-b23d-fbd4cf002dd8\"\n    },\n    \"m_Name\": \"##\",\n    \"m_DefaultReferenceName\": \"Boolean_2BD0F9A7\",\n    \"m_OverrideReferenceName\": \"\",\n    \"m_GeneratePropertyBlock\": true,\n    \"m_Precision\": 0,\n    \"m_GPUInstanced\": false,\n    \"m_Hidden\": false,\n    \"m_Value\": false\n}"
         },
         {
