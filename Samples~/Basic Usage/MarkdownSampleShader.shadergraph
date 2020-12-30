@@ -7,6 +7,9 @@
             "m_Id": "7d219f41571b4f2bb6122a5d13c66ae6"
         },
         {
+            "m_Id": "fe6fae022bb848869d8dfc840082edf5"
+        },
+        {
             "m_Id": "154f08e800204de482d649fbea24cb0a"
         },
         {
@@ -46,16 +49,37 @@
             "m_Id": "3315e878bfd043a8836fc24ad7669cab"
         },
         {
-            "m_Id": "da6f4de67d00496f8744730215fa5519"
+            "m_Id": "327fdc1a505643adb9eec0e672f9582e"
         },
         {
-            "m_Id": "327fdc1a505643adb9eec0e672f9582e"
+            "m_Id": "8ad316250bc7462c9107902a5c7d94b9"
+        },
+        {
+            "m_Id": "bb0fd3a78c4c4806821da359fe068876"
+        },
+        {
+            "m_Id": "d19dfc5915e54b24b14c63ef943d568a"
+        },
+        {
+            "m_Id": "37152a03919b4f2486338c0e0c3480c6"
+        },
+        {
+            "m_Id": "4e7ca759d290460899530f48babc8f1b"
+        },
+        {
+            "m_Id": "41733e8f9db843c9b0e6ce052dfa7c90"
+        },
+        {
+            "m_Id": "d5e98415abe042e7b7e8cd773fe20ab1"
+        },
+        {
+            "m_Id": "1ac840e98d6f414f8f4e80c6ae10751f"
+        },
+        {
+            "m_Id": "18a5e7bb94434fdc9a87dab436fec2fd"
         }
     ],
     "m_Keywords": [
-        {
-            "m_Id": "8464088b64b74709b9cac49413d2d7e1"
-        },
         {
             "m_Id": "15ae6e1056b04d429cf5ecb2cd65fa69"
         }
@@ -183,27 +207,63 @@
     "m_OverrideReferenceName": "_SOME_ENUM_KEYWORD",
     "m_GeneratePropertyBlock": true,
     "m_KeywordType": 1,
-    "m_KeywordDefinition": 1,
+    "m_KeywordDefinition": 0,
     "m_KeywordScope": 0,
     "m_Entries": [
         {
             "id": 1,
-            "displayName": "Option 1",
-            "referenceName": "OPTION_1"
+            "displayName": "Colors",
+            "referenceName": "COLORS"
         },
         {
             "id": 2,
-            "displayName": "Option 2",
-            "referenceName": "OPTION_2"
+            "displayName": "Texture",
+            "referenceName": "TEXTURE"
         },
         {
             "id": 3,
-            "displayName": "Option 3",
-            "referenceName": "OPTION_3"
+            "displayName": "Gradient",
+            "referenceName": "GRADIENT"
         }
     ],
     "m_Value": 0,
     "m_IsEditable": true
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.BooleanShaderProperty",
+    "m_ObjectId": "18a5e7bb94434fdc9a87dab436fec2fd",
+    "m_Guid": {
+        "m_GuidSerialized": "a7ab1684-e8d6-4986-b511-fa8b9a736818"
+    },
+    "m_Name": "#NOTE The above is a link",
+    "m_DefaultReferenceName": "",
+    "m_OverrideReferenceName": "Boolean_b33b62171e084c9f9c7664243b215c75_9",
+    "m_GeneratePropertyBlock": true,
+    "m_Precision": 0,
+    "overrideHLSLDeclaration": false,
+    "hlslDeclarationOverride": 0,
+    "m_Hidden": false,
+    "m_Value": false
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.BooleanShaderProperty",
+    "m_ObjectId": "1ac840e98d6f414f8f4e80c6ae10751f",
+    "m_Guid": {
+        "m_GuidSerialized": "53a2e8e0-d06d-4d99-aca1-11afb0ab7119"
+    },
+    "m_Name": "#NOTE You can also add notes.",
+    "m_DefaultReferenceName": "",
+    "m_OverrideReferenceName": "Boolean_b33b62171e084c9f9c7664243b215c75_7",
+    "m_GeneratePropertyBlock": true,
+    "m_Precision": 0,
+    "overrideHLSLDeclaration": false,
+    "hlslDeclarationOverride": 0,
+    "m_Hidden": false,
+    "m_Value": false
 }
 
 {
@@ -332,6 +392,24 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.BooleanShaderProperty",
+    "m_ObjectId": "37152a03919b4f2486338c0e0c3480c6",
+    "m_Guid": {
+        "m_GuidSerialized": "bfb49f40-9019-4f41-abf5-0d0b9bec78b9"
+    },
+    "m_Name": "#DRAWER GradientGenerator [_SOME_ENUM_KEYWORD_GRADIENT]",
+    "m_DefaultReferenceName": "",
+    "m_OverrideReferenceName": "Boolean_b33b62171e084c9f9c7664243b215c75_4",
+    "m_GeneratePropertyBlock": true,
+    "m_Precision": 0,
+    "overrideHLSLDeclaration": false,
+    "hlslDeclarationOverride": 0,
+    "m_Hidden": false,
+    "m_Value": false
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
     "m_ObjectId": "3a8d3edda94d4c0ca593bd1e6f6ea6a9",
     "m_Id": 0,
@@ -379,6 +457,24 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.BooleanShaderProperty",
+    "m_ObjectId": "41733e8f9db843c9b0e6ce052dfa7c90",
+    "m_Guid": {
+        "m_GuidSerialized": "8f12a15c-fabc-4dbf-b468-d7782887cdad"
+    },
+    "m_Name": "### Not in foldout",
+    "m_DefaultReferenceName": "",
+    "m_OverrideReferenceName": "Boolean_b33b62171e084c9f9c7664243b215c75_6",
+    "m_GeneratePropertyBlock": true,
+    "m_Precision": 0,
+    "overrideHLSLDeclaration": false,
+    "hlslDeclarationOverride": 0,
+    "m_Hidden": false,
+    "m_Value": false
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.Vector1MaterialSlot",
     "m_ObjectId": "4267239dd2dd43b380b494edc9f8e433",
     "m_Id": 0,
@@ -413,6 +509,24 @@
         "x": 0.0,
         "y": 1.0
     }
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.BooleanShaderProperty",
+    "m_ObjectId": "4e7ca759d290460899530f48babc8f1b",
+    "m_Guid": {
+        "m_GuidSerialized": "1f6cf03a-3eb9-4068-8470-c2001d20d5fa"
+    },
+    "m_Name": "##",
+    "m_DefaultReferenceName": "",
+    "m_OverrideReferenceName": "Boolean_b33b62171e084c9f9c7664243b215c75_5",
+    "m_GeneratePropertyBlock": true,
+    "m_Precision": 0,
+    "overrideHLSLDeclaration": false,
+    "hlslDeclarationOverride": 0,
+    "m_Hidden": false,
+    "m_Value": false
 }
 
 {
@@ -583,25 +697,6 @@
 
 {
     "m_SGVersion": 0,
-    "m_Type": "UnityEditor.ShaderGraph.ShaderKeyword",
-    "m_ObjectId": "8464088b64b74709b9cac49413d2d7e1",
-    "m_Guid": {
-        "m_GuidSerialized": "85757f7a-94ee-49ac-beb3-e0fa509bcffa"
-    },
-    "m_Name": "SOME_BOOLEAN_KEYWORD",
-    "m_DefaultReferenceName": "BOOLEAN_8464088B64B74709B9CAC49413D2D7E1_ON",
-    "m_OverrideReferenceName": "_SOME_BOOLEAN_KEYWORD",
-    "m_GeneratePropertyBlock": true,
-    "m_KeywordType": 0,
-    "m_KeywordDefinition": 1,
-    "m_KeywordScope": 0,
-    "m_Entries": [],
-    "m_Value": 0,
-    "m_IsEditable": true
-}
-
-{
-    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.BlockNode",
     "m_ObjectId": "899344c492894a338ce76ac59462aab9",
     "m_Group": {
@@ -630,6 +725,30 @@
         "m_SerializableColors": []
     },
     "m_SerializedDescriptor": "SurfaceDescription.Metallic"
+}
+
+{
+    "m_SGVersion": 3,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.ColorShaderProperty",
+    "m_ObjectId": "8ad316250bc7462c9107902a5c7d94b9",
+    "m_Guid": {
+        "m_GuidSerialized": "95dbc20d-7eab-4684-8f0c-a202c9cc2bbe"
+    },
+    "m_Name": "Color 1 [_SOME_ENUM_KEYWORD_COLORS]",
+    "m_DefaultReferenceName": "Color_8ad316250bc7462c9107902a5c7d94b9",
+    "m_OverrideReferenceName": "",
+    "m_GeneratePropertyBlock": true,
+    "m_Precision": 0,
+    "overrideHLSLDeclaration": false,
+    "hlslDeclarationOverride": 0,
+    "m_Hidden": false,
+    "m_Value": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 0.0
+    },
+    "m_ColorMode": 0
 }
 
 {
@@ -844,6 +963,30 @@
 {
     "m_SGVersion": 3,
     "m_Type": "UnityEditor.ShaderGraph.Internal.ColorShaderProperty",
+    "m_ObjectId": "bb0fd3a78c4c4806821da359fe068876",
+    "m_Guid": {
+        "m_GuidSerialized": "06475312-dd41-4c85-bd6f-a21cc25e1b52"
+    },
+    "m_Name": "Color 2 [_SOME_ENUM_KEYWORD_COLORS]",
+    "m_DefaultReferenceName": "Color_bb0fd3a78c4c4806821da359fe068876",
+    "m_OverrideReferenceName": "",
+    "m_GeneratePropertyBlock": true,
+    "m_Precision": 0,
+    "overrideHLSLDeclaration": false,
+    "hlslDeclarationOverride": 0,
+    "m_Hidden": false,
+    "m_Value": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 0.0
+    },
+    "m_ColorMode": 0
+}
+
+{
+    "m_SGVersion": 3,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.ColorShaderProperty",
     "m_ObjectId": "be37ff9ff5624ca5bff2cce363e3bb0c",
     "m_Guid": {
         "m_GuidSerialized": "5ba0a456-4b3b-4dd2-8bf5-9c4f65789672"
@@ -964,6 +1107,29 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.Texture2DShaderProperty",
+    "m_ObjectId": "d19dfc5915e54b24b14c63ef943d568a",
+    "m_Guid": {
+        "m_GuidSerialized": "92c50538-f9e9-4e93-b6e9-02a9d5cbbcd4"
+    },
+    "m_Name": "Gradient Texture [_SOME_ENUM_KEYWORD_TEXTURE]",
+    "m_DefaultReferenceName": "Texture2D_d19dfc5915e54b24b14c63ef943d568a",
+    "m_OverrideReferenceName": "",
+    "m_GeneratePropertyBlock": true,
+    "m_Precision": 0,
+    "overrideHLSLDeclaration": false,
+    "hlslDeclarationOverride": 0,
+    "m_Hidden": false,
+    "m_Value": {
+        "m_SerializedTexture": "{\"texture\":{\"instanceID\":0}}",
+        "m_Guid": ""
+    },
+    "m_Modifiable": true,
+    "m_DefaultType": 0
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.Rendering.Universal.ShaderGraph.UniversalLitSubTarget",
     "m_ObjectId": "d3086cf171394f99ba91867dee5aa776",
     "m_WorkflowMode": 1,
@@ -972,21 +1138,27 @@
 }
 
 {
-    "m_SGVersion": 0,
-    "m_Type": "UnityEditor.ShaderGraph.Internal.BooleanShaderProperty",
-    "m_ObjectId": "da6f4de67d00496f8744730215fa5519",
+    "m_SGVersion": 3,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.ColorShaderProperty",
+    "m_ObjectId": "d5e98415abe042e7b7e8cd773fe20ab1",
     "m_Guid": {
-        "m_GuidSerialized": "a00e38f5-c7f1-4713-855c-c701b2de7791"
+        "m_GuidSerialized": "2a040183-7627-4756-b5cf-0515d7578dbd"
     },
-    "m_Name": "#REF _SOME_BOOLEAN_KEYWORD",
-    "m_DefaultReferenceName": "",
-    "m_OverrideReferenceName": "Boolean_b33b62171e084c9f9c7664243b215c75_2",
+    "m_Name": "Yet Another Color",
+    "m_DefaultReferenceName": "Color_d5e98415abe042e7b7e8cd773fe20ab1",
+    "m_OverrideReferenceName": "",
     "m_GeneratePropertyBlock": true,
     "m_Precision": 0,
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
     "m_Hidden": false,
-    "m_Value": false
+    "m_Value": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 0.0
+    },
+    "m_ColorMode": 0
 }
 
 {
@@ -1043,5 +1215,23 @@
         "a": 0.0
     },
     "m_ColorMode": 0
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.BooleanShaderProperty",
+    "m_ObjectId": "fe6fae022bb848869d8dfc840082edf5",
+    "m_Guid": {
+        "m_GuidSerialized": "0fcc8dca-72ef-41b9-8a66-de753cf6f9e1"
+    },
+    "m_Name": "#LINK [ShaderGraph Markdown on GitHub](https://github.com)",
+    "m_DefaultReferenceName": "",
+    "m_OverrideReferenceName": "Boolean_b33b62171e084c9f9c7664243b215c75_8",
+    "m_GeneratePropertyBlock": true,
+    "m_Precision": 0,
+    "overrideHLSLDeclaration": false,
+    "hlslDeclarationOverride": 0,
+    "m_Hidden": false,
+    "m_Value": false
 }
 

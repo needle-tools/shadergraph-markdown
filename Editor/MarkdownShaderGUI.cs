@@ -16,6 +16,7 @@ namespace Needle
         {
             public string name;
             public List<MaterialProperty> properties;
+            public Action customDrawer = null;
         }
 
         private static GUIStyle centeredGreyMiniLabel;
@@ -34,11 +35,15 @@ namespace Needle
         
         private readonly Dictionary<string, bool> headerGroupStates = new Dictionary<string, bool>();
         private readonly Dictionary<string, MarkdownMaterialPropertyDrawer> drawerCache = new Dictionary<string, MarkdownMaterialPropertyDrawer>();
+        private readonly List<MaterialProperty> referencedProperties = new List<MaterialProperty>();
+        private readonly List<string> excludedProperties = new List<string>() {"unity_Lightmaps", "unity_LightmapsInd", "unity_ShadowMasks" };
         
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
             var targetMat = materialEditor.target as Material;
             if (!targetMat) return;
+            
+            // referencedProperties.Clear();
             
             // split by header properties
             var headerGroups = new List<HeaderGroup>();
@@ -46,17 +51,37 @@ namespace Needle
             
             foreach (var prop in properties)
             {
-                if(prop.displayName.StartsWith("## ")) {
-                    headerGroups.Add(new HeaderGroup() { name = prop.displayName.Substring(prop.displayName.IndexOf(' ') + 1) });
+                if(prop.displayName.StartsWith("## ") || prop.displayName.Equals("##", StringComparison.Ordinal))
+                {
+                    if (prop.displayName.Equals("##", StringComparison.Ordinal))
+                        headerGroups.Add(new HeaderGroup() { name = null });
+                    else
+                        headerGroups.Add(new HeaderGroup() { name = prop.displayName.Substring(prop.displayName.IndexOf(' ') + 1) });
                 }
                 else
                 {
                     var last = headerGroups.Last();
                     if (last.properties == null) 
                         last.properties = new List<MaterialProperty>();
+                    
+                    // need to process REF properties early so we can hide them properly if needed
+                    var display = prop.displayName;
+                    if (display.StartsWith("#REF"))
+                    {
+                        var keywordRef = display.Split(' ')[1];
+                        try {
+                            var keywordProp = FindProperty(keywordRef, properties);
+                            referencedProperties.Add(keywordProp);
+                        }
+                        catch (ArgumentException) {
+                            // EditorGUILayout.HelpBox(e.Message, MessageType.Error);
+                        }
+                    }
+
                     last.properties.Add(prop);
                 }
             }
+            headerGroups.Add(new HeaderGroup() { name = "Debug", properties = null, customDrawer = DrawDebugGroupContent });
 
             string GetBetween(string str, char start, char end, bool last = false)
             {
@@ -64,6 +89,32 @@ namespace Needle
                 var i1 = last ? str.LastIndexOf(end)   : str.IndexOf(end);
                 if (i0 < 0 || i1 < 0) return null;
                 return str.Substring(i0 + 1, i1 - i0 - 1);
+            }
+            
+            void DrawDebugGroupContent()
+            {
+                EditorGUILayout.LabelField("Shader Keywords", EditorStyles.boldLabel);
+                foreach (var kw in targetMat.shaderKeywords)
+                {
+                    EditorGUILayout.LabelField(kw, EditorStyles.miniLabel);
+                }
+
+                if (GUILayout.Button("Clear Keywords"))
+                {
+                    foreach (var kw in targetMat.shaderKeywords)
+                        targetMat.DisableKeyword(kw);
+                }
+                EditorGUILayout.Space();
+
+                // EditorGUILayout.LabelField("Shader Properties", EditorStyles.boldLabel);
+                // var shader = targetMat.shader;
+                // var propertyCount = ShaderUtil.GetPropertyCount(shader);
+                // for (int i = 0; i < propertyCount; i++) {
+                //     EditorGUILayout.LabelField(ShaderUtil.GetPropertyName(shader, i), ShaderUtil.GetPropertyType(shader, i) + (ShaderUtil.IsShaderPropertyHidden(shader, i) ? " (hidden)" : ""));
+                // }
+                
+                // ShaderUtil.GetShaderGlobalKeywords(shader);
+                // ShaderUtil.GetShaderLocalKeywords(shader);
             }
 
             void DrawGroup(HeaderGroup group)
@@ -134,6 +185,7 @@ namespace Needle
                         try
                         {
                             var keywordProp = FindProperty(keywordRef, properties);
+                            // referencedProperties.Add(keywordProp);
                             materialEditor.ShaderProperty(keywordProp, keywordProp.displayName);
                         }
                         catch (ArgumentException e)
@@ -143,6 +195,20 @@ namespace Needle
                     }
                     else
                     {
+                        if(referencedProperties.Contains(prop))
+                        {
+                            previousPropertyWasDrawn = false;
+                            continue;
+                        }
+
+                        var idx = Shader.PropertyToID(prop.name);
+                        if(targetMat.shader && idx >= 0 && idx < ShaderUtil.GetPropertyCount(targetMat.shader) && ShaderUtil.IsShaderPropertyHidden(targetMat.shader, idx))
+                            continue;
+
+                        // excluded properties
+                        if (excludedProperties.Contains(prop.name))
+                            continue;
+                        
                         materialEditor.ShaderProperty(prop, display);
                         previousPropertyWasDrawn = true;
                     }
@@ -152,9 +218,9 @@ namespace Needle
             
             foreach(var group in headerGroups)
             {
-                if (group.properties == null) continue;
+                if (group.properties == null && group.customDrawer == null) continue;
 
-                if (group.name.Equals("Default", StringComparison.OrdinalIgnoreCase)) {
+                if (group.name == null || group.name.Equals("Default", StringComparison.OrdinalIgnoreCase)) {
                     DrawGroup(group);
                 }
                 else {
@@ -164,7 +230,10 @@ namespace Needle
                     {
                         EditorGUI.indentLevel++;
                         EditorGUILayout.Space();
-                        DrawGroup(group);
+                        if (group.customDrawer != null)
+                            group.customDrawer.Invoke();
+                        else
+                            DrawGroup(group);
                         EditorGUI.indentLevel--;
                     }
                     CoreEditorUtils.DrawSplitter();

@@ -14,11 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   texturePropertyName: _RampTexture
   mappedGradientStore:
-  - material: {fileID: 2100000, guid: 55452bed78984374e9b861890387675f, type: 2}
+  - material: {fileID: 2100000, guid: a9ea2ef2d94fb2342ba6888a879f5960, type: 2}
     gradient:
       serializedVersion: 2
-      key0: {r: 1, g: 0.7029425, b: 0.4575472, a: 1}
-      key1: {r: 1, g: 0.45238096, b: 0, a: 1}
+      key0: {r: 1, g: 1, b: 1, a: 1}
+      key1: {r: 1, g: 1, b: 1, a: 1}
       key2: {r: 0, g: 0, b: 0, a: 0}
       key3: {r: 0, g: 0, b: 0, a: 0}
       key4: {r: 0, g: 0, b: 0, a: 0}
