@@ -38,6 +38,8 @@ _ShaderGraph 7 / 8_
 2. You should see the property display change in the Blackboard, to differentiate it from actual properties in your shader.   
 2. Save your shader, and select a material that uses this shader — done!
 
+To see a more complex example, you can also import the sample shown in this Readme via `Package Manager > ShaderGraph Markdown > Samples`.
+
 ## Attribute Reference
 1. `## Foldout`  
    A foldout header
