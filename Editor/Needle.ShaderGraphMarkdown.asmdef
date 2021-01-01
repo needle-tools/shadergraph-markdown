@@ -1,8 +1,10 @@
 {
-    "name": "Needle.ShaderGraph.Markdown",
+    "name": "Needle.ShaderGraphMarkdown",
+    "rootNamespace": "",
     "references": [
         "GUID:3eae0364be2026648bf74846acb8a731",
-        "GUID:be0903cd8e1546f498710afdc59db5eb"
+        "GUID:be0903cd8e1546f498710afdc59db5eb",
+        "GUID:78bd2ddd6e276394a9615c203e574844"
     ],
     "includePlatforms": [
         "Editor"
@@ -23,6 +25,11 @@
             "name": "com.unity.shadergraph",
             "expression": "10.0.0",
             "define": "SHADERGRAPH_10_OR_NEWER"
+        },
+        {
+            "name": "com.unity.render-pipelines.high-definition",
+            "expression": "7.0.0",
+            "define": "HDRP_7_OR_NEWER"
         }
     ],
     "noEngineReferences": false

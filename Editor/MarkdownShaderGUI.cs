@@ -1,10 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using Needle.ShaderGraphMarkdown;
+using System.Collections.Generic;
+using UnityEngine;
 using UnityEditor;
 using UnityEditor.Rendering;
-using UnityEngine;
+using Needle.ShaderGraphMarkdown;
 
 // we're making an exception here: only Needle namespace, because full namespace
 // has to be included in the ShaderGraph custom ui field.
@@ -12,7 +12,7 @@ namespace Needle
 {
     public class MarkdownShaderGUI : ShaderGUI
     {
-       private class HeaderGroup
+        private class HeaderGroup
         {
             public string name;
             public List<MaterialProperty> properties;
@@ -113,6 +113,7 @@ namespace Needle
                     last.properties.Add(prop);
                 }
             }
+            headerGroups.Add(new HeaderGroup() { name = null, properties = null, customDrawer = DrawCustomGUI });
             headerGroups.Add(new HeaderGroup() { name = "Debug", properties = null, customDrawer = DrawDebugGroupContent });
 
             string GetBetween(string str, char start, char end, bool last = false)
@@ -138,15 +139,30 @@ namespace Needle
                 }
                 EditorGUILayout.Space();
 
-                // EditorGUILayout.LabelField("Shader Properties", EditorStyles.boldLabel);
-                // var shader = targetMat.shader;
-                // var propertyCount = ShaderUtil.GetPropertyCount(shader);
-                // for (int i = 0; i < propertyCount; i++) {
-                //     EditorGUILayout.LabelField(ShaderUtil.GetPropertyName(shader, i), ShaderUtil.GetPropertyType(shader, i) + (ShaderUtil.IsShaderPropertyHidden(shader, i) ? " (hidden)" : ""));
-                // }
+                EditorGUILayout.LabelField("ShaderGraph Info", EditorStyles.boldLabel);
+                if (GUILayout.Button("Refresh"))
+                {
+                    
+                }
+                // UnityEditor.ShaderGraph.GraphData.SortActiveTargets
+                // allPotentialTargets
+                // activeTargets
+                // onSaveGraph
+            }
+            
+            void DrawCustomGUI()
+            {
+                if (!haveSearchedForCustomGUI)
+                    InitializeCustomGUI();
+            
+                if(baseShaderGui != null) {
+                    EditorGUILayout.Space();
+                    CoreEditorUtils.DrawSplitter();
+                    EditorGUILayout.LabelField("Additional Options", EditorStyles.boldLabel);
+                    EditorGUILayout.Space();
                 
-                // ShaderUtil.GetShaderGlobalKeywords(shader);
-                // ShaderUtil.GetShaderLocalKeywords(shader);
+                    baseShaderGui?.OnGUI(materialEditor, properties);
+                }
             }
 
             void DrawGroup(HeaderGroup group)
@@ -242,7 +258,12 @@ namespace Needle
                 if (group.properties == null && group.customDrawer == null) continue;
 
                 if (group.name == null || group.name.Equals("Default", StringComparison.OrdinalIgnoreCase)) {
-                    DrawGroup(group);
+                    if(group.customDrawer != null) {
+                        group.customDrawer.Invoke();
+                    }
+                    else {
+                        DrawGroup(group);
+                    }
                 }
                 else {
                     if (!headerGroupStates.ContainsKey(group.name)) headerGroupStates.Add(group.name, false);
@@ -260,6 +281,25 @@ namespace Needle
                     CoreEditorUtils.DrawSplitter();
                 }
             }
+
+            // EditorGUILayout.Space();
+            // CoreEditorUtils.DrawSplitter();
+            // EditorGUILayout.LabelField("base.OnGUI", EditorStyles.boldLabel);
+            // EditorGUILayout.Space();
+            //
+            // base.OnGUI(materialEditor, properties);
+        }
+
+        private ShaderGUI baseShaderGui = null;
+
+        private bool haveSearchedForCustomGUI = false;
+        private void InitializeCustomGUI()
+        {
+            // instead of calling base, we need to draw the right inspector here
+            // e.g. for a Lit HDRP ShaderGraph: Rendering.HighDefinition.LitShaderGraphGUI
+            var litGui = typeof(UnityEditor.Rendering.HighDefinition.HDShaderUtils).Assembly.GetType("UnityEditor.Rendering.HighDefinition.MarkdownHDLitGUI");
+            baseShaderGui = (ShaderGUI) Activator.CreateInstance(litGui);
+            haveSearchedForCustomGUI = true;
         }
     }
 }

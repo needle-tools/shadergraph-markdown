@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEditor;
@@ -6,7 +7,7 @@ using System.Reflection;
 
 namespace Needle.ShaderGraphMarkdown
 {
-    public static class ShaderGraphPropertyUI
+    internal static class ShaderGraphPropertyUI
     {
         [InitializeOnLoadMethod]
         static void Init()
@@ -16,6 +17,19 @@ namespace Needle.ShaderGraphMarkdown
 
         private static int i = 0;
         private static StyleSheet styleSheet;
+
+        // IEnumerable<EditorWindow> ShaderGraphWindows
+        // {
+        //     get
+        //     {
+        //           
+        //     }
+        // }
+        
+        static Blackboard GetBlackboardFromWindow(EditorWindow shaderGraphWindow)
+        {
+            return null;
+        }
         
         private static void EditorUpdate()
         {
@@ -23,9 +37,9 @@ namespace Needle.ShaderGraphMarkdown
             if (i != 0) return;
 
             #if SHADERGRAPH_10_OR_NEWER
-            var shaderGraphAssembly = typeof(UnityEditor.ShaderGraph.PositionControl).Assembly; // does not exist earlier
+            var shaderGraphAssembly = typeof(UnityEditor.ShaderGraph.PositionControl).Assembly; // does not exist pre-2020.2
             #else
-            var shaderGraphAssembly = typeof(UnityEditor.ShaderGraph.KeywordDefinition).Assembly; // is internal in 2020.2+
+            var shaderGraphAssembly = typeof(UnityEditor.ShaderGraph.KeywordDefinition).Assembly; // went internal in 2020.2+
             #endif
             var windowType = shaderGraphAssembly.GetType("UnityEditor.ShaderGraph.Drawing.MaterialGraphEditWindow");
             var windows = Resources.FindObjectsOfTypeAll(windowType);
