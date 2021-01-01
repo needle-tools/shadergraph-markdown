@@ -28,10 +28,18 @@ Pill {
 .__markdown .__markdown_Link #contents > #top > #title-label {
     font-size:11px;
     color: #5f7aff;
+    max-width:350px;
+    white-space:normal;
+}
+
+.__markdown .__markdown_Note #contents > #top {
+    width:auto;
 }
 
 .__markdown .__markdown_Note #contents > #top > #title-label {
     color: #ffdc30;
+    max-width:350px;
+    white-space:normal;
 }
 
 .__markdown .__markdown_Drawer #contents > #top > #title-label {
