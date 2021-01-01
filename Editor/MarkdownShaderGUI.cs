@@ -51,9 +51,12 @@ namespace Needle
 
         internal static MarkdownProperty GetMarkdownType(string display)
         {
+            // markdown blockquote: >
+            // markdown footnote: [^MyNote] Hello I'm a footnote
+
             if (display.StartsWith("#REF"))
                 return MarkdownProperty.Reference;
-            if (display.StartsWith("#LINK"))
+            if (display.StartsWith("[") && display.IndexOf("]", StringComparison.Ordinal) > -1 && display.IndexOf("(", StringComparison.Ordinal) > -1 && display.EndsWith(")"))
                 return MarkdownProperty.Link;
             if (display.StartsWith("#NOTE"))
                 return MarkdownProperty.Note;
@@ -219,8 +222,7 @@ namespace Needle
                                 continue;
                             }
 
-                            var idx = Shader.PropertyToID(prop.name);
-                            if(targetMat.shader && idx >= 0 && idx < ShaderUtil.GetPropertyCount(targetMat.shader) && ShaderUtil.IsShaderPropertyHidden(targetMat.shader, idx))
+                            if(targetMat.shader && prop.flags.HasFlag(MaterialProperty.PropFlags.HideInInspector))
                                 continue;
 
                             // excluded properties
