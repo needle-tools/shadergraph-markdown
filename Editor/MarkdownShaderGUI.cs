@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.Rendering;
 using Needle.ShaderGraphMarkdown;
+using UnityEditor.Rendering.HighDefinition;
 
 // we're making an exception here: only Needle namespace, because full namespace
 // has to be included in the ShaderGraph custom ui field.
@@ -68,6 +69,8 @@ namespace Needle
                 return MarkdownProperty.Header;
             return MarkdownProperty.None;
         }
+
+        private bool showOriginalPropertyList = false;
         
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
@@ -126,6 +129,15 @@ namespace Needle
             
             void DrawDebugGroupContent()
             {
+                EditorGUI.BeginChangeCheck();
+                showOriginalPropertyList = EditorGUILayout.Toggle("Show Original Properties", showOriginalPropertyList);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    InitializeCustomGUI(targetMat);    
+                }
+                
+                EditorGUILayout.Space();
+                
                 EditorGUILayout.LabelField("Shader Keywords", EditorStyles.boldLabel);
                 foreach (var kw in targetMat.shaderKeywords)
                 {
@@ -139,10 +151,11 @@ namespace Needle
                 }
                 EditorGUILayout.Space();
 
+                
                 EditorGUILayout.LabelField("ShaderGraph Info", EditorStyles.boldLabel);
                 if (GUILayout.Button("Refresh"))
                 {
-                    
+                    Debug.Log(MarkdownHDExtensions.GetDefaultCustomInspectorFromShader(targetMat.shader));
                 }
                 // UnityEditor.ShaderGraph.GraphData.SortActiveTargets
                 // allPotentialTargets
@@ -153,7 +166,7 @@ namespace Needle
             void DrawCustomGUI()
             {
                 if (!haveSearchedForCustomGUI)
-                    InitializeCustomGUI();
+                    InitializeCustomGUI(targetMat);
             
                 if(baseShaderGui != null) {
                     EditorGUILayout.Space();
@@ -263,6 +276,7 @@ namespace Needle
                     }
                     else {
                         DrawGroup(group);
+                        CoreEditorUtils.DrawSplitter();
                     }
                 }
                 else {
@@ -272,8 +286,10 @@ namespace Needle
                     {
                         EditorGUI.indentLevel++;
                         EditorGUILayout.Space();
-                        if (group.customDrawer != null)
+                        if (group.customDrawer != null) {
                             group.customDrawer.Invoke();
+                            CoreEditorUtils.DrawSplitter();
+                        }
                         else
                             DrawGroup(group);
                         EditorGUI.indentLevel--;
@@ -293,12 +309,33 @@ namespace Needle
         private ShaderGUI baseShaderGui = null;
 
         private bool haveSearchedForCustomGUI = false;
-        private void InitializeCustomGUI()
+        private void InitializeCustomGUI(Material targetMat)
         {
-            // instead of calling base, we need to draw the right inspector here
-            // e.g. for a Lit HDRP ShaderGraph: Rendering.HighDefinition.LitShaderGraphGUI
-            var litGui = typeof(UnityEditor.Rendering.HighDefinition.HDShaderUtils).Assembly.GetType("UnityEditor.Rendering.HighDefinition.MarkdownHDLitGUI");
+            // instead of calling base, we need to draw the right inspector here.
+            // to figure out which one that is, we need to get info from the ShaderGraph directly - 
+            // at least in HDRP, different custom editors are used depending on what modes are selected in ShaderGraph.
+            
+            // also see HDShaderUtils.cs
+            
+            // Decal        Rendering.HighDefinition.DecalGUI
+            // Eye          Rendering.HighDefinition.LightingShaderGraphGUI
+            // Fabric       Rendering.HighDefinition.LightingShaderGraphGUI
+            // Hair         Rendering.HighDefinition.LightingShaderGraphGUI
+            // Lit          Rendering.HighDefinition.LitShaderGraphGUI
+            // StackLit     Rendering.HighDefinition.LightingShaderGraphGUI
+            // LayeredLit   Rendering.HighDefinition.LayeredLitGUI
+            // Unlit        Rendering.HighDefinition.HDUnlitGUI
+            // TerrainLitGUI
+            // AxFGUI
+            var defaultCustomInspector = MarkdownHDExtensions.GetDefaultCustomInspectorFromShader(targetMat.shader);
+            Debug.Log(defaultCustomInspector);
+            var litGui = typeof(HDShaderUtils).Assembly.GetType("UnityEditor." + defaultCustomInspector);
             baseShaderGui = (ShaderGUI) Activator.CreateInstance(litGui);
+            
+            // remove the "ShaderGraphUIBlock" uiBlock ("Exposed Properties") as we're rendering that ourselves
+            if(!showOriginalPropertyList)
+                MarkdownHDExtensions.RemoveShaderGraphUIBlock(baseShaderGui);
+            
             haveSearchedForCustomGUI = true;
         }
     }
