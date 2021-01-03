@@ -7,15 +7,17 @@ Material:
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_Name: Shader Graphs_MarkdownSampleShader-URP7
-  m_Shader: {fileID: -6465566751694194690, guid: 1a9806c3200f553499593f7047e8f772, type: 3}
-  m_ShaderKeywords: _SOME_ENUM_KEYWORD_COLORS
+  m_Name: Shader Graphs_HDRPLitGraph
+  m_Shader: {fileID: -6465566751694194690, guid: 7b19f59e4d33a6f47828ac566ca7fe8b, type: 3}
+  m_ShaderKeywords: _DISABLE_SSR_TRANSPARENT
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: 2000
-  stringTagMap: {}
+  m_CustomRenderQueue: 2225
+  stringTagMap:
+    MotionVector: User
   disabledShaderPasses:
+  - MOTIONVECTORS
   - TransparentDepthPrepass
   - TransparentDepthPostpass
   - TransparentBackface
@@ -23,14 +25,6 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
-    - Texture2D_55007525:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
-    - Texture2D_E29F2BB5:
-        m_Texture: {fileID: 0}
-        m_Scale: {x: 1, y: 1}
-        m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -44,22 +38,6 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
-    - Boolean_2BD0F9A7: 0
-    - Boolean_38C50D32: 0
-    - Boolean_45D23026: 0
-    - Boolean_59D32853: 0
-    - Boolean_5CA4D77: 0
-    - Boolean_6006151C: 0
-    - Boolean_71F4866F: 0
-    - Boolean_78A71D4C: 0
-    - Boolean_8C0F5A39: 0
-    - Boolean_8C7CD49A: 0
-    - Boolean_935815D1: 0
-    - Boolean_E7CFC5A4: 0
-    - Boolean_E84C3DC4: 0
-    - Boolean_F8AC5285: 0
-    - Vector1_12F5CA7E: 0
-    - Vector1_EC1386CF: 0
     - _AddPrecomputedVelocity: 0
     - _AlphaCutoffEnable: 0
     - _AlphaDstBlend: 0
@@ -73,7 +51,7 @@ Material:
     - _DoubleSidedEnable: 0
     - _DoubleSidedNormalMode: 2
     - _DstBlend: 0
-    - _EnableBlendModePreserveSpecularLighting: 0
+    - _EnableBlendModePreserveSpecularLighting: 1
     - _EnableFogOnTransparent: 1
     - _OpaqueCullMode: 2
     - _RayTracing: 0
@@ -82,7 +60,6 @@ Material:
     - _RefractionModel: 0
     - _RenderQueueType: 1
     - _RequireSplitLighting: 0
-    - _SOME_ENUM_KEYWORD: 0
     - _SrcBlend: 1
     - _StencilRef: 0
     - _StencilRefDepth: 8
@@ -94,7 +71,7 @@ Material:
     - _StencilWriteMaskDistortionVec: 4
     - _StencilWriteMaskGBuffer: 14
     - _StencilWriteMaskMV: 40
-    - _SupportDecals: 0
+    - _SupportDecals: 1
     - _SurfaceType: 0
     - _TransparentBackfaceEnable: 0
     - _TransparentCullMode: 2
@@ -109,17 +86,10 @@ Material:
     - _ZTestTransparent: 4
     - _ZWrite: 1
     m_Colors:
-    - Color_32BC4294: {r: 0, g: 0, b: 0, a: 0}
-    - Color_39A5200C: {r: 0, g: 0, b: 0, a: 0}
-    - Color_5962B269: {r: 0, g: 0, b: 0, a: 0}
-    - Color_63909785: {r: 0, g: 0, b: 0, a: 0}
-    - Color_87A92276: {r: 0, g: 0, b: 0, a: 0}
-    - Color_B1A19E31: {r: 0, g: 0, b: 0, a: 0}
-    - Vector4_A24E3AB: {r: 0, g: 0, b: 0, a: 0}
     - _DoubleSidedConstants: {r: 1, g: 1, b: -1, a: 0}
     - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
   m_BuildTextureStacks: []
---- !u!114 &722601099533637829
+--- !u!114 &9000038367742764289
 MonoBehaviour:
   m_ObjectHideFlags: 11
   m_CorrespondingSourceObject: {fileID: 0}

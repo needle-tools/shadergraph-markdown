@@ -4,13 +4,13 @@
             "typeInfo": {
                 "fullName": "UnityEditor.ShaderGraph.Internal.BooleanShaderProperty"
             },
-            "JSONnodeData": "{\n    \"m_Guid\": {\n        \"m_GuidSerialized\": \"7dae2a26-7135-43b0-a402-9e29faa11049\"\n    },\n    \"m_Name\": \"#LINK [Markdown for ShaderGraph by @NeedleTools / @hybridherbst](https://twitter.com/hybridherbst)\",\n    \"m_DefaultReferenceName\": \"Boolean_8C7CD49A\",\n    \"m_OverrideReferenceName\": \"\",\n    \"m_GeneratePropertyBlock\": true,\n    \"m_Precision\": 0,\n    \"m_GPUInstanced\": false,\n    \"m_Hidden\": false,\n    \"m_Value\": false\n}"
+            "JSONnodeData": "{\n    \"m_Guid\": {\n        \"m_GuidSerialized\": \"7dae2a26-7135-43b0-a402-9e29faa11049\"\n    },\n    \"m_Name\": \"[Markdown for ShaderGraph by @NeedleTools / @hybridherbst](https://twitter.com/hybridherbst)\",\n    \"m_DefaultReferenceName\": \"Boolean_8C7CD49A\",\n    \"m_OverrideReferenceName\": \"\",\n    \"m_GeneratePropertyBlock\": true,\n    \"m_Precision\": 0,\n    \"m_GPUInstanced\": false,\n    \"m_Hidden\": false,\n    \"m_Value\": false\n}"
         },
         {
             "typeInfo": {
                 "fullName": "UnityEditor.ShaderGraph.Internal.BooleanShaderProperty"
             },
-            "JSONnodeData": "{\n    \"m_Guid\": {\n        \"m_GuidSerialized\": \"59618790-927b-49cd-a89d-22486468e194\"\n    },\n    \"m_Name\": \"#LINK [ShaderGraph Markdown on GitHub](https://github.com)\",\n    \"m_DefaultReferenceName\": \"Boolean_45D23026\",\n    \"m_OverrideReferenceName\": \"\",\n    \"m_GeneratePropertyBlock\": true,\n    \"m_Precision\": 0,\n    \"m_GPUInstanced\": false,\n    \"m_Hidden\": false,\n    \"m_Value\": false\n}"
+            "JSONnodeData": "{\n    \"m_Guid\": {\n        \"m_GuidSerialized\": \"59618790-927b-49cd-a89d-22486468e194\"\n    },\n    \"m_Name\": \"[ShaderGraph Markdown on GitHub](https://github.com)\",\n    \"m_DefaultReferenceName\": \"Boolean_45D23026\",\n    \"m_OverrideReferenceName\": \"\",\n    \"m_GeneratePropertyBlock\": true,\n    \"m_Precision\": 0,\n    \"m_GPUInstanced\": false,\n    \"m_Hidden\": false,\n    \"m_Value\": false\n}"
         },
         {
             "typeInfo": {

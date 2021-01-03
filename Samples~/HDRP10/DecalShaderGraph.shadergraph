@@ -427,7 +427,7 @@
             "m_Id": "de0aa10a4ce24781af2c8989dd36d37e"
         }
     ],
-    "m_CustomEditorGUI": ""
+    "m_CustomEditorGUI": "Needle.MarkdownShaderGUI"
 }
 
 {
