@@ -45,16 +45,17 @@ To see a more complex example, you can also import the sample shown in this Read
    A foldout header
 6. `## Header`  
    A header, similar to the `[Header]` attribute in scripts
-8. `[Link Text](URL)`  
-   A web link
-7. `!NOTE Any note text`  
-9. `!REF KEYWORD_NAME`  
+8. `[Link Text](URL)`<a href="#footnote-1"><sup>1</sup></a>  
+   A web link.  
+9. `!NOTE Any note text`<a href="#footnote-1"><sup>1</sup></a>  
+10. `!REF KEYWORD_NAME`  
   A reference to a keyword to be drawn here
 7. `!DRAWER SubclassOfMarkdownMaterialPropertyDrawer`  
 This will draw custom code, similar to a `PropertyDrawer` for the Inspector. Drawers are specified as subclasses of `MarkdownMaterialPropertyDrawer`, and an example of that is provided as package sample (install via PackMan).
 1. `#`  
    End the current foldout. This is useful if you want to show properties "outside" a foldout again.
 
+<sup>[1](footnote-1)</sup>: Will not be shown if the previous property was conditionally excluded.
 
 ## Conditional Properties
 All properties — both regular ones and "markdown" properties — can have a condition appended to their display name. This will make them only display if that specific keyword is set.  
