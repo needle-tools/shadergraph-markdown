@@ -22,7 +22,7 @@ A nice feature is that you can make properties display conditionally, that is, o
 
 The ShaderGraph UI and blackboard are modified to render all "markdown dummy properties" differently, to increase legibility.  
 
-![ShaderGraph Blackboard](https://github.com/needle-tools/shadergraph-markdown/wiki/Images/03_ShaderGraphUI.gif)  
+![ShaderGraph Blackboard](https://github.com/needle-tools/shadergraph-markdown/wiki/Images/03_ShaderGraphUI.png)  
 
 ## Quick Start
 Install via OpenUPM: https://openupm.com/packages/com.needle.shadergraph-markdown/
@@ -73,6 +73,8 @@ Currently only single conditions are allowed (you can't combine these with `&&` 
 
 ### HDRP Support
 HDRP ShaderGraphs are supported. A speciality there is that these already have custom shader inspectors. ShaderGraph Markdown finds and displays the "original" inspectors in addition to your own properties.  
+
+![Conditional Properties](https://github.com/needle-tools/shadergraph-markdown/wiki/Images/08_HDRP_Support.png)  
 
 That being said, HDRP does some keyword magic (weird times when material keywords are reset); if you find somethign doesn't work as expected, you use the "Debug" section to reset keywords and/or show the original property list.
 
