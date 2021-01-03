@@ -1,0 +1,32 @@
+{
+    "name": "Needle.ShaderGraphMarkdown.Internal",
+    "rootNamespace": "",
+    "references": [],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [],
+    "autoReferenced": false,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.render-pipelines.universal",
+            "expression": "7.0.0",
+            "define": "URP_7_OR_NEWER"
+        },
+        {
+            "name": "com.unity.render-pipelines.high-definition",
+            "expression": "7.0.0",
+            "define": "HDRP_7_OR_NEWER"
+        },
+        {
+            "name": "com.unity.render-pipelines.core",
+            "expression": "0.0.0",
+            "define": "NO_HDRP_INTERNAL"
+        }
+    ],
+    "noEngineReferences": false
+}
