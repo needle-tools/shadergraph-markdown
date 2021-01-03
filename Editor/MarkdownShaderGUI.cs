@@ -36,7 +36,6 @@ namespace Needle
             }
         }
         
-        private readonly Dictionary<string, bool> headerGroupStates = new Dictionary<string, bool>();
         private readonly Dictionary<string, MarkdownMaterialPropertyDrawer> drawerCache = new Dictionary<string, MarkdownMaterialPropertyDrawer>();
         private readonly List<MaterialProperty> referencedProperties = new List<MaterialProperty>();
 
@@ -51,22 +50,29 @@ namespace Needle
             Foldout
         }
 
+        private static string refFormat = "!REF";
+        private static string noteFormat = "!NOTE";
+        private static string drawerFormat = "!DRAWER";
+        private static string foldoutHeaderFormat = "#";
+        private static string foldoutHeaderFormatStart = foldoutHeaderFormat + " ";
+        private static string headerFormatStart = "##" + " ";
+        
         internal static MarkdownProperty GetMarkdownType(string display)
         {
             // markdown blockquote: >
             // markdown footnote: [^MyNote] Hello I'm a footnote
 
-            if (display.StartsWith("#REF"))
+            if (display.StartsWith(refFormat))
                 return MarkdownProperty.Reference;
             if (display.StartsWith("[") && display.IndexOf("]", StringComparison.Ordinal) > -1 && display.IndexOf("(", StringComparison.Ordinal) > -1 && display.EndsWith(")"))
                 return MarkdownProperty.Link;
-            if (display.StartsWith("#NOTE"))
+            if (display.StartsWith(noteFormat))
                 return MarkdownProperty.Note;
-            if (display.StartsWith("#DRAWER"))
+            if (display.StartsWith(drawerFormat))
                 return MarkdownProperty.Drawer;
-            if (display.StartsWith("## ") || display.Equals("##", StringComparison.Ordinal))
+            if (display.StartsWith(foldoutHeaderFormatStart) || display.Equals(foldoutHeaderFormat, StringComparison.Ordinal))
                 return MarkdownProperty.Foldout;
-            if (display.StartsWith("### "))
+            if (display.StartsWith(headerFormatStart))
                 return MarkdownProperty.Header;
             return MarkdownProperty.None;
         }
@@ -86,10 +92,10 @@ namespace Needle
             
             foreach (var prop in properties)
             {
-                if(prop.displayName.StartsWith("## ") || prop.displayName.Equals("##", StringComparison.Ordinal))
+                if(prop.displayName.StartsWith(foldoutHeaderFormatStart) || prop.displayName.Equals(foldoutHeaderFormat, StringComparison.Ordinal))
                 {
-                    if (prop.displayName.Equals("##", StringComparison.Ordinal)  || 
-                        (prop.displayName.StartsWith("## (", StringComparison.Ordinal) && prop.displayName.EndsWith(")", StringComparison.Ordinal))) // for multiple ## (1) foldout breakers)
+                    if (prop.displayName.Equals(foldoutHeaderFormat, StringComparison.Ordinal)  || 
+                        (prop.displayName.StartsWith(foldoutHeaderFormatStart + "(", StringComparison.Ordinal) && prop.displayName.EndsWith(")", StringComparison.Ordinal))) // for multiple ## (1) foldout breakers)
                         headerGroups.Add(new HeaderGroup() { name = null });
                     else
                         headerGroups.Add(new HeaderGroup() { name = prop.displayName.Substring(prop.displayName.IndexOf(' ') + 1) });
@@ -102,7 +108,7 @@ namespace Needle
                     
                     // need to process REF properties early so we can hide them properly if needed
                     var display = prop.displayName;
-                    if (display.StartsWith("#REF"))
+                    if (display.StartsWith(refFormat))
                     {
                         var keywordRef = display.Split(' ')[1];
                         try {
@@ -159,13 +165,13 @@ namespace Needle
                 EditorGUILayout.Space();
                 #endif
                 
-                #if HDRP_7_OR_NEWER
-                EditorGUILayout.LabelField("ShaderGraph Info", EditorStyles.boldLabel);
-                if (GUILayout.Button("Refresh"))
-                {
-                    Debug.Log(MarkdownHDExtensions.GetDefaultCustomInspectorFromShader(targetMat.shader));
-                }
-                #endif
+                // #if HDRP_7_OR_NEWER
+                // EditorGUILayout.LabelField("ShaderGraph Info", EditorStyles.boldLabel);
+                // if (GUILayout.Button("Refresh"))
+                // {
+                //     Debug.Log(MarkdownHDExtensions.GetDefaultCustomInspectorFromShader(targetMat.shader));
+                // }
+                // #endif
             }
             
             void DrawCustomGUI()
@@ -286,10 +292,14 @@ namespace Needle
                         CoreEditorUtils.DrawSplitter();
                     }
                 }
-                else {
-                    if (!headerGroupStates.ContainsKey(group.name)) headerGroupStates.Add(group.name, false);
-                    headerGroupStates[group.name] = CoreEditorUtils.DrawHeaderFoldout(group.name, headerGroupStates[group.name]);
-                    if (headerGroupStates[group.name])
+                else
+                {
+                    var keyName = $"{nameof(MarkdownShaderGUI)}.{group.name}";
+                    var state = SessionState.GetBool(keyName, true);
+                    var newState = CoreEditorUtils.DrawHeaderFoldout(group.name, state);
+                    if(newState != state) SessionState.SetBool(keyName, newState);
+                    state = newState;
+                    if (state)
                     {
                         EditorGUI.indentLevel++;
                         EditorGUILayout.Space();

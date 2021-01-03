@@ -17,19 +17,7 @@ namespace Needle.ShaderGraphMarkdown
 
         private static int i = 0;
         private static StyleSheet styleSheet;
-
-        // IEnumerable<EditorWindow> ShaderGraphWindows
-        // {
-        //     get
-        //     {
-        //           
-        //     }
-        // }
-        
-        static Blackboard GetBlackboardFromWindow(EditorWindow shaderGraphWindow)
-        {
-            return null;
-        }
+        private static PropertyInfo _graphEditorView, _blackboardProvider, _blackboard;
         
         private static void EditorUpdate()
         {
@@ -45,21 +33,21 @@ namespace Needle.ShaderGraphMarkdown
             var windows = Resources.FindObjectsOfTypeAll(windowType);
             foreach (var wnd in windows)
             {
-                var _graphEditorView = windowType.GetProperty("graphEditorView", (BindingFlags) (-1));
+                if (_graphEditorView == null) _graphEditorView = windowType.GetProperty("graphEditorView", (BindingFlags) (-1));
                 var graphEditorView = _graphEditorView?.GetValue(wnd);
-                if(graphEditorView == null) continue;
+                if (graphEditorView == null) continue;
 
                 var GraphEditorView = graphEditorView.GetType();
 
-                var _blackboardProvider = GraphEditorView.GetProperty("blackboardProvider", (BindingFlags) (-1));
+                if (_blackboardProvider == null) _blackboardProvider = GraphEditorView.GetProperty("blackboardProvider", (BindingFlags) (-1));
                 var blackboardProvider = _blackboardProvider?.GetValue(graphEditorView);
-                if(blackboardProvider == null) continue;
+                if (blackboardProvider == null) continue;
 
                 var BlackboardProvider = blackboardProvider.GetType();
 
-                var _blackboard = BlackboardProvider.GetProperty("blackboard", (BindingFlags) (-1));
+                if (_blackboard == null) _blackboard = BlackboardProvider.GetProperty("blackboard", (BindingFlags) (-1));
                 var blackboard = (Blackboard) _blackboard?.GetValue(blackboardProvider);
-                if(blackboard == null) continue;
+                if (blackboard == null) continue;
                 
                 if (!styleSheet)
                     styleSheet = Resources.Load<StyleSheet>("Styles/ShaderGraphMarkdown");

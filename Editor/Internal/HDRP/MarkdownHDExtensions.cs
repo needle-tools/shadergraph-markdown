@@ -1,4 +1,4 @@
-#if !NO_HDRP_INTERNAL && UNITY_2019_4_OR_NEWER
+#if !NO_INTERNALS_ACCESS && UNITY_2019_4_OR_NEWER
 
 using System;
 using System.IO;
@@ -198,10 +198,12 @@ namespace UnityEditor.Rendering.HighDefinition
                 blockList = (MaterialUIBlockList) typeof(HDUnlitGUI).GetField("uiBlocks", (BindingFlags) (-1))?.GetValue(hdUnlitGUI); 
             }
 #endif
+#if !UNITY_2021_1_OR_NEWER
             else if (baseShaderGui is DecalGUI decalGUI)
             {
                 blockList = (MaterialUIBlockList) typeof(DecalGUI).GetField("uiBlocks", (BindingFlags) (-1))?.GetValue(decalGUI); 
             }
+#endif
             else
             {
                 blockList = (MaterialUIBlockList) baseShaderGui.GetType().GetField("uiBlocks", (BindingFlags) (-1))?.GetValue(baseShaderGui);
