@@ -34,38 +34,51 @@ _ShaderGraph 10 / 11_
 _ShaderGraph 7 / 8_  
 
 1. Create a new bool property. This is our "dummy" — its only purpose is to specify how the UI is drawn.  
-2. Name it `## Hello Foldout`.  
-2. You should see the property display change in the Blackboard, to differentiate it from actual properties in your shader.   
-2. Save your shader, and select a material that uses this shader — done!
+2. Name it `## Hello Foldout`. You don't need to change the reference name.  
+3. You should see the property display change in the Blackboard, to differentiate it from actual properties in your shader.   
+4. Save your shader, and select a material that uses this shader — done!
 
 To see a more complex example, you can also import the sample shown in this Readme via `Package Manager > ShaderGraph Markdown > Samples`.
 
 ## Attribute Reference
-1. `## Foldout`  
+1. `# Foldout`  
    A foldout header
-2. `##`  
-  Foldout breaker (no foldout)
-6. `### Header`  
+6. `## Header`  
    A header, similar to the `[Header]` attribute in scripts
-7. `#NOTE Any note text`  
-8. `#LINK [Link Text](URL)`  
-9.  `#REF KEYWORD_NAME`  
+8. `[Link Text](URL)`  
+   A web link
+7. `!NOTE Any note text`  
+9. `!REF KEYWORD_NAME`  
   A reference to a keyword to be drawn here
-7. `#DRAWER SubclassOfMarkdownMaterialPropertyDrawer`  
+7. `!DRAWER SubclassOfMarkdownMaterialPropertyDrawer`  
 This will draw custom code, similar to a `PropertyDrawer` for the Inspector. Drawers are specified as subclasses of `MarkdownMaterialPropertyDrawer`, and an example of that is provided as package sample (install via PackMan).
+1. `#`  
+   End the current foldout. This is useful if you want to show properties "outside" a foldout again.
+
 
 ## Conditional Properties
 All properties — both regular ones and "markdown" properties — can have a condition appended to their display name. This will make them only display if that specific keyword is set.  
 
 ![Blackboard Conditions](https://github.com/needle-tools/shadergraph-markdown/wiki/Images/05_BlackboardConditions.png)  
 
-The `#REF` property pulls in an enum keyword, and other properties then draw depending on the specified condition.  
+The `!REF` property pulls in an enum keyword, and other properties then draw depending on the specified condition.  
 
 ![Conditional Properties](https://github.com/needle-tools/shadergraph-markdown/wiki/Images/02_ConditionalProperties.gif)  
 
-Note that the condition is specified in the form  `KeywordReference_OptionSuffix`.
+The condition is specified in the form  `KeywordReference_OptionSuffix`.
 
-Also note that currently only single conditions are allowed (you can't combine these with `&&` or `||` right now).
+Currently only single conditions are allowed (you can't combine these with `&&` or `||` right now).
+
+## Notes
+
+### HDRP Support
+HDRP ShaderGraphs are supported. A speciality there is that these already have custom shader inspectors. ShaderGraph Markdown finds and displays the "original" inspectors in addition to your own properties.  
+
+That being said, HDRP does some keyword magic (weird times when material keywords are reset); if you find somethign doesn't work as expected, you use the "Debug" section to reset keywords and/or show the original property list.
+
+### Quickly enable / disable MarkdownShaderGUI
+
+A context menu entry on every ShaderGraph-based material allows to quickly switch the material inspector between the default one and MarkdownShaderGUI. This is useful for debugging (e.g. finding some missing Conditionals).
 
 ## Contact
 <b>[needle — tools for unity](https://needle.tools)</b> • 
