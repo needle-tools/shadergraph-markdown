@@ -52,6 +52,7 @@ namespace Needle
 
         private static string refFormat = "!REF";
         private static string noteFormat = "!NOTE";
+        private static string alternateNoteFormat = "* ";
         private static string drawerFormat = "!DRAWER";
         private static string foldoutHeaderFormat = "#";
         private static string foldoutHeaderFormatStart = foldoutHeaderFormat + " ";
@@ -66,7 +67,7 @@ namespace Needle
                 return MarkdownProperty.Reference;
             if (display.StartsWith("[") && display.IndexOf("]", StringComparison.Ordinal) > -1 && display.IndexOf("(", StringComparison.Ordinal) > -1 && display.EndsWith(")"))
                 return MarkdownProperty.Link;
-            if (display.StartsWith(noteFormat))
+            if (display.StartsWith(noteFormat) || display.StartsWith(alternateNoteFormat))
                 return MarkdownProperty.Note;
             if (display.StartsWith(drawerFormat))
                 return MarkdownProperty.Drawer;
@@ -77,7 +78,7 @@ namespace Needle
             return MarkdownProperty.None;
         }
 
-        private bool showOriginalPropertyList = false;
+        private bool showOriginalPropertyList = false, debugConditionalProperties = false;
         
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
@@ -110,13 +111,16 @@ namespace Needle
                     var display = prop.displayName;
                     if (display.StartsWith(refFormat))
                     {
-                        var keywordRef = display.Split(' ')[1];
-                        try {
-                            var keywordProp = FindProperty(keywordRef, properties);
-                            referencedProperties.Add(keywordProp);
-                        }
-                        catch (ArgumentException) {
-                            // EditorGUILayout.HelpBox(e.Message, MessageType.Error);
+                        var split = display.Split(' ');
+                        if(split.Length > 1) {
+                            var keywordRef = split[1];
+                            try {
+                                var keywordProp = FindProperty(keywordRef, properties);
+                                referencedProperties.Add(keywordProp);
+                            }
+                            catch (ArgumentException) {
+                                // EditorGUILayout.HelpBox(e.Message, MessageType.Error);
+                            }
                         }
                     }
 
@@ -139,9 +143,8 @@ namespace Needle
                 EditorGUI.BeginChangeCheck();
                 showOriginalPropertyList = EditorGUILayout.Toggle("Show Original Properties", showOriginalPropertyList);
                 if (EditorGUI.EndChangeCheck())
-                {
                     InitializeCustomGUI(targetMat);    
-                }
+                debugConditionalProperties = EditorGUILayout.Toggle("Debug Conditional Properties", debugConditionalProperties);
                 
                 EditorGUILayout.Space();
                 
@@ -200,17 +203,25 @@ namespace Needle
                 foreach (var prop in group.properties)
                 {
                     var display = prop.displayName;
-                    var hasCondition = display.Contains('[') && display.EndsWith("]", StringComparison.Ordinal);
+                    var isDisabled = false;
+                    var hasCondition = !display.StartsWith("[", StringComparison.Ordinal) && display.Contains('[') && display.EndsWith("]", StringComparison.Ordinal);
                     if(hasCondition) {
                         var condition = GetBetween(display, '[', ']', true);
                         if (!string.IsNullOrEmpty(condition))
                         {
                             if (Array.IndexOf(targetMat.shaderKeywords, condition) < 0)
                             {
-                                previousPropertyWasDrawn = false;
-                                continue;
+                                if(!debugConditionalProperties) {
+                                    previousPropertyWasDrawn = false;
+                                    continue;
+                                }
+                                else {
+                                    isDisabled = true;
+                                    EditorGUI.BeginDisabledGroup(true);
+                                }
                             }
-                            display = display.Substring(0, display.IndexOf('[') - 1);
+                            if(!debugConditionalProperties)
+                                display = display.Substring(0, display.IndexOf('[') - 1);
                         }
                     }
 
@@ -221,60 +232,81 @@ namespace Needle
                             var linkText = GetBetween(display, '[', ']');
                             var linkHref = GetBetween(display, '(', ')');
                             if (GUILayout.Button(linkText, CenteredGreyMiniLabel)) Application.OpenURL(linkHref);
-                            continue;
+                            break;
                         case MarkdownProperty.Note:
                             if (!previousPropertyWasDrawn) continue;
-                            var noteText = display.Substring(display.IndexOf(' ') + 1);
+                            var index = display.IndexOf(' ');
+                            var noteText = display.Substring(index + 1);
                             EditorGUILayout.LabelField(noteText, CenteredGreyMiniLabel);
-                            continue;
+                            break;
                         case MarkdownProperty.Drawer:
                             var parts = display.Split(' ');
-                            var objectName = parts[1];
-                            if(!drawerCache.ContainsKey(objectName)) {
-                                var objectPath = AssetDatabase.FindAssets($"t:{nameof(MarkdownMaterialPropertyDrawer)} {objectName}").Select(AssetDatabase.GUIDToAssetPath).FirstOrDefault();
-                                var scriptableObject = AssetDatabase.LoadAssetAtPath<MarkdownMaterialPropertyDrawer>(objectPath);
-                                drawerCache.Add(objectName, scriptableObject);
+                            if(parts.Length > 1) {
+                                var objectName = parts[1];
+                                if(!drawerCache.ContainsKey(objectName)) {
+                                    var objectPath = AssetDatabase.FindAssets($"t:{nameof(MarkdownMaterialPropertyDrawer)} {objectName}").Select(AssetDatabase.GUIDToAssetPath).FirstOrDefault();
+                                    var scriptableObject = AssetDatabase.LoadAssetAtPath<MarkdownMaterialPropertyDrawer>(objectPath);
+                                    drawerCache.Add(objectName, scriptableObject);
+                                }
+                                if(drawerCache[objectName]) {
+                                    try {
+                                        drawerCache[objectName].OnDrawerGUI(materialEditor, properties);
+                                    }
+                                    catch (Exception e) {
+                                        EditorGUILayout.HelpBox("Error in Custom Drawer \"" + objectName + "\": " + e, MessageType.Error);
+                                    }
+                                }
+                                else
+                                    EditorGUILayout.HelpBox("Custom Drawer \"" + objectName + "\" not found.", MessageType.Error);
                             }
-                            if(drawerCache[objectName])
-                                drawerCache[objectName].OnDrawerGUI(materialEditor, properties);
-                            else
-                                EditorGUILayout.HelpBox("Custom Drawer for property " + objectName + " not found.", MessageType.Error);
-                            continue;
+                            else {
+                                EditorGUILayout.HelpBox("No Drawer specified.", MessageType.Warning);
+                            }
+                            previousPropertyWasDrawn = true;
+                            break;
                         case MarkdownProperty.Header:
                             var labelName = display.Substring(display.IndexOf(' ') + 1);
                             EditorGUILayout.Space();
                             EditorGUILayout.LabelField(labelName, EditorStyles.boldLabel);
-                            continue;
+                            previousPropertyWasDrawn = true;
+                            break;
                         case MarkdownProperty.Reference:
-                            var keywordRef = display.Split(' ')[1];
-                            try
-                            {
-                                var keywordProp = FindProperty(keywordRef, properties);
-                                materialEditor.ShaderProperty(keywordProp, keywordProp.displayName);
+                            var split = display.Split(' ');
+                            if(split.Length > 1) {
+                                var keywordRef = display.Split(' ')[1];
+                                try
+                                {
+                                    var keywordProp = FindProperty(keywordRef, properties);
+                                    materialEditor.ShaderProperty(keywordProp, keywordProp.displayName);
+                                }
+                                catch (ArgumentException e)
+                                {
+                                    EditorGUILayout.HelpBox(e.Message, MessageType.Error);
+                                }
                             }
-                            catch (ArgumentException e)
-                            {
-                                EditorGUILayout.HelpBox(e.Message, MessageType.Error);
-                            }
-                            continue;
+                            previousPropertyWasDrawn = true;
+                            break;
                         case MarkdownProperty.None:
                         default:
                             if(referencedProperties.Contains(prop))
                             {
                                 previousPropertyWasDrawn = false;
-                                continue;
+                                break;
                             }
 
                             if(prop.flags.HasFlag(MaterialProperty.PropFlags.HideInInspector))
-                                continue;
+                                break;
                             
                             if(prop.flags.HasFlag(MaterialProperty.PropFlags.PerRendererData))
-                                continue;
+                                break;
 
                             materialEditor.ShaderProperty(prop, display);
                             previousPropertyWasDrawn = true;
                             break;
                     }
+                    
+                    if(isDisabled)
+                        EditorGUI.EndDisabledGroup();
                 }    
                 EditorGUILayout.Space();
             }
