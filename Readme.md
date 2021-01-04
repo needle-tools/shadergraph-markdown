@@ -7,7 +7,7 @@
 **ShaderGraph Markdown** contains a custom ShaderGUI to use with Unity's ShaderGraph.  
 It uses "dummy properties" to draw a nice inspector for your materials, and decorates the Blackboard (where you edit properties) so that the markdown is readable and looks good.  
 
-The dummy properties kind of look like markdown, which is where the name comes from. Please see the [Attribute Reference](#attribute-reference)! 
+The property naming syntax is inspired by the simplicity of markdown. Please see the [Attribute Reference](#attribute-reference)! 
 
 ![Workflow](https://github.com/needle-tools/shadergraph-markdown/wiki/Images/04_Workflow.gif)
 
@@ -62,7 +62,8 @@ All properties — both regular ones and "markdown" properties — can have a co
 
 ![Blackboard Conditions](https://github.com/needle-tools/shadergraph-markdown/wiki/Images/05_BlackboardConditions.png)  
 
-The `!REF` property pulls in an enum keyword, and other properties then draw depending on the specified condition.  
+The `!REF` property draws an enum or boolean keyword.  
+Other properties can specify a "condition" in which to draw them; this is very useful to de-clutter inspectors when you have specific properties in specific conditions.  
 
 ![Conditional Properties](https://github.com/needle-tools/shadergraph-markdown/wiki/Images/02_ConditionalProperties.gif)  
 
@@ -73,11 +74,11 @@ Currently only single conditions are allowed (you can't combine these with `&&` 
 ## Notes
 
 ### HDRP Support
-HDRP ShaderGraphs are supported. A speciality there is that these already have custom shader inspectors. ShaderGraph Markdown finds and displays the "original" inspectors in addition to your own properties.  
+HDRP ShaderGraphs are supported. A speciality there is that these already have custom shader inspectors. ShaderGraph Markdown finds and displays the "original" inspector in addition to your own properties.  
 
 ![Conditional Properties](https://github.com/needle-tools/shadergraph-markdown/wiki/Images/08_HDRP_Support.png)  
 
-That being said, HDRP does some keyword magic (weird times when material keywords are reset); if you find somethign doesn't work as expected, you use the "Debug" section to reset keywords and/or show the original property list.
+That being said, HDRP does some keyword magic (resetting material keywords at times); if you find something doesn't work as expected, you can use the "Debug" section to reset keywords and/or show the original property list.  
 
 ### Quickly enable / disable MarkdownShaderGUI
 
