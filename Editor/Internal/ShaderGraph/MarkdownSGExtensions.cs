@@ -30,21 +30,26 @@
 // namespace Needle.ShaderGraphMarkdown
 // {
 //     [Serializable]
-//     [BlackboardInputInfo(3000, name = "Markdown/Foldout Header")]
+//     [BlackboardInputInfo(30000, name = "Markdown/Foldout Header")]
 //     public class MarkdownFoldout : MarkdownShaderProperty
 //     {
 //         internal override string DisplayName => "# My Foldout";
 //     }
 //
 //     [Serializable]
-//     [BlackboardInputInfo(3001, name = "Markdown/Header")]
+//     [BlackboardInputInfo(30001, name = "Markdown/Header")]
 //     public class MarkdownHeader : MarkdownShaderProperty
 //     {
-//         internal override string DisplayName => "# My Header";
+//         internal override string DisplayName => "## My Header";
 //     }
 //     
-//     // [Serializable]
-//     // [BlackboardInputInfo(20, name = "Markdown/Custom Stuff")]
+//     [Serializable]
+//     [BlackboardInputInfo(30002, name = "Markdown/Note")]
+//     public class MarkdownNote : MarkdownShaderProperty
+//     {
+//         internal override string DisplayName => "!NOTE My Note";
+//     }
+//     
 //     public abstract class MarkdownShaderProperty : AbstractShaderProperty<bool>
 //     {
 //          internal abstract string DisplayName { get; }
@@ -101,5 +106,5 @@
 //          }
 //     }   
 // }
-
+//
 #endif
