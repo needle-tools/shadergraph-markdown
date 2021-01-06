@@ -6,30 +6,29 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using UnityEditor;
-using UnityEditor.ShaderGraph;
 using UnityEngine;
-using UnityEngine.Rendering;
+using UnityEditor.ShaderGraph.Internal;
 
 #if UNITY_2020_2_OR_NEWER
-using UnityEditor.ShaderGraph.Drawing;
-using UnityEditor.ShaderGraph.Drawing.Controls;
 using UnityEditor.ShaderGraph.Serialization;
+using UnityEditorInternal;
+
+#else
+using UnityEngine.Rendering;
 #endif
-using UnityEditor.ShaderGraph.Internal;
 
 namespace UnityEditor.ShaderGraph
 {
     public static class MarkdownSGExtensions
     {
         
-        [MenuItem("CONTEXT/Shader/Remove All Properties", true)]
+        [MenuItem("internal:CONTEXT/Shader/Remove All Properties", true)]
         static bool RemoveAllPropertiesValidate(MenuCommand command)
         {
             return GetGraphData((Shader) command.context) != null;
         }
 
-        [MenuItem("CONTEXT/Shader/Remove All Properties", false)]
+        [MenuItem("internal:CONTEXT/Shader/Remove All Properties", false)]
         static void RemoveAllProperties(MenuCommand command)
         {
             var shader = (Shader) command.context;
@@ -55,13 +54,13 @@ namespace UnityEditor.ShaderGraph
             AssetDatabase.Refresh();
         }
         
-        [MenuItem("CONTEXT/Shader/Add Test Property", true)]
+        [MenuItem("internal:CONTEXT/Shader/Add Test Property", true)]
         static bool AddTestPropertyValidate(MenuCommand command)
         {
             return GetGraphData((Shader) command.context) != null;
         }
 
-        [MenuItem("CONTEXT/Shader/Add Test Properties", false)]
+        [MenuItem("internal:CONTEXT/Shader/Add Test Properties", false)]
         static void AddTestProperty(MenuCommand command)
         {
             var shader = (Shader) command.context;
@@ -74,6 +73,20 @@ namespace UnityEditor.ShaderGraph
 
             AddMaterialKeyword<bool>(shader, "Some Boolean Keyword");
             AddMaterialKeyword<Enum>(shader, "Some Enum Keyword");
+        }
+
+        [MenuItem("CONTEXT/Shader/Add Properties Wizard", true)]
+        static bool AddPropertiesWizardValidate(MenuCommand command)
+        {
+            return GetGraphData((Shader) command.context) != null;
+        }
+        
+        [MenuItem("CONTEXT/Shader/Add Properties Wizard", false)]
+        static void AddPropertiesWizard(MenuCommand command)
+        {
+            // open wizard window
+            var wizard = ScriptableWizard.DisplayWizard<PropertyWizard>("Add Properties from Material", "Add Properties");
+            wizard.targetShader = (Shader) command.context;
         }
         
         // private static PropertyInfo _graphEditorView;
@@ -350,6 +363,64 @@ namespace UnityEditor.ShaderGraph
 #endif
     }
 
+    [Serializable]
+    class PropertyWizard : ScriptableWizard
+    {
+        public Shader targetShader;
+        public Material sourceMaterial;
+
+        private SerializedProperty _targetShader;
+        private SerializedProperty _sourceMaterial;
+        
+        private SerializedObject serializedObject;
+        private void OnEnable()
+        {
+            serializedObject = new SerializedObject(this);
+            createButtonName = "Apply Properties";
+
+            _targetShader = serializedObject.FindProperty("targetShader");
+            _sourceMaterial = serializedObject.FindProperty("sourceMaterial");
+        }
+
+        private ReorderableList propertyList;
+
+        void OnGUI()
+        {
+            serializedObject.Update();
+            
+            EditorGUILayout.PropertyField(_targetShader);
+            EditorGUILayout.PropertyField(_sourceMaterial);
+
+            if (serializedObject.hasModifiedProperties)
+            {
+                serializedObject.ApplyModifiedProperties();
+
+                if (!sourceMaterial) return;
+                
+                // rebuild reorderable list
+                // propertyList = new ReorderableList()
+
+                var shader = sourceMaterial.shader;
+                var propertyCount = ShaderUtil.GetPropertyCount(shader);
+                for (int i = 0; i < propertyCount; i++)
+                {
+                    var propertyLog = ShaderUtil.GetPropertyName(shader, i) + " " + 
+                                      "[" + ShaderUtil.GetPropertyType(shader, i) + "] " + 
+                                      "(" + ShaderUtil.GetPropertyDescription(shader, i) + ")" + 
+                                      (ShaderUtil.IsShaderPropertyHidden(shader, i) ? " (hidden)" : "");
+                    Debug.Log(propertyLog);
+                }
+            }
+            
+            GUILayout.Label("Property Wizard");
+        }
+
+        private void OnWizardCreate()
+        {
+            
+        }
+    }
+    
     // [Serializable]
     // [BlackboardInputInfo(30000, name = "Markdown/Foldout Header")]
     // public class MarkdownFoldout : MarkdownShaderProperty
