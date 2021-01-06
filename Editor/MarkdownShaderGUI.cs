@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.Rendering;
 using Needle.ShaderGraphMarkdown;
+using UnityEditor.ShaderGraph;
 #if HDRP_7_OR_NEWER
 using UnityEditor.Rendering.HighDefinition;
 #endif
@@ -346,13 +347,6 @@ namespace Needle
                     CoreEditorUtils.DrawSplitter();
                 }
             }
-
-            // EditorGUILayout.Space();
-            // CoreEditorUtils.DrawSplitter();
-            // EditorGUILayout.LabelField("base.OnGUI", EditorStyles.boldLabel);
-            // EditorGUILayout.Space();
-            //
-            // base.OnGUI(materialEditor, properties);
         }
 
         private ShaderGUI baseShaderGui = null;
@@ -383,7 +377,7 @@ namespace Needle
             // UnityEditor.Rendering.HighDefinition.DecalGUI
              
             #if HDRP_7_OR_NEWER
-            var defaultCustomInspector = MarkdownHDExtensions.GetDefaultCustomInspectorFromShader(targetMat.shader);
+            var defaultCustomInspector = MarkdownSGExtensions.GetDefaultCustomInspectorFromShader(targetMat.shader);
             if (!defaultCustomInspector.StartsWith("UnityEditor."))
                 defaultCustomInspector = "UnityEditor." + defaultCustomInspector;
             var litGui = typeof(HDShaderUtils).Assembly.GetType(defaultCustomInspector);
