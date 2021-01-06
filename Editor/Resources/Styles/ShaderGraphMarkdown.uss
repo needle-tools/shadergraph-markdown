@@ -1,8 +1,4 @@
-Pill {
-    /* background-color: red; */
-}
-
-#pill #node-border {
+.__markdown #pill #node-border {
     background-image: none;
     border-bottom-width: 0;
     border-top-width: 0;
@@ -13,13 +9,6 @@ Pill {
 .__markdown .pill.has-icon #contents #top #icon {
     display:none;
 }
-
-/*
-.__markdown #pill #contents > #top > #title-label {
-    font-size: 16px;
-    -unity-font-style: italic;
-}
-*/
 
 .__markdown .__markdown_Reference #contents > #top > #title-label {
     -unity-font-style: italic;
@@ -58,4 +47,18 @@ Pill {
 .__markdown #contentItem > Label#typeLabel {
     /* -unity-font-style: italic; */
     opacity: 0.5;
+}
+
+.__markdown_DefaultReferenceWarning > #typeLabel {
+    padding-right:8px;
+    border-right-width: 2px;
+    border-right-color: rgba(255,0,0,1);
+    /*-unity-font-style: italic;*/
+}
+
+.__markdown_NonRecommendedReferenceHint > #typeLabel {
+    padding-right:8px;
+    border-right-width: 2px;
+    border-right-color: rgb(241, 192, 14);
+    /*-unity-font-style: italic;*/
 }

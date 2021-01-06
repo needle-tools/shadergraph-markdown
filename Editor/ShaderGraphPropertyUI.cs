@@ -1,9 +1,12 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using System.Reflection;
+using UnityEditor.ShaderGraph.Internal;
 
 namespace Needle.ShaderGraphMarkdown
 {
@@ -18,6 +21,7 @@ namespace Needle.ShaderGraphMarkdown
         private static int i = 0;
         private static StyleSheet styleSheet;
         private static PropertyInfo _graphEditorView, _blackboardProvider, _blackboard;
+        private static FieldInfo m_InputRows;
         
         private static void EditorUpdate()
         {
@@ -49,18 +53,64 @@ namespace Needle.ShaderGraphMarkdown
                 var blackboard = (Blackboard) _blackboard?.GetValue(blackboardProvider);
                 if (blackboard == null) continue;
                 
+#if UNITY_2020_2_OR_NEWER
+                // get inputRows as well so we can access actual shader property data, not just UI
+                if(m_InputRows == null) m_InputRows = BlackboardProvider.GetField("m_InputRows", (BindingFlags) (-1));
+                var inputRows = (Dictionary<ShaderInput, BlackboardRow>) m_InputRows.GetValue(blackboardProvider);
+                var shaderInputs = inputRows.ToDictionary(x => x.Value, x => x.Key);
+#endif
                 if (!styleSheet)
                     styleSheet = Resources.Load<StyleSheet>("Styles/ShaderGraphMarkdown");
                 
                 var blackboardElements = blackboard.Query<BlackboardField>().Visible().ToList();
                 foreach(var fieldView in blackboardElements)
                 {
+#if UNITY_2020_2_OR_NEWER
+                    bool usesDefaultReferenceName = false;
+                    bool usesRecommendedReferenceName = true;
+                    
+                    // get shaderInput for this field
+                    var element = (VisualElement) fieldView;
+                    while (!(element is BlackboardRow) && element.parent != null)
+                        element = element.parent;
+                    
+                    if(element is BlackboardRow blackboardRow)
+                    {
+                        if (shaderInputs.ContainsKey(blackboardRow))
+                        {
+                            var shaderInput = shaderInputs[blackboardRow];
+                            if (shaderInput.referenceName.Equals(shaderInput.GetDefaultReferenceName(), StringComparison.Ordinal))
+                                usesDefaultReferenceName = true;
+
+                            if (!shaderInput.referenceName.StartsWith("_"))
+                                usesRecommendedReferenceName = false;
+                        }
+                    }
+#endif
+                    
                     var displayName = fieldView.text;
-                        
+                    var contentItem = fieldView.Q("contentItem");
                     var markdownType = MarkdownShaderGUI.GetMarkdownType(displayName);
                     switch (markdownType)
                     {
                         case MarkdownShaderGUI.MarkdownProperty.None:
+                            contentItem.ClearClassList();
+#if UNITY_2020_2_OR_NEWER
+                            if (usesDefaultReferenceName && ShaderGraphMarkdownSettings.instance.showDefaultReferenceNameWarning)
+                            {
+                                if (!fieldView.styleSheets.Contains(styleSheet))
+                                    fieldView.styleSheets.Add(styleSheet);
+                                
+                                contentItem.AddToClassList("__markdown_DefaultReferenceWarning");
+                            }
+                            else if (!usesRecommendedReferenceName && ShaderGraphMarkdownSettings.instance.showNamingRecommendationHint)
+                            {
+                                if (!fieldView.styleSheets.Contains(styleSheet))
+                                    fieldView.styleSheets.Add(styleSheet);
+                                
+                                contentItem.AddToClassList("__markdown_NonRecommendedReferenceHint");
+                            }
+#endif
                             break;
                         default:
                             if (!fieldView.styleSheets.Contains(styleSheet))
@@ -68,7 +118,7 @@ namespace Needle.ShaderGraphMarkdown
                     
                             if (!fieldView.ClassListContains("__markdown"))
                                 fieldView.AddToClassList("__markdown");
-                            var contentItem = fieldView.Q("contentItem");
+                            
                             contentItem.ClearClassList();
                             contentItem.AddToClassList("__markdown_" + markdownType);
                             
