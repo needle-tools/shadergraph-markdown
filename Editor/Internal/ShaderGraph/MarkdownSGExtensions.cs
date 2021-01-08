@@ -357,9 +357,11 @@ namespace UnityEditor.ShaderGraph
     {
         public Shader targetShader;
         public Material sourceMaterial;
+        public Shader sourceShader;
+        public bool hideMatchingProperties = false;
 
         private SerializedProperty _targetShader;
-        private SerializedProperty _sourceMaterial;
+        private SerializedProperty _sourceMaterial, _sourceShader;
         
         private SerializedObject serializedObject;
         private void OnEnable()
@@ -369,6 +371,7 @@ namespace UnityEditor.ShaderGraph
 
             _targetShader = serializedObject.FindProperty("targetShader");
             _sourceMaterial = serializedObject.FindProperty("sourceMaterial");
+            _sourceShader = serializedObject.FindProperty("sourceShader");
         }
 
         [Serializable]
@@ -380,90 +383,146 @@ namespace UnityEditor.ShaderGraph
             public bool isHidden = false;
         }
 
-        private ReorderableList propertyList;
-        [SerializeField]
-        private List<ShaderProperty> properties;
+        private Dictionary<string, ShaderProperty> sourceProperties = new Dictionary<string, ShaderProperty>();
+        private Dictionary<string, ShaderProperty> targetProperties = new Dictionary<string, ShaderProperty>();
 
         void OnGUI()
         {
             serializedObject.Update();
-            
-            EditorGUILayout.PropertyField(_targetShader);
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.BeginVertical();
             EditorGUILayout.PropertyField(_sourceMaterial);
+            EditorGUILayout.PropertyField(_sourceShader);
+            EditorGUILayout.EndVertical();
+            EditorGUILayout.BeginVertical();
+            EditorGUILayout.PropertyField(_targetShader);
+            EditorGUILayout.EndVertical();
+            EditorGUILayout.EndHorizontal();
+            
+            void AddProperty(ShaderUtil.ShaderPropertyType shaderPropertyType, string displayName, string referenceName)
+            {
+                Type ShaderPropertyTypeToType(ShaderUtil.ShaderPropertyType propertyType)
+                {
+                    switch (propertyType)
+                    {
+                        case ShaderUtil.ShaderPropertyType.Color:
+                            return typeof(Color);
+                        case ShaderUtil.ShaderPropertyType.Float:
+                            return typeof(float);
+                        case ShaderUtil.ShaderPropertyType.Range:
+                            return typeof(float);
+                        case ShaderUtil.ShaderPropertyType.TexEnv:
+                            return typeof(Texture2D);
+                        case ShaderUtil.ShaderPropertyType.Vector:
+                            return typeof(Vector4);
+                        default:
+                            return null;
+                    }
+                }
+                        
+                MarkdownSGExtensions.AddMaterialProperty(targetShader, ShaderPropertyTypeToType(shaderPropertyType), displayName, referenceName);
+            }
 
-            void Refresh() {
-                if (!sourceMaterial) return;
-                
-                // rebuild reorderable list
-                // propertyList = new ReorderableList()
-
-                if (properties == null) properties = new List<ShaderProperty>();
-                properties.Clear();
-                var shader = sourceMaterial.shader;
+            void FillPropertyList(Shader shader, ref Dictionary<string, ShaderProperty> props)
+            {
+                if (props == null) props = new Dictionary<string, ShaderProperty>();
+                props.Clear();
                 var propertyCount = ShaderUtil.GetPropertyCount(shader);
                 for (int i = 0; i < propertyCount; i++)
                 {
-                    properties.Add(new ShaderProperty()
+                    var propName = ShaderUtil.GetPropertyName(shader, i);
+                    if (props.ContainsKey(propName))
                     {
-                        name = ShaderUtil.GetPropertyName(shader, i),
+                        Debug.LogWarning("Duplicate property: " + propName, shader);
+                        return;
+                    }
+                    
+                    props.Add(propName, new ShaderProperty()
+                    {
+                        name = propName,
                         description = ShaderUtil.GetPropertyDescription(shader, i),
                         propertyType = ShaderUtil.GetPropertyType(shader, i),
                         isHidden = ShaderUtil.IsShaderPropertyHidden(shader, i)
                     });
                 }
+            }
+            
+            void Refresh() {
+                if (!sourceMaterial && !sourceShader) return;
+                
+                FillPropertyList(sourceMaterial ? sourceMaterial.shader : sourceShader, ref sourceProperties);
+                FillPropertyList(targetShader, ref targetProperties);
+            }
 
-                propertyList = new ReorderableList(serializedObject, serializedObject.FindProperty("properties"), true, true, true, true);
-                propertyList.elementHeight = 110;
-                propertyList.drawElementCallback += (rect, index, active, focused) =>
+            void DrawElement(Rect rect, ShaderProperty property, bool existsInSource, bool drawButtons)
+            {
+                var c = GUI.color;
+                var baseColor = existsInSource ? Color.green : Color.white;
+                if (property.isHidden)
+                    baseColor.a = 0.5f;
+                GUI.color = baseColor;
+                rect.height = 20;
+                property.name = EditorGUI.TextField(rect, property.name);
+                rect.y += rect.height;
+                property.description = EditorGUI.TextField(rect, property.description);
+                rect.y += rect.height;
+                property.propertyType = (ShaderUtil.ShaderPropertyType) EditorGUI.EnumPopup(rect, property.propertyType);
+                rect.y += rect.height;
+                // property.isHidden = EditorGUI.Toggle(rect, property.isHidden);
+                // rect.y += rect.height;
+                // rect.width *= 0.5f;
+                if (drawButtons && GUI.Button(rect, "Add to Target"))
                 {
-                    var element = propertyList.serializedProperty.GetArrayElementAtIndex(index);
-                    var name = element.FindPropertyRelative("name");
-                    var propertyType = element.FindPropertyRelative("propertyType");
-                    var description = element.FindPropertyRelative("description");
-                    var isHidden = element.FindPropertyRelative("isHidden");
-                    rect.height = 20;
-                    EditorGUI.PropertyField(rect, name);
-                    rect.y += rect.height;
-                    EditorGUI.PropertyField(rect, description);
-                    rect.y += rect.height;
-                    EditorGUI.PropertyField(rect, propertyType);
-                    rect.y += rect.height;
-                    EditorGUI.PropertyField(rect, isHidden);
-                    rect.width *= 0.5f;
-                    
-                    if (GUI.Button(rect, "Add to Shader"))
+                    if (!targetProperties.ContainsKey(property.name))
                     {
-                        Type ShaderPropertyTypeToType(ShaderUtil.ShaderPropertyType shaderPropertyType)
-                        {
-                            switch (shaderPropertyType)
-                            {
-                                case ShaderUtil.ShaderPropertyType.Color:
-                                    return typeof(Color);
-                                case ShaderUtil.ShaderPropertyType.Float:
-                                    return typeof(float);
-                                case ShaderUtil.ShaderPropertyType.Range:
-                                    return typeof(float);
-                                case ShaderUtil.ShaderPropertyType.TexEnv:
-                                    return typeof(Texture2D);
-                                case ShaderUtil.ShaderPropertyType.Vector:
-                                    return typeof(Vector4);
-                                default:
-                                    return null;
-                            }
-                        }
-                        
-                        MarkdownSGExtensions.AddMaterialProperty(targetShader, ShaderPropertyTypeToType(properties[index].propertyType), description.stringValue, name.stringValue);
+                        AddProperty(property.propertyType, property.description, property.name);
                     }
-                };
+                    else
+                    {
+                        Debug.LogWarning("Property already exists: " + property.name + ", can't add again.");
+                    }
+                }
+                GUI.color = c;
             }
             
             GUILayout.Label("Property Wizard");
             if (GUILayout.Button("Refresh"))
                 Refresh();
+            if(GUILayout.Button("Add All Properties")) {
+                foreach (var kvp in sourceProperties)
+                {
+                    var prop = kvp.Value;
+                    if(!targetProperties.ContainsKey(prop.name))
+                        AddProperty(prop.propertyType, prop.description, prop.name);
+                }
+            }
+
+            hideMatchingProperties = EditorGUILayout.Toggle("Hide Matching Properties", hideMatchingProperties);
 
             sp = EditorGUILayout.BeginScrollView(sp);
-            if(propertyList != null)
-                propertyList.DoLayoutList();
+            var draw = GUILayoutUtility.GetRect(position.width, Mathf.Max(sourceProperties.Count, targetProperties.Count) * 110);
+            draw.width /= 2;
+            int j = 0;
+            foreach(var prop in sourceProperties)
+            {
+                if(hideMatchingProperties && targetProperties.ContainsKey(prop.Key))
+                    continue;
+                
+                DrawElement(new Rect(draw.x, j * 110, draw.width, 110), prop.Value, targetProperties.ContainsKey(prop.Key), true);
+                j++;
+            }
+
+            draw.x += draw.width;
+            j = 0;
+            foreach(var prop in targetProperties)
+            {
+                if(hideMatchingProperties && sourceProperties.ContainsKey(prop.Key))
+                    continue;
+
+                DrawElement(new Rect(draw.x, j * 110, draw.width, 110), prop.Value, sourceProperties.ContainsKey(prop.Key), false);
+                j++;
+            }
+            
             EditorGUILayout.EndScrollView();
 
             if (serializedObject.hasModifiedProperties)
