@@ -294,7 +294,13 @@ namespace UnityEditor.ShaderGraph
             WriteShaderGraphToDisk(shader, graphData);
         }
 
-        internal static void AddMaterialPropertyInternal(GraphData graphData, Type propertyType, string displayName, string referenceName = null)
+        private static
+#if UNITY_2020_2_OR_NEWER
+            List<JsonData<AbstractShaderProperty>>
+#else
+            List<AbstractShaderProperty>
+#endif
+        GetProperties(GraphData graphData)
         {
             if (m_Properties == null) m_Properties = typeof(GraphData).GetField("m_Properties", (BindingFlags) (-1));
             var properties = 
@@ -304,6 +310,12 @@ namespace UnityEditor.ShaderGraph
                 (List<AbstractShaderProperty>)
 #endif
                 m_Properties.GetValue(graphData);
+            return properties;
+        }
+
+        internal static void AddMaterialPropertyInternal(GraphData graphData, Type propertyType, string displayName, string referenceName = null)
+        {
+            var properties = GetProperties(graphData);
 
             var prop = (AbstractShaderProperty) Activator.CreateInstance(propertyType, true);
             prop.displayName = displayName;
@@ -314,6 +326,20 @@ namespace UnityEditor.ShaderGraph
             properties.Add(prop);
         }
 
+        public static void RemoveMaterialProperty(Shader shader, string referenceName)
+        {
+            var graphData = GetGraphData(shader);
+            if (graphData == null) return;
+            RemoveMaterialProperty(graphData, referenceName);
+            WriteShaderGraphToDisk(shader, graphData);
+        }
+
+        internal static void RemoveMaterialProperty(GraphData graphData, string referenceName)
+        {
+            var properties = GetProperties(graphData);
+            properties.RemoveAll(x => ((AbstractShaderProperty) x).referenceName.Equals(referenceName, StringComparison.Ordinal));
+        }
+        
         public static void AddMaterialPropertyInternal(Shader shader, Type propertyType, string displayName, string referenceName = null)
         {
             var graphData = GetGraphData(shader);
@@ -401,6 +427,12 @@ namespace UnityEditor.ShaderGraph
         private Dictionary<string, ShaderProperty> sourceProperties = new Dictionary<string, ShaderProperty>();
         private Dictionary<string, ShaderProperty> targetProperties = new Dictionary<string, ShaderProperty>();
 
+        enum DrawMode
+        {
+            AddToTarget,
+            RemoveFromTarget
+        }
+        
         void OnGUI()
         {
             serializedObject.Update();
@@ -469,7 +501,7 @@ namespace UnityEditor.ShaderGraph
                 FillPropertyList(targetShader, ref targetProperties);
             }
 
-            void DrawElement(Rect rect, ShaderProperty property, bool existsInSource, bool drawButtons)
+            void DrawElement(Rect rect, ShaderProperty property, bool existsInSource, DrawMode mode)
             {
                 var c = GUI.color;
                 var baseColor = existsInSource ? Color.green : Color.white;
@@ -486,18 +518,31 @@ namespace UnityEditor.ShaderGraph
                 // property.isHidden = EditorGUI.Toggle(rect, property.isHidden);
                 // rect.y += rect.height;
                 // rect.width *= 0.5f;
-                if (drawButtons && GUI.Button(rect, "Add to Target"))
+                switch (mode)
                 {
-                    if (!targetProperties.ContainsKey(property.name))
-                    {
-                        var graphData = MarkdownSGExtensions.GetGraphData(targetShader);
-                        AddProperty(graphData, property.propertyType, property.description, property.name);
-                        MarkdownSGExtensions.WriteShaderGraphToDisk(targetShader, graphData);
-                    }
-                    else
-                    {
-                        Debug.LogWarning("Property already exists: " + property.name + ", can't add again.");
-                    }
+                    case DrawMode.AddToTarget:
+                        if (GUI.Button(rect, "Add to Target"))
+                        {
+                            if (!targetProperties.ContainsKey(property.name))
+                            {
+                                var graphData = MarkdownSGExtensions.GetGraphData(targetShader);
+                                AddProperty(graphData, property.propertyType, property.description, property.name);
+                                MarkdownSGExtensions.WriteShaderGraphToDisk(targetShader, graphData);
+                            }
+                            else
+                            {
+                                Debug.LogWarning("Property already exists: " + property.name + ", can't add again.");
+                            }
+                        }
+                        break;
+                    case DrawMode.RemoveFromTarget:
+                        if (GUI.Button(rect, "Remove from Target"))
+                        {
+                            var graphData = MarkdownSGExtensions.GetGraphData(targetShader);
+                            MarkdownSGExtensions.RemoveMaterialProperty(graphData, property.name);
+                            MarkdownSGExtensions.WriteShaderGraphToDisk(targetShader, graphData);
+                        }
+                        break;
                 }
                 GUI.color = c;
             }
@@ -505,7 +550,7 @@ namespace UnityEditor.ShaderGraph
             GUILayout.Label("Property Wizard");
             if (GUILayout.Button("Refresh"))
                 Refresh();
-            if(GUILayout.Button("Add All Properties"))
+            if(GUILayout.Button("Add All Source Properties to Target"))
             {
                 var graphData = MarkdownSGExtensions.GetGraphData(targetShader);
                 
@@ -530,7 +575,7 @@ namespace UnityEditor.ShaderGraph
                 if(hideMatchingProperties && targetProperties.ContainsKey(prop.Key))
                     continue;
                 
-                DrawElement(new Rect(draw.x, j * 110, draw.width, 110), prop.Value, targetProperties.ContainsKey(prop.Key), true);
+                DrawElement(new Rect(draw.x, j * 110, draw.width, 110), prop.Value, targetProperties.ContainsKey(prop.Key), DrawMode.AddToTarget);
                 j++;
             }
 
@@ -541,7 +586,7 @@ namespace UnityEditor.ShaderGraph
                 if(hideMatchingProperties && sourceProperties.ContainsKey(prop.Key))
                     continue;
 
-                DrawElement(new Rect(draw.x, j * 110, draw.width, 110), prop.Value, sourceProperties.ContainsKey(prop.Key), false);
+                DrawElement(new Rect(draw.x, j * 110, draw.width, 110), prop.Value, sourceProperties.ContainsKey(prop.Key), DrawMode.RemoveFromTarget);
                 j++;
             }
             
