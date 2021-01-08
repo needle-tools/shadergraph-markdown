@@ -8,10 +8,10 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 using UnityEditor.ShaderGraph.Internal;
-
+using UnityEditorInternal;
 #if UNITY_2020_2_OR_NEWER
 using UnityEditor.ShaderGraph.Serialization;
-using UnityEditorInternal;
+using UnityEngine.Rendering;
 
 #else
 using UnityEngine.Rendering;
@@ -38,15 +38,13 @@ namespace UnityEditor.ShaderGraph
                 
             if (m_Keywords == null) m_Keywords = typeof(GraphData).GetField("m_Keywords", (BindingFlags) (-1));
             if (m_Properties == null) m_Properties = typeof(GraphData).GetField("m_Properties", (BindingFlags) (-1));
-            #if UNITY_2020_2_OR_NEWER
+#if UNITY_2020_2_OR_NEWER
             var keywords = (List<JsonData<ShaderKeyword>>) m_Keywords.GetValue(graphData);
             var properties = (List<JsonData<AbstractShaderProperty>>) m_Properties.GetValue(graphData);
-            #else
+#else
             var keywords = (List<ShaderKeyword>) m_Keywords.GetValue(graphData);
             var properties = (List<AbstractShaderProperty>) m_Properties.GetValue(graphData);
-            #endif
-            //#else
-            //#endif
+#endif
             keywords.Clear();
             properties.Clear();
                 
@@ -88,21 +86,6 @@ namespace UnityEditor.ShaderGraph
             var wizard = ScriptableWizard.DisplayWizard<PropertyWizard>("Add Properties from Material", "Add Properties");
             wizard.targetShader = (Shader) command.context;
         }
-        
-        // private static PropertyInfo _graphEditorView;
-        // static void Stuff()
-        // {
-        //     var shaderGraphWindows = Resources.FindObjectsOfTypeAll<MaterialGraphEditWindow>();
-        //     foreach (var window in shaderGraphWindows)
-        //     {
-        //         if (_graphEditorView == null) _graphEditorView = typeof(MaterialGraphEditWindow).GetProperty("graphEditorView", (BindingFlags) (-1));
-        //         var graphEditorView = (GraphEditorView) _graphEditorView?.GetValue(window);
-        //         if (graphEditorView == null) continue;
-        //
-        //         var blackboardProvider = graphEditorView.blackboardProvider;
-        //         var blackboard = blackboardProvider.blackboard;
-        //     }
-        // }
 
         internal static GraphData GetGraphData(AssetImporter importer)
         {
@@ -143,6 +126,7 @@ namespace UnityEditor.ShaderGraph
     #endif
         }
 
+        // commented out entries are either duplicates or don't have matching Unity types
         private static readonly Dictionary<Type, Type> TypeToPropertyTypeMap = new Dictionary<Type, Type>()
         {
             { typeof(Gradient),       typeof(GradientShaderProperty) },
@@ -236,25 +220,30 @@ namespace UnityEditor.ShaderGraph
         {
             AddMaterialPropertyInternal(shader, typeof(T), displayName, referenceName);
         }
-        
-        public static void AddMaterialProperty<T>(Shader shader, string displayName, string referenceName = null)
+
+        public static void AddMaterialProperty(Shader shader, Type propertyType, string displayName, string referenceName = null)
         {
             Type foundType = null;
             foreach(var dict in TypeMaps)
             {
-                if (dict.ContainsKey(typeof(T))) {
-                    foundType = dict[typeof(T)];
+                if (dict.ContainsKey(propertyType)) {
+                    foundType = dict[propertyType];
                     break;
                 }
             }
             
             if(foundType == null)
             {
-                Debug.LogError($"Can't add property of type {typeof(T)}: not found in type map. Allowed types: {string.Join("\n", TypeToPropertyTypeMap.Select(x => x.Key + " (" + x.Value + ")"))}");
+                Debug.LogError($"Can't add property of type {propertyType}: not found in type map. Allowed types: {string.Join("\n", TypeToPropertyTypeMap.Select(x => x.Key + " (" + x.Value + ")"))}");
                 return;
             }
             
-            AddMaterialPropertyInternal(shader, TypeToPropertyTypeMap[typeof(T)], displayName, referenceName);
+            AddMaterialPropertyInternal(shader, TypeToPropertyTypeMap[propertyType], displayName, referenceName);
+        }
+        
+        public static void AddMaterialProperty<T>(Shader shader, string displayName, string referenceName = null)
+        {
+            AddMaterialProperty(shader, typeof(T), displayName, referenceName);
         }
         
         public static string GetDefaultCustomInspectorFromShader(Shader shader)
@@ -382,7 +371,18 @@ namespace UnityEditor.ShaderGraph
             _sourceMaterial = serializedObject.FindProperty("sourceMaterial");
         }
 
+        [Serializable]
+        public class ShaderProperty
+        {
+            public string name;
+            public ShaderUtil.ShaderPropertyType propertyType;
+            public string description;
+            public bool isHidden = false;
+        }
+
         private ReorderableList propertyList;
+        [SerializeField]
+        private List<ShaderProperty> properties;
 
         void OnGUI()
         {
@@ -391,34 +391,89 @@ namespace UnityEditor.ShaderGraph
             EditorGUILayout.PropertyField(_targetShader);
             EditorGUILayout.PropertyField(_sourceMaterial);
 
-            if (serializedObject.hasModifiedProperties)
-            {
-                serializedObject.ApplyModifiedProperties();
-
+            void Refresh() {
                 if (!sourceMaterial) return;
                 
                 // rebuild reorderable list
                 // propertyList = new ReorderableList()
 
+                if (properties == null) properties = new List<ShaderProperty>();
+                properties.Clear();
                 var shader = sourceMaterial.shader;
                 var propertyCount = ShaderUtil.GetPropertyCount(shader);
                 for (int i = 0; i < propertyCount; i++)
                 {
-                    var propertyLog = ShaderUtil.GetPropertyName(shader, i) + " " + 
-                                      "[" + ShaderUtil.GetPropertyType(shader, i) + "] " + 
-                                      "(" + ShaderUtil.GetPropertyDescription(shader, i) + ")" + 
-                                      (ShaderUtil.IsShaderPropertyHidden(shader, i) ? " (hidden)" : "");
-                    Debug.Log(propertyLog);
+                    properties.Add(new ShaderProperty()
+                    {
+                        name = ShaderUtil.GetPropertyName(shader, i),
+                        description = ShaderUtil.GetPropertyDescription(shader, i),
+                        propertyType = ShaderUtil.GetPropertyType(shader, i),
+                        isHidden = ShaderUtil.IsShaderPropertyHidden(shader, i)
+                    });
                 }
+
+                propertyList = new ReorderableList(serializedObject, serializedObject.FindProperty("properties"), true, true, true, true);
+                propertyList.elementHeight = 110;
+                propertyList.drawElementCallback += (rect, index, active, focused) =>
+                {
+                    var element = propertyList.serializedProperty.GetArrayElementAtIndex(index);
+                    var name = element.FindPropertyRelative("name");
+                    var propertyType = element.FindPropertyRelative("propertyType");
+                    var description = element.FindPropertyRelative("description");
+                    var isHidden = element.FindPropertyRelative("isHidden");
+                    rect.height = 20;
+                    EditorGUI.PropertyField(rect, name);
+                    rect.y += rect.height;
+                    EditorGUI.PropertyField(rect, description);
+                    rect.y += rect.height;
+                    EditorGUI.PropertyField(rect, propertyType);
+                    rect.y += rect.height;
+                    EditorGUI.PropertyField(rect, isHidden);
+                    rect.width *= 0.5f;
+                    
+                    if (GUI.Button(rect, "Add to Shader"))
+                    {
+                        Type ShaderPropertyTypeToType(ShaderUtil.ShaderPropertyType shaderPropertyType)
+                        {
+                            switch (shaderPropertyType)
+                            {
+                                case ShaderUtil.ShaderPropertyType.Color:
+                                    return typeof(Color);
+                                case ShaderUtil.ShaderPropertyType.Float:
+                                    return typeof(float);
+                                case ShaderUtil.ShaderPropertyType.Range:
+                                    return typeof(float);
+                                case ShaderUtil.ShaderPropertyType.TexEnv:
+                                    return typeof(Texture2D);
+                                case ShaderUtil.ShaderPropertyType.Vector:
+                                    return typeof(Vector4);
+                                default:
+                                    return null;
+                            }
+                        }
+                        
+                        MarkdownSGExtensions.AddMaterialProperty(targetShader, ShaderPropertyTypeToType(properties[index].propertyType), description.stringValue, name.stringValue);
+                    }
+                };
             }
             
             GUILayout.Label("Property Wizard");
+            if (GUILayout.Button("Refresh"))
+                Refresh();
+
+            sp = EditorGUILayout.BeginScrollView(sp);
+            if(propertyList != null)
+                propertyList.DoLayoutList();
+            EditorGUILayout.EndScrollView();
+
+            if (serializedObject.hasModifiedProperties)
+            {
+                serializedObject.ApplyModifiedProperties();
+                Refresh();
+            }
         }
 
-        private void OnWizardCreate()
-        {
-            
-        }
+        private Vector2 sp;
     }
     
     // [Serializable]
