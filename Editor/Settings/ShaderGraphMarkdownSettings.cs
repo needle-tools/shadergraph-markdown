@@ -9,7 +9,7 @@ using UnityEditorInternal;
 
 namespace Needle.ShaderGraphMarkdown
 {
-    public class ShaderGraphMarkdownSettingsProvider : SettingsProvider
+    internal class ShaderGraphMarkdownSettingsProvider : SettingsProvider
     {
         private SerializedObject m_SerializedObject;
         private SerializedProperty showDefaultReferenceNameWarning, showNamingRecommendationHint;
@@ -59,7 +59,7 @@ namespace Needle.ShaderGraphMarkdown
 
 #if !UNITY_2020_1_OR_NEWER
 #region FilePath/ScriptableSingleton Shim
-    public class ScriptableSingleton<T> : ScriptableObject where T : ScriptableObject {
+    internal class ScriptableSingleton<T> : ScriptableObject where T : ScriptableObject {
         static T s_Instance;
         public static T instance {
             get {

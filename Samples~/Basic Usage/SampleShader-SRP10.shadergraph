@@ -197,25 +197,6 @@
 
 {
     "m_SGVersion": 0,
-    "m_Type": "UnityEditor.Rendering.HighDefinition.ShaderGraph.BuiltinData",
-    "m_ObjectId": "0d671dc1915844059fd588f9472599b3",
-    "m_Distortion": false,
-    "m_DistortionMode": 0,
-    "m_DistortionDepthTest": true,
-    "m_AddPrecomputedVelocity": false,
-    "m_TransparentWritesMotionVec": false,
-    "m_AlphaToMask": false,
-    "m_DepthOffset": false,
-    "m_TransparencyFog": true,
-    "m_AlphaTestShadow": false,
-    "m_BackThenFrontRendering": false,
-    "m_TransparentDepthPrepass": false,
-    "m_TransparentDepthPostpass": false,
-    "m_SupportLodCrossFade": false
-}
-
-{
-    "m_SGVersion": 0,
     "m_Type": "UnityEditor.Rendering.HighDefinition.ShaderGraph.HDLitSubTarget",
     "m_ObjectId": "11447e942d774c6b840ee9b664306791"
 }
@@ -554,7 +535,7 @@
     },
     "m_Name": "Small",
     "m_DefaultReferenceName": "Vector1_42a77b66dd9d4363a8336eb7f432188e",
-    "m_OverrideReferenceName": "",
+    "m_OverrideReferenceName": "_SmallNumber",
     "m_GeneratePropertyBlock": true,
     "m_Precision": 0,
     "overrideHLSLDeclaration": false,
@@ -687,7 +668,7 @@
     "m_SGVersion": 0,
     "m_Type": "UnityEditor.Rendering.HighDefinition.ShaderGraph.SystemData",
     "m_ObjectId": "601ff20d72ae46dc92255edb2afaeec5",
-    "m_MaterialNeedsUpdateHash": -1,
+    "m_MaterialNeedsUpdateHash": 529,
     "m_SurfaceType": 0,
     "m_RenderingPass": 1,
     "m_BlendMode": 0,
@@ -729,26 +710,6 @@
     },
     "m_Labels": [],
     "m_Space": 0
-}
-
-{
-    "m_SGVersion": 0,
-    "m_Type": "UnityEditor.Rendering.HighDefinition.ShaderGraph.LightingData",
-    "m_ObjectId": "67899bb95b624de886009cf4ff606372",
-    "m_NormalDropOffSpace": 0,
-    "m_BlendPreserveSpecular": true,
-    "m_ReceiveDecals": true,
-    "m_ReceiveSSR": true,
-    "m_ReceiveSSRTransparent": false,
-    "m_SpecularAA": false,
-    "m_SpecularOcclusionMode": 0,
-    "m_OverrideBakedGI": false
-}
-
-{
-    "m_SGVersion": 0,
-    "m_Type": "UnityEditor.Rendering.HighDefinition.ShaderGraph.HDLitSubTarget",
-    "m_ObjectId": "6e1f51eba9e9412abe5c0fa484164166"
 }
 
 {
@@ -886,7 +847,7 @@
     },
     "m_Name": "Large",
     "m_DefaultReferenceName": "",
-    "m_OverrideReferenceName": "Vector1_1",
+    "m_OverrideReferenceName": "LargeNumber",
     "m_GeneratePropertyBlock": true,
     "m_Precision": 0,
     "overrideHLSLDeclaration": false,
@@ -909,7 +870,7 @@
     },
     "m_Name": "Color 1 [_SOME_ENUM_KEYWORD_COLORS]",
     "m_DefaultReferenceName": "Color_8ad316250bc7462c9107902a5c7d94b9",
-    "m_OverrideReferenceName": "",
+    "m_OverrideReferenceName": "_BGColor1",
     "m_GeneratePropertyBlock": true,
     "m_Precision": 0,
     "overrideHLSLDeclaration": false,
@@ -1187,18 +1148,6 @@
 
 {
     "m_SGVersion": 0,
-    "m_Type": "UnityEditor.Rendering.HighDefinition.ShaderGraph.HDLitData",
-    "m_ObjectId": "b4f67128a75242c38edc9bc9818535c8",
-    "m_RayTracing": false,
-    "m_MaterialType": 0,
-    "m_RefractionModel": 0,
-    "m_SSSTransmission": true,
-    "m_EnergyConservingSpecular": true,
-    "m_ClearCoat": false
-}
-
-{
-    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.Internal.BooleanShaderProperty",
     "m_ObjectId": "b8848953f32349b7b20a06875411bfd9",
     "m_Guid": {
@@ -1248,7 +1197,7 @@
     },
     "m_Name": "Some Color",
     "m_DefaultReferenceName": "Color_be37ff9ff5624ca5bff2cce363e3bb0c",
-    "m_OverrideReferenceName": "",
+    "m_OverrideReferenceName": "_SomeColor",
     "m_GeneratePropertyBlock": true,
     "m_Precision": 0,
     "overrideHLSLDeclaration": false,
@@ -1328,7 +1277,7 @@
     },
     "m_Name": "Some Vector",
     "m_DefaultReferenceName": "Vector4_c919f260d290438a981fb5f011a7d383",
-    "m_OverrideReferenceName": "",
+    "m_OverrideReferenceName": "_SomeVector",
     "m_GeneratePropertyBlock": true,
     "m_Precision": 0,
     "overrideHLSLDeclaration": false,
@@ -1369,7 +1318,7 @@
     },
     "m_Name": "Gradient Texture [_SOME_ENUM_KEYWORD_TEXTURE]",
     "m_DefaultReferenceName": "Texture2D_d19dfc5915e54b24b14c63ef943d568a",
-    "m_OverrideReferenceName": "",
+    "m_OverrideReferenceName": "_BGTexture",
     "m_GeneratePropertyBlock": true,
     "m_Precision": 0,
     "overrideHLSLDeclaration": false,
@@ -1401,7 +1350,7 @@
     },
     "m_Name": "Yet Another Color",
     "m_DefaultReferenceName": "Color_d5e98415abe042e7b7e8cd773fe20ab1",
-    "m_OverrideReferenceName": "",
+    "m_OverrideReferenceName": "_YetAnotherColor",
     "m_GeneratePropertyBlock": true,
     "m_Precision": 0,
     "overrideHLSLDeclaration": false,
@@ -1499,7 +1448,7 @@
     },
     "m_Name": "Day",
     "m_DefaultReferenceName": "",
-    "m_OverrideReferenceName": "Color_c2cb65b47e23464f8188f662697561ce_1",
+    "m_OverrideReferenceName": "_DayColor",
     "m_GeneratePropertyBlock": true,
     "m_Precision": 0,
     "overrideHLSLDeclaration": false,
@@ -1531,30 +1480,6 @@
     "m_TransparentDepthPrepass": false,
     "m_TransparentDepthPostpass": false,
     "m_SupportLodCrossFade": false
-}
-
-{
-    "m_SGVersion": 0,
-    "m_Type": "UnityEditor.Rendering.HighDefinition.ShaderGraph.SystemData",
-    "m_ObjectId": "f4971c693a5242798de8dfe6940ab1cf",
-    "m_MaterialNeedsUpdateHash": 529,
-    "m_SurfaceType": 0,
-    "m_RenderingPass": 1,
-    "m_BlendMode": 0,
-    "m_ZTest": 4,
-    "m_ZWrite": false,
-    "m_TransparentCullMode": 2,
-    "m_OpaqueCullMode": 2,
-    "m_SortPriority": 0,
-    "m_AlphaTest": false,
-    "m_TransparentDepthPrepass": false,
-    "m_TransparentDepthPostpass": false,
-    "m_SupportLodCrossFade": false,
-    "m_DoubleSidedMode": 0,
-    "m_DOTSInstancing": false,
-    "m_Version": 0,
-    "m_FirstTimeMigrationExecuted": true,
-    "inspectorFoldoutMask": 0
 }
 
 {
