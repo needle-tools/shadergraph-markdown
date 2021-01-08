@@ -8,85 +8,15 @@ using System.Reflection;
 using System.Text;
 using UnityEngine;
 using UnityEditor.ShaderGraph.Internal;
-using UnityEditorInternal;
 #if UNITY_2020_2_OR_NEWER
 using UnityEditor.ShaderGraph.Serialization;
-using UnityEngine.Rendering;
-
 #else
-using UnityEngine.Rendering;
 #endif
 
 namespace UnityEditor.ShaderGraph
 {
     public static class MarkdownSGExtensions
-    {
-        
-        [MenuItem("internal:CONTEXT/Shader/Remove All Properties", true)]
-        static bool RemoveAllPropertiesValidate(MenuCommand command)
-        {
-            return GetGraphData((Shader) command.context) != null;
-        }
-
-        [MenuItem("internal:CONTEXT/Shader/Remove All Properties", false)]
-        static void RemoveAllProperties(MenuCommand command)
-        {
-            var shader = (Shader) command.context;
-                
-            var graphData = GetGraphData(shader);
-            if (graphData == null) return;
-                
-            if (m_Keywords == null) m_Keywords = typeof(GraphData).GetField("m_Keywords", (BindingFlags) (-1));
-            if (m_Properties == null) m_Properties = typeof(GraphData).GetField("m_Properties", (BindingFlags) (-1));
-#if UNITY_2020_2_OR_NEWER
-            var keywords = (List<JsonData<ShaderKeyword>>) m_Keywords.GetValue(graphData);
-            var properties = (List<JsonData<AbstractShaderProperty>>) m_Properties.GetValue(graphData);
-#else
-            var keywords = (List<ShaderKeyword>) m_Keywords.GetValue(graphData);
-            var properties = (List<AbstractShaderProperty>) m_Properties.GetValue(graphData);
-#endif
-            keywords.Clear();
-            properties.Clear();
-                
-            WriteShaderGraphToDisk(shader, graphData);
-            AssetDatabase.Refresh();
-        }
-        
-        [MenuItem("internal:CONTEXT/Shader/Add Test Property", true)]
-        static bool AddTestPropertyValidate(MenuCommand command)
-        {
-            return GetGraphData((Shader) command.context) != null;
-        }
-
-        [MenuItem("internal:CONTEXT/Shader/Add Test Properties", false)]
-        static void AddTestProperty(MenuCommand command)
-        {
-            var shader = (Shader) command.context;
-            
-            AddMaterialProperty<bool>(shader, "My Bool");
-            AddMaterialProperty<Color>(shader, "My Color");
-            AddMaterialProperty<Texture2D>(shader, "My Texture");
-            AddMaterialProperty<Vector4>(shader, "My Vector");
-            AddMaterialProperty<float>(shader, "My Float");
-
-            AddMaterialKeyword<bool>(shader, "Some Boolean Keyword");
-            AddMaterialKeyword<Enum>(shader, "Some Enum Keyword");
-        }
-
-        [MenuItem("CONTEXT/Shader/Add Properties Wizard", true)]
-        static bool AddPropertiesWizardValidate(MenuCommand command)
-        {
-            return GetGraphData((Shader) command.context) != null;
-        }
-        
-        [MenuItem("CONTEXT/Shader/Add Properties Wizard", false)]
-        static void AddPropertiesWizard(MenuCommand command)
-        {
-            // open wizard window
-            var wizard = ScriptableWizard.DisplayWizard<PropertyWizard>("Add Properties from Material", "Add Properties");
-            wizard.targetShader = (Shader) command.context;
-        }
-
+    { 
         internal static GraphData GetGraphData(AssetImporter importer)
         {
             var path = importer.assetPath;
@@ -124,128 +54,9 @@ namespace UnityEditor.ShaderGraph
     #else
             File.WriteAllText(AssetDatabase.GetAssetPath(shader), JsonUtility.ToJson(graphData));
     #endif
-        }
-
-        // commented out entries are either duplicates or don't have matching Unity types
-        private static readonly Dictionary<Type, Type> TypeToPropertyTypeMap = new Dictionary<Type, Type>()
-        {
-            { typeof(Gradient),       typeof(GradientShaderProperty) },
-            // { typeof(Matrix),         typeof(Matrix2ShaderProperty) },
-            // { typeof(null),           typeof(Matrix3ShaderProperty) },
-            { typeof(Matrix4x4),      typeof(Matrix4ShaderProperty) },
-            // { typeof(Matrix4x4),      typeof(MatrixShaderProperty) },
-            { typeof(TextureSamplerState), typeof(SamplerStateShaderProperty) },
-            // { typeof(VirtualTexture), typeof(VirtualTextureShaderProperty) },
-            // { typeof(null),           typeof(AbstractShaderProperty) },
-            { typeof(bool),           typeof(BooleanShaderProperty) },
-            { typeof(Color),          typeof(ColorShaderProperty) },
-            { typeof(Cubemap),        typeof(CubemapShaderProperty) },
-            { typeof(Texture2DArray), typeof(Texture2DArrayShaderProperty) },
-            { typeof(Texture2D),      typeof(Texture2DShaderProperty) },
-            { typeof(Texture3D),      typeof(Texture3DShaderProperty) },
-            { typeof(float),          typeof(Vector1ShaderProperty) },
-            { typeof(Vector2),        typeof(Vector2ShaderProperty) },
-            { typeof(Vector3),        typeof(Vector3ShaderProperty) },
-            { typeof(Vector4),        typeof(Vector4ShaderProperty) },
-            // { typeof(float),          typeof(VectorShaderProperty) },
-            // { typeof(null),           typeof(MultiJsonInternal.UnknownShaderPropertyType) },
-        };
-
-
-        private static FieldInfo m_Properties, m_Keywords;
-        
-        public static void AddMaterialKeyword<T>(Shader shader, string displayName, string referenceName = null)
-        {
-            var keywordType = typeof(T);
-            
-            var graphData = GetGraphData(shader);
-            if (graphData == null) return;
-            if (m_Keywords == null) m_Keywords = typeof(GraphData).GetField("m_Keywords", (BindingFlags) (-1));
-            var keywords =
-#if UNITY_2020_2_OR_NEWER
-                (List<JsonData<ShaderKeyword>>)
-#else
-                (List<ShaderKeyword>)
-#endif
-                m_Keywords.GetValue(graphData);
-
-            ShaderKeyword keyword = null;
-            if(keywordType == typeof(Enum))
-                keyword = new ShaderKeyword(KeywordType.Enum);
-            else if (keywordType == typeof(bool))
-                keyword = new ShaderKeyword(KeywordType.Boolean);
-            else {
-                Debug.LogError($"Can't create keyword of type {keywordType}, allowed types are Enum and bool");
-                return;
-            }
-            
-            keyword.displayName = displayName;
-            if (!string.IsNullOrEmpty(referenceName))
-                keyword.overrideReferenceName = referenceName;
-            
-            // JsonData has an implicit conversion operator
-            keywords.Add(keyword);
-            
-            WriteShaderGraphToDisk(shader, graphData);
             AssetDatabase.Refresh();
         }
 
-        public static void AddMaterialPropertyInternal(Shader shader, Type propertyType, string displayName, string referenceName = null)
-        {
-            var graphData = GetGraphData(shader);
-            if (graphData == null) return;
-            if (m_Properties == null) m_Properties = typeof(GraphData).GetField("m_Properties", (BindingFlags) (-1));
-            
-            var properties = 
-#if UNITY_2020_2_OR_NEWER
-                (List<JsonData<AbstractShaderProperty>>)
-#else
-                (List<AbstractShaderProperty>)
-#endif
-                m_Properties.GetValue(graphData);
-
-            var prop = (AbstractShaderProperty) Activator.CreateInstance(propertyType, true);
-            prop.displayName = displayName;
-            if (!string.IsNullOrEmpty(referenceName))
-                prop.overrideReferenceName = referenceName;
-            
-            // JsonData has an implicit conversion operator
-            properties.Add(prop);
-
-            WriteShaderGraphToDisk(shader, graphData);
-            AssetDatabase.Refresh();
-        }
-        
-        public static void AddMaterialPropertyInternal<T>(Shader shader, string displayName, string referenceName = null) where T: AbstractShaderProperty
-        {
-            AddMaterialPropertyInternal(shader, typeof(T), displayName, referenceName);
-        }
-
-        public static void AddMaterialProperty(Shader shader, Type propertyType, string displayName, string referenceName = null)
-        {
-            Type foundType = null;
-            foreach(var dict in TypeMaps)
-            {
-                if (dict.ContainsKey(propertyType)) {
-                    foundType = dict[propertyType];
-                    break;
-                }
-            }
-            
-            if(foundType == null)
-            {
-                Debug.LogError($"Can't add property of type {propertyType}: not found in type map. Allowed types: {string.Join("\n", TypeToPropertyTypeMap.Select(x => x.Key + " (" + x.Value + ")"))}");
-                return;
-            }
-            
-            AddMaterialPropertyInternal(shader, TypeToPropertyTypeMap[propertyType], displayName, referenceName);
-        }
-        
-        public static void AddMaterialProperty<T>(Shader shader, string displayName, string referenceName = null)
-        {
-            AddMaterialProperty(shader, typeof(T), displayName, referenceName);
-        }
-        
         public static string GetDefaultCustomInspectorFromShader(Shader shader)
         {
             var graphData = GetGraphData(shader);
@@ -325,15 +136,7 @@ namespace UnityEditor.ShaderGraph
                 }
 #endif
                 MarkdownSGExtensions.WriteShaderGraphToDisk(mat.shader, graphData);
-                AssetDatabase.Refresh();
             }
-        }
-
-
-        private static readonly List<Dictionary<Type, Type>> TypeMaps = new List<Dictionary<Type, Type>>() { TypeToPropertyTypeMap };
-        public static void RegisterTypeMap(Dictionary<Type,Type> typeToPropertyTypeMap)
-        {
-            if (!TypeMaps.Contains(typeToPropertyTypeMap)) TypeMaps.Add(typeToPropertyTypeMap);
         }
 
         private static readonly List<Func<GraphData, string>> CustomInspectorGetters = new List<Func<GraphData, string>>();
@@ -350,6 +153,218 @@ namespace UnityEditor.ShaderGraph
             CustomInspectorSetters.Add(func);
         }
 #endif
+        
+#region ShaderGraph Property Manipulation API
+
+        [MenuItem("internal:CONTEXT/Shader/Remove All Properties", true)]
+        static bool RemoveAllPropertiesValidate(MenuCommand command)
+        {
+            return GetGraphData((Shader) command.context) != null;
+        }
+
+        [MenuItem("internal:CONTEXT/Shader/Remove All Properties", false)]
+        static void RemoveAllProperties(MenuCommand command)
+        {
+            var shader = (Shader) command.context;
+                
+            var graphData = GetGraphData(shader);
+            if (graphData == null) return;
+                
+            if (m_Keywords == null) m_Keywords = typeof(GraphData).GetField("m_Keywords", (BindingFlags) (-1));
+            if (m_Properties == null) m_Properties = typeof(GraphData).GetField("m_Properties", (BindingFlags) (-1));
+#if UNITY_2020_2_OR_NEWER
+            var keywords = (List<JsonData<ShaderKeyword>>) m_Keywords.GetValue(graphData);
+            var properties = (List<JsonData<AbstractShaderProperty>>) m_Properties.GetValue(graphData);
+#else
+            var keywords = (List<ShaderKeyword>) m_Keywords.GetValue(graphData);
+            var properties = (List<AbstractShaderProperty>) m_Properties.GetValue(graphData);
+#endif
+            keywords.Clear();
+            properties.Clear();
+                
+            WriteShaderGraphToDisk(shader, graphData);
+        }
+        
+        [MenuItem("internal:CONTEXT/Shader/Add Test Property", true)]
+        static bool AddTestPropertyValidate(MenuCommand command)
+        {
+            return GetGraphData((Shader) command.context) != null;
+        }
+
+        [MenuItem("internal:CONTEXT/Shader/Add Test Properties", false)]
+        static void AddTestProperty(MenuCommand command)
+        {
+            var shader = (Shader) command.context;
+            
+            AddMaterialProperty<bool>(shader, "My Bool");
+            AddMaterialProperty<Color>(shader, "My Color");
+            AddMaterialProperty<Texture2D>(shader, "My Texture");
+            AddMaterialProperty<Vector4>(shader, "My Vector");
+            AddMaterialProperty<float>(shader, "My Float");
+
+            AddMaterialKeyword<bool>(shader, "Some Boolean Keyword");
+            AddMaterialKeyword<Enum>(shader, "Some Enum Keyword");
+        }
+
+        [MenuItem("CONTEXT/Shader/Add Properties Wizard", true)]
+        static bool AddPropertiesWizardValidate(MenuCommand command)
+        {
+            return GetGraphData((Shader) command.context) != null;
+        }
+        
+        [MenuItem("CONTEXT/Shader/Add Properties Wizard", false)]
+        static void AddPropertiesWizard(MenuCommand command)
+        {
+            // open wizard window
+            var wizard = ScriptableWizard.DisplayWizard<PropertyWizard>("Add Properties from Material", "Add Properties");
+            wizard.targetShader = (Shader) command.context;
+        }
+
+        [InitializeOnLoadMethod]
+        static void RegisterBaseTypeMap()
+        {
+            RegisterTypeMap(TypeToPropertyTypeMap);
+        }
+
+        private static readonly List<Dictionary<Type, Type>> TypeMaps = new List<Dictionary<Type, Type>>(); 
+        public static void RegisterTypeMap(Dictionary<Type,Type> typeToPropertyTypeMap)
+        {
+            if (!TypeMaps.Contains(typeToPropertyTypeMap)) TypeMaps.Add(typeToPropertyTypeMap);
+        }
+        
+        // commented out entries are either duplicates or don't have matching Unity types
+        private static readonly Dictionary<Type, Type> TypeToPropertyTypeMap = new Dictionary<Type, Type>()
+        {
+            { typeof(Gradient),       typeof(GradientShaderProperty) },
+            // { typeof(Matrix),         typeof(Matrix2ShaderProperty) },
+            // { typeof(null),           typeof(Matrix3ShaderProperty) },
+            { typeof(Matrix4x4),      typeof(Matrix4ShaderProperty) },
+            // { typeof(Matrix4x4),      typeof(MatrixShaderProperty) },
+            { typeof(TextureSamplerState), typeof(SamplerStateShaderProperty) },
+            // { typeof(VirtualTexture), typeof(VirtualTextureShaderProperty) },
+            // { typeof(null),           typeof(AbstractShaderProperty) },
+            { typeof(bool),           typeof(BooleanShaderProperty) },
+            { typeof(Color),          typeof(ColorShaderProperty) },
+            { typeof(Cubemap),        typeof(CubemapShaderProperty) },
+            { typeof(Texture2DArray), typeof(Texture2DArrayShaderProperty) },
+            { typeof(Texture2D),      typeof(Texture2DShaderProperty) },
+            { typeof(Texture3D),      typeof(Texture3DShaderProperty) },
+            { typeof(float),          typeof(Vector1ShaderProperty) },
+            { typeof(Vector2),        typeof(Vector2ShaderProperty) },
+            { typeof(Vector3),        typeof(Vector3ShaderProperty) },
+            { typeof(Vector4),        typeof(Vector4ShaderProperty) },
+            // { typeof(float),          typeof(VectorShaderProperty) },
+            // { typeof(null),           typeof(MultiJsonInternal.UnknownShaderPropertyType) },
+        };
+
+        private static FieldInfo m_Properties, m_Keywords;
+        
+        public static void AddMaterialKeyword<T>(Shader shader, string displayName, string referenceName = null)
+        {
+            var keywordType = typeof(T);
+            
+            var graphData = GetGraphData(shader);
+            if (graphData == null) return;
+            if (m_Keywords == null) m_Keywords = typeof(GraphData).GetField("m_Keywords", (BindingFlags) (-1));
+            var keywords =
+#if UNITY_2020_2_OR_NEWER
+                (List<JsonData<ShaderKeyword>>)
+#else
+                (List<ShaderKeyword>)
+#endif
+                m_Keywords.GetValue(graphData);
+
+            ShaderKeyword keyword = null;
+            if(keywordType == typeof(Enum))
+                keyword = new ShaderKeyword(KeywordType.Enum);
+            else if (keywordType == typeof(bool))
+                keyword = new ShaderKeyword(KeywordType.Boolean);
+            else {
+                Debug.LogError($"Can't create keyword of type {keywordType}, allowed types are Enum and bool");
+                return;
+            }
+            
+            keyword.displayName = displayName;
+            if (!string.IsNullOrEmpty(referenceName))
+                keyword.overrideReferenceName = referenceName;
+            
+            // JsonData has an implicit conversion operator
+            keywords.Add(keyword);
+            
+            WriteShaderGraphToDisk(shader, graphData);
+        }
+
+        internal static void AddMaterialPropertyInternal(GraphData graphData, Type propertyType, string displayName, string referenceName = null)
+        {
+            if (m_Properties == null) m_Properties = typeof(GraphData).GetField("m_Properties", (BindingFlags) (-1));
+            var properties = 
+#if UNITY_2020_2_OR_NEWER
+                (List<JsonData<AbstractShaderProperty>>)
+#else
+                (List<AbstractShaderProperty>)
+#endif
+                m_Properties.GetValue(graphData);
+
+            var prop = (AbstractShaderProperty) Activator.CreateInstance(propertyType, true);
+            prop.displayName = displayName;
+            if (!string.IsNullOrEmpty(referenceName))
+                prop.overrideReferenceName = referenceName;
+            
+            // JsonData has an implicit conversion operator
+            properties.Add(prop);
+        }
+
+        public static void AddMaterialPropertyInternal(Shader shader, Type propertyType, string displayName, string referenceName = null)
+        {
+            var graphData = GetGraphData(shader);
+            if (graphData == null) return;
+            if (propertyType == null) return;
+            
+            AddMaterialPropertyInternal(graphData, propertyType, displayName, referenceName);
+
+            WriteShaderGraphToDisk(shader, graphData);
+        }
+        
+        public static void AddMaterialPropertyInternal<T>(Shader shader, string displayName, string referenceName = null) where T: AbstractShaderProperty
+        {
+            AddMaterialPropertyInternal(shader, typeof(T), displayName, referenceName);
+        }
+
+        internal static void AddMaterialProperty(GraphData graphData, Type propertyType, string displayName, string referenceName = null)
+        {
+            AddMaterialPropertyInternal(graphData, FindTypeInTypeMap(propertyType), displayName, referenceName);
+        }
+
+        private static Type FindTypeInTypeMap(Type propertyType)
+        {
+            Type foundType = null;
+            foreach(var dict in TypeMaps)
+            {
+                if (dict == null) continue;
+                if (dict.ContainsKey(propertyType)) {
+                    foundType = dict[propertyType];
+                    break;
+                }
+            }
+            
+            if(foundType == null)
+            {
+                Debug.LogError($"Can't add property of type {propertyType}: not found in type map. Allowed types: {string.Join("\n", TypeToPropertyTypeMap.Select(x => x.Key + " (" + x.Value + ")"))}");
+                return null;
+            }
+
+            return foundType;
+        }
+        
+        public static void AddMaterialProperty(Shader shader, Type propertyType, string displayName, string referenceName = null)
+        {
+            AddMaterialPropertyInternal(shader, FindTypeInTypeMap(propertyType), displayName, referenceName);
+        }
+        
+        public static void AddMaterialProperty<T>(Shader shader, string displayName, string referenceName = null)
+        {
+            AddMaterialProperty(shader, typeof(T), displayName, referenceName);
+        }
     }
 
     [Serializable]
@@ -399,7 +414,7 @@ namespace UnityEditor.ShaderGraph
             EditorGUILayout.EndVertical();
             EditorGUILayout.EndHorizontal();
             
-            void AddProperty(ShaderUtil.ShaderPropertyType shaderPropertyType, string displayName, string referenceName)
+            void AddProperty(GraphData graphData, ShaderUtil.ShaderPropertyType shaderPropertyType, string displayName, string referenceName)
             {
                 Type ShaderPropertyTypeToType(ShaderUtil.ShaderPropertyType propertyType)
                 {
@@ -420,7 +435,7 @@ namespace UnityEditor.ShaderGraph
                     }
                 }
                         
-                MarkdownSGExtensions.AddMaterialProperty(targetShader, ShaderPropertyTypeToType(shaderPropertyType), displayName, referenceName);
+                MarkdownSGExtensions.AddMaterialProperty(graphData, ShaderPropertyTypeToType(shaderPropertyType), displayName, referenceName);
             }
 
             void FillPropertyList(Shader shader, ref Dictionary<string, ShaderProperty> props)
@@ -475,7 +490,9 @@ namespace UnityEditor.ShaderGraph
                 {
                     if (!targetProperties.ContainsKey(property.name))
                     {
-                        AddProperty(property.propertyType, property.description, property.name);
+                        var graphData = MarkdownSGExtensions.GetGraphData(targetShader);
+                        AddProperty(graphData, property.propertyType, property.description, property.name);
+                        MarkdownSGExtensions.WriteShaderGraphToDisk(targetShader, graphData);
                     }
                     else
                     {
@@ -488,13 +505,18 @@ namespace UnityEditor.ShaderGraph
             GUILayout.Label("Property Wizard");
             if (GUILayout.Button("Refresh"))
                 Refresh();
-            if(GUILayout.Button("Add All Properties")) {
+            if(GUILayout.Button("Add All Properties"))
+            {
+                var graphData = MarkdownSGExtensions.GetGraphData(targetShader);
+                
                 foreach (var kvp in sourceProperties)
                 {
                     var prop = kvp.Value;
                     if(!targetProperties.ContainsKey(prop.name))
-                        AddProperty(prop.propertyType, prop.description, prop.name);
+                        AddProperty(graphData, prop.propertyType, prop.description, prop.name);
                 }
+                
+                MarkdownSGExtensions.WriteShaderGraphToDisk(targetShader, graphData);
             }
 
             hideMatchingProperties = EditorGUILayout.Toggle("Hide Matching Properties", hideMatchingProperties);
@@ -534,6 +556,10 @@ namespace UnityEditor.ShaderGraph
 
         private Vector2 sp;
     }
+    
+#endregion
+
+#region Custom Blackboard Properties - Experimental
     
     // [Serializable]
     // [BlackboardInputInfo(30000, name = "Markdown/Foldout Header")]
@@ -611,6 +637,8 @@ namespace UnityEditor.ShaderGraph
     //          };
     //      }
     // }
+    
+#endregion
 }
 
 #endif
