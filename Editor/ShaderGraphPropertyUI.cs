@@ -50,7 +50,7 @@ namespace Needle.ShaderGraphMarkdown
                 var BlackboardProvider = blackboardProvider.GetType();
 
                 if (_blackboard == null) _blackboard = BlackboardProvider.GetProperty("blackboard", (BindingFlags) (-1));
-                var blackboard = (Blackboard) _blackboard?.GetValue(blackboardProvider);
+                var blackboard = (VisualElement) _blackboard?.GetValue(blackboardProvider);
                 if (blackboard == null) continue;
                 
 #if UNITY_2020_2_OR_NEWER
