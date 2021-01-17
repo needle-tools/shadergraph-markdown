@@ -74,11 +74,26 @@
         },
         {
             "m_Id": "1ac840e98d6f414f8f4e80c6ae10751f"
+        },
+        {
+            "m_Id": "5b03dc86eb2e496b9dd760faf6162b83"
+        },
+        {
+            "m_Id": "2444c906c76348a7ab56198ced0abda7"
+        },
+        {
+            "m_Id": "faafddfa9f5c4cbca6e7d1dad0d635c2"
+        },
+        {
+            "m_Id": "b3dac903f448497b916fdfae4d78dd0f"
         }
     ],
     "m_Keywords": [
         {
             "m_Id": "15ae6e1056b04d429cf5ecb2cd65fa69"
+        },
+        {
+            "m_Id": "dc800a2c9cee4dd28aa11fdb60dec10b"
         }
     ],
     "m_Nodes": [
@@ -334,6 +349,30 @@
         "m_SerializableColors": []
     },
     "m_SerializedDescriptor": "SurfaceDescription.NormalTS"
+}
+
+{
+    "m_SGVersion": 3,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.ColorShaderProperty",
+    "m_ObjectId": "2444c906c76348a7ab56198ced0abda7",
+    "m_Guid": {
+        "m_GuidSerialized": "7a35dd0c-41df-4c81-81a2-4ee322617b85"
+    },
+    "m_Name": "-Optional Color [_SIMPLE_OPTION_ON]",
+    "m_DefaultReferenceName": "Color_2444c906c76348a7ab56198ced0abda7",
+    "m_OverrideReferenceName": "_OptionalColor",
+    "m_GeneratePropertyBlock": true,
+    "m_Precision": 0,
+    "overrideHLSLDeclaration": false,
+    "hlslDeclarationOverride": 0,
+    "m_Hidden": false,
+    "m_Value": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 0.0
+    },
+    "m_ColorMode": 0
 }
 
 {
@@ -647,6 +686,24 @@
         "m_SerializableColors": []
     },
     "m_SerializedDescriptor": "SurfaceDescription.Transmittance"
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.BooleanShaderProperty",
+    "m_ObjectId": "5b03dc86eb2e496b9dd760faf6162b83",
+    "m_Guid": {
+        "m_GuidSerialized": "014b7ac8-805d-4f5b-8eaf-03e525594dee"
+    },
+    "m_Name": "!REF _SIMPLE_OPTION",
+    "m_DefaultReferenceName": "Boolean_5b03dc86eb2e496b9dd760faf6162b83",
+    "m_OverrideReferenceName": "",
+    "m_GeneratePropertyBlock": true,
+    "m_Precision": 0,
+    "overrideHLSLDeclaration": false,
+    "hlslDeclarationOverride": 0,
+    "m_Hidden": false,
+    "m_Value": false
 }
 
 {
@@ -1147,6 +1204,30 @@
 }
 
 {
+    "m_SGVersion": 3,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.ColorShaderProperty",
+    "m_ObjectId": "b3dac903f448497b916fdfae4d78dd0f",
+    "m_Guid": {
+        "m_GuidSerialized": "346b87aa-14e7-4ce4-b653-0703dd033815"
+    },
+    "m_Name": "-Optional Color 2 [_NonKeywordOption]",
+    "m_DefaultReferenceName": "Color_b3dac903f448497b916fdfae4d78dd0f",
+    "m_OverrideReferenceName": "",
+    "m_GeneratePropertyBlock": true,
+    "m_Precision": 0,
+    "overrideHLSLDeclaration": false,
+    "hlslDeclarationOverride": 0,
+    "m_Hidden": false,
+    "m_Value": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 0.0
+    },
+    "m_ColorMode": 0
+}
+
+{
     "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.Internal.BooleanShaderProperty",
     "m_ObjectId": "b8848953f32349b7b20a06875411bfd9",
@@ -1409,6 +1490,25 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.ShaderKeyword",
+    "m_ObjectId": "dc800a2c9cee4dd28aa11fdb60dec10b",
+    "m_Guid": {
+        "m_GuidSerialized": "9db50780-4f38-4a2c-be1e-ff43448d54cd"
+    },
+    "m_Name": "Simple Option",
+    "m_DefaultReferenceName": "BOOLEAN_DC800A2C9CEE4DD28AA11FDB60DEC10B_ON",
+    "m_OverrideReferenceName": "_SIMPLE_OPTION_ON",
+    "m_GeneratePropertyBlock": true,
+    "m_KeywordType": 0,
+    "m_KeywordDefinition": 0,
+    "m_KeywordScope": 0,
+    "m_Entries": [],
+    "m_Value": 0,
+    "m_IsEditable": true
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.Rendering.Universal.ShaderGraph.UniversalTarget",
     "m_ObjectId": "ddf1ce5f59164fa5b4ba8162e8730c3b",
     "m_ActiveSubTarget": {
@@ -1480,6 +1580,24 @@
     "m_TransparentDepthPrepass": false,
     "m_TransparentDepthPostpass": false,
     "m_SupportLodCrossFade": false
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.BooleanShaderProperty",
+    "m_ObjectId": "faafddfa9f5c4cbca6e7d1dad0d635c2",
+    "m_Guid": {
+        "m_GuidSerialized": "b3bc52d7-a355-4f2a-882c-680648708d9d"
+    },
+    "m_Name": "A Bool Value as Option",
+    "m_DefaultReferenceName": "Boolean_faafddfa9f5c4cbca6e7d1dad0d635c2",
+    "m_OverrideReferenceName": "_NonKeywordOption",
+    "m_GeneratePropertyBlock": true,
+    "m_Precision": 0,
+    "overrideHLSLDeclaration": false,
+    "hlslDeclarationOverride": 0,
+    "m_Hidden": false,
+    "m_Value": false
 }
 
 {

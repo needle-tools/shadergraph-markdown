@@ -142,7 +142,19 @@
             "typeInfo": {
                 "fullName": "UnityEditor.ShaderGraph.Internal.BooleanShaderProperty"
             },
-            "JSONnodeData": "{\n    \"m_Guid\": {\n        \"m_GuidSerialized\": \"021886e5-cc24-4b29-8d3f-eb0ce08699ba\"\n    },\n    \"m_Name\": \"!NOTE You can also add notes.\",\n    \"m_DefaultReferenceName\": \"Boolean_F8AC5285\",\n    \"m_OverrideReferenceName\": \"\",\n    \"m_GeneratePropertyBlock\": true,\n    \"m_Precision\": 0,\n    \"m_GPUInstanced\": false,\n    \"m_Hidden\": false,\n    \"m_Value\": false\n}"
+            "JSONnodeData": "{\n    \"m_Guid\": {\n        \"m_GuidSerialized\": \"304c308d-664f-4e61-b29e-959ea9756ad8\"\n    },\n    \"m_Name\": \"!REF _SIMPLE_OPTION\",\n    \"m_DefaultReferenceName\": \"Boolean_3C474ADF\",\n    \"m_OverrideReferenceName\": \"\",\n    \"m_GeneratePropertyBlock\": true,\n    \"m_Precision\": 0,\n    \"m_GPUInstanced\": false,\n    \"m_Hidden\": false,\n    \"m_Value\": false\n}"
+        },
+        {
+            "typeInfo": {
+                "fullName": "UnityEditor.ShaderGraph.Internal.ColorShaderProperty"
+            },
+            "JSONnodeData": "{\n    \"m_Guid\": {\n        \"m_GuidSerialized\": \"76e5f048-2a03-49e6-9567-d294fdf39e31\"\n    },\n    \"m_Name\": \"-Optional Color [_SIMPLE_OPTION_ON]\",\n    \"m_DefaultReferenceName\": \"Color_640AF357\",\n    \"m_OverrideReferenceName\": \"\",\n    \"m_GeneratePropertyBlock\": true,\n    \"m_Precision\": 0,\n    \"m_GPUInstanced\": false,\n    \"m_Hidden\": false,\n    \"m_Value\": {\n        \"r\": 0.0,\n        \"g\": 0.0,\n        \"b\": 0.0,\n        \"a\": 0.0\n    },\n    \"m_ColorMode\": 0\n}"
+        },
+        {
+            "typeInfo": {
+                "fullName": "UnityEditor.ShaderGraph.Internal.BooleanShaderProperty"
+            },
+            "JSONnodeData": "{\n    \"m_Guid\": {\n        \"m_GuidSerialized\": \"021886e5-cc24-4b29-8d3f-eb0ce08699ba\"\n    },\n    \"m_Name\": \"-!NOTE You can also add notes.\",\n    \"m_DefaultReferenceName\": \"Boolean_F8AC5285\",\n    \"m_OverrideReferenceName\": \"\",\n    \"m_GeneratePropertyBlock\": true,\n    \"m_Precision\": 0,\n    \"m_GPUInstanced\": false,\n    \"m_Hidden\": false,\n    \"m_Value\": false\n}"
         }
     ],
     "m_SerializedKeywords": [
@@ -151,6 +163,12 @@
                 "fullName": "UnityEditor.ShaderGraph.ShaderKeyword"
             },
             "JSONnodeData": "{\n    \"m_Guid\": {\n        \"m_GuidSerialized\": \"f9d0e6f9-bcd9-4304-b7f0-844670c5b7eb\"\n    },\n    \"m_Name\": \"Important Option\",\n    \"m_DefaultReferenceName\": \"ENUM_F6B46097\",\n    \"m_OverrideReferenceName\": \"_SOME_ENUM_KEYWORD\",\n    \"m_GeneratePropertyBlock\": true,\n    \"m_KeywordType\": 1,\n    \"m_KeywordDefinition\": 0,\n    \"m_KeywordScope\": 0,\n    \"m_Entries\": [\n        {\n            \"id\": 1,\n            \"displayName\": \"Colors\",\n            \"referenceName\": \"COLORS\"\n        },\n        {\n            \"id\": 2,\n            \"displayName\": \"Texture\",\n            \"referenceName\": \"TEXTURE\"\n        },\n        {\n            \"id\": 3,\n            \"displayName\": \"Gradient\",\n            \"referenceName\": \"GRADIENT\"\n        }\n    ],\n    \"m_Value\": 0,\n    \"m_IsEditable\": true,\n    \"m_IsExposable\": true\n}"
+        },
+        {
+            "typeInfo": {
+                "fullName": "UnityEditor.ShaderGraph.ShaderKeyword"
+            },
+            "JSONnodeData": "{\n    \"m_Guid\": {\n        \"m_GuidSerialized\": \"70b5cd1e-5bb8-4cea-b45d-5beecb4402f8\"\n    },\n    \"m_Name\": \"Simple Option\",\n    \"m_DefaultReferenceName\": \"BOOLEAN_F452BDC1_ON\",\n    \"m_OverrideReferenceName\": \"_SIMPLE_OPTION_ON\",\n    \"m_GeneratePropertyBlock\": true,\n    \"m_KeywordType\": 0,\n    \"m_KeywordDefinition\": 0,\n    \"m_KeywordScope\": 0,\n    \"m_Entries\": [],\n    \"m_Value\": 0,\n    \"m_IsEditable\": true,\n    \"m_IsExposable\": true\n}"
         }
     ],
     "m_SerializableNodes": [
