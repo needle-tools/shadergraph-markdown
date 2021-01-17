@@ -62,3 +62,27 @@
     border-right-color: rgb(241, 192, 14);
     /*-unity-font-style: italic;*/
 }
+
+.__markdown_indent_1 {
+    margin-left:10px;
+}
+
+.__markdown_indent_2 {
+    margin-left:20px;
+}
+
+.__markdown_indent_3 {
+    margin-left:30px;
+}
+
+.__markdown_indent_4 {
+    margin-left:40px;
+}
+
+.__markdown_indent_5 {
+    margin-left:50px;
+}
+
+.__markdown_indent_6 {
+    margin-left:60px;
+}

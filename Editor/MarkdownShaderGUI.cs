@@ -6,6 +6,7 @@ using UnityEditor;
 using UnityEditor.Rendering;
 using Needle.ShaderGraphMarkdown;
 using UnityEditor.ShaderGraph;
+using UnityEngine.Rendering;
 #if HDRP_7_OR_NEWER
 using UnityEditor.Rendering.HighDefinition;
 #endif
@@ -77,6 +78,17 @@ namespace Needle
             if (display.StartsWith(headerFormatStart))
                 return MarkdownProperty.Header;
             return MarkdownProperty.None;
+        }
+
+        internal static int GetIndentLevel(string display)
+        {
+            int indent = 0;
+            for(int i = 0; i < display.Length; i++) {
+                if (display[i].Equals('-')) indent++;
+                else break;
+            }
+
+            return indent;
         }
 
         private bool showOriginalPropertyList = false, debugConditionalProperties = false;
@@ -246,6 +258,9 @@ namespace Needle
                         }
                     }
 
+                    var currentIndent = EditorGUI.indentLevel;
+                    EditorGUI.indentLevel = currentIndent + GetIndentLevel(display);
+                    display = display.TrimStart('-');
                     switch (GetMarkdownType(display))
                     {
                         case MarkdownProperty.Link:
@@ -321,6 +336,7 @@ namespace Needle
                             previousPropertyWasDrawn = true;
                             break;
                     }
+                    EditorGUI.indentLevel = currentIndent;
                     
                     if(isDisabled)
                         EditorGUI.EndDisabledGroup();

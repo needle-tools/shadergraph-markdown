@@ -90,41 +90,36 @@ namespace Needle.ShaderGraphMarkdown
                     
                     var displayName = fieldView.text;
                     var contentItem = fieldView.Q("contentItem");
+
+                    var indentLevel = MarkdownShaderGUI.GetIndentLevel(displayName);
+                    displayName = displayName.TrimStart('-');
                     var markdownType = MarkdownShaderGUI.GetMarkdownType(displayName);
+                    contentItem.ClearClassList();
+                    if (!fieldView.styleSheets.Contains(styleSheet))
+                        fieldView.styleSheets.Add(styleSheet);
+                    
                     switch (markdownType)
                     {
                         case MarkdownShaderGUI.MarkdownProperty.None:
-                            contentItem.ClearClassList();
 #if UNITY_2020_2_OR_NEWER
                             if (usesDefaultReferenceName && ShaderGraphMarkdownSettings.instance.showDefaultReferenceNameWarning)
-                            {
-                                if (!fieldView.styleSheets.Contains(styleSheet))
-                                    fieldView.styleSheets.Add(styleSheet);
-                                
                                 contentItem.AddToClassList("__markdown_DefaultReferenceWarning");
-                            }
                             else if (!usesRecommendedReferenceName && ShaderGraphMarkdownSettings.instance.showNamingRecommendationHint)
-                            {
-                                if (!fieldView.styleSheets.Contains(styleSheet))
-                                    fieldView.styleSheets.Add(styleSheet);
-                                
                                 contentItem.AddToClassList("__markdown_NonRecommendedReferenceHint");
-                            }
 #endif
                             break;
                         default:
-                            if (!fieldView.styleSheets.Contains(styleSheet))
-                                fieldView.styleSheets.Add(styleSheet);
+                            contentItem.AddToClassList("__markdown_" + markdownType);
                     
                             if (!fieldView.ClassListContains("__markdown"))
                                 fieldView.AddToClassList("__markdown");
                             
-                            contentItem.ClearClassList();
-                            contentItem.AddToClassList("__markdown_" + markdownType);
-                            
                             fieldView.typeText = markdownType.ToString();
                             break;
                     }
+                    
+                    if(indentLevel > 0)
+                        contentItem.AddToClassList("__markdown_indent_" + indentLevel);
                 }
             }
         }
