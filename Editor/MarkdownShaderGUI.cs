@@ -81,7 +81,7 @@ namespace Needle
 
         private bool showOriginalPropertyList = false, debugConditionalProperties = false;
 
-        private static MaterialProperty FindProperty(string keywordRef, MaterialProperty[] properties)
+        private new static MaterialProperty FindProperty(string keywordRef, MaterialProperty[] properties)
         {
             var keywordProp = ShaderGUI.FindProperty(keywordRef, properties, false);
             
@@ -218,7 +218,19 @@ namespace Needle
                         var condition = GetBetween(display, '[', ']', true);
                         if (!string.IsNullOrEmpty(condition))
                         {
-                            if (Array.IndexOf(targetMat.shaderKeywords, condition) < 0)
+                            var keywordIsSet = Array.IndexOf(targetMat.shaderKeywords, condition) >= 0;
+                            var boolIsSet = false;
+                            
+                            // support for using bool/float values as conditionals
+                            if(!keywordIsSet && targetMat.shader.FindPropertyIndex(condition) > -1) {
+                                var propertyIndex = targetMat.shader.FindPropertyIndex(condition);
+                                var propertyType = targetMat.shader.GetPropertyType(propertyIndex);
+                                if(propertyType == ShaderPropertyType.Float && targetMat.GetFloat(condition) > 0.5f)
+                                    boolIsSet = true;
+                            }
+                            
+                            var conditionIsFulfilled = keywordIsSet || boolIsSet;
+                            if (!conditionIsFulfilled)
                             {
                                 if(!debugConditionalProperties) {
                                     previousPropertyWasDrawn = false;
