@@ -80,6 +80,18 @@ namespace Needle
         }
 
         private bool showOriginalPropertyList = false, debugConditionalProperties = false;
+
+        private static MaterialProperty FindProperty(string keywordRef, MaterialProperty[] properties)
+        {
+            var keywordProp = ShaderGUI.FindProperty(keywordRef, properties, false);
+            
+            // special case: bool properties have to be named MY_PROP_ON in ShaderGraph to be exposed,
+            // but the actual property is named "MY_PROP" and the keyword is still "MY_PROP_ON".
+            if (keywordProp == null && keywordRef.EndsWith("_ON", StringComparison.Ordinal))
+                keywordProp = ShaderGUI.FindProperty(keywordRef.Substring(0, keywordRef.Length - "_ON".Length), properties, false);
+            
+            return keywordProp;
+        }
         
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
@@ -115,13 +127,9 @@ namespace Needle
                         var split = display.Split(' ');
                         if(split.Length > 1) {
                             var keywordRef = split[1];
-                            try {
-                                var keywordProp = FindProperty(keywordRef, properties);
+                            var keywordProp = FindProperty(keywordRef, properties);
+                            if(keywordProp != null)
                                 referencedProperties.Add(keywordProp);
-                            }
-                            catch (ArgumentException) {
-                                // EditorGUILayout.HelpBox(e.Message, MessageType.Error);
-                            }
                         }
                     }
 
@@ -275,15 +283,11 @@ namespace Needle
                             var split = display.Split(' ');
                             if(split.Length > 1) {
                                 var keywordRef = display.Split(' ')[1];
-                                try
-                                {
-                                    var keywordProp = FindProperty(keywordRef, properties);
+                                var keywordProp = FindProperty(keywordRef, properties);
+                                if(keywordProp == null)
+                                    EditorGUILayout.HelpBox("Could not find MaterialProperty: '" + keywordRef, MessageType.Error);
+                                else
                                     materialEditor.ShaderProperty(keywordProp, keywordProp.displayName);
-                                }
-                                catch (ArgumentException e)
-                                {
-                                    EditorGUILayout.HelpBox(e.Message, MessageType.Error);
-                                }
                             }
                             previousPropertyWasDrawn = true;
                             break;
