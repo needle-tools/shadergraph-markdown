@@ -21,7 +21,7 @@ namespace Needle.ShaderGraphMarkdown
         [HideInInspector] [SerializeField] private List<Map> mappedGradientStore = new List<Map>();
         private Dictionary<Material, Gradient> mappedGradients;
 
-        public override void OnDrawerGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
+        public override void OnDrawerGUI(MaterialEditor materialEditor, MaterialProperty[] properties, DrawerParameters parameters)
         {
             var targetMat = materialEditor.target as Material;
             if (!targetMat) return;
@@ -34,13 +34,13 @@ namespace Needle.ShaderGraphMarkdown
 
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.GradientField("Ramp", mappedGradients[targetMat]);
-            if (GUILayout.Button("Apply")) ApplyRampTexture(targetMat);
+            if (GUILayout.Button("Apply")) ApplyRampTexture(targetMat, parameters.Get(0, texturePropertyName));
             EditorGUILayout.EndHorizontal();
         }
 
-        private void ApplyRampTexture(Material targetMat)
+        private void ApplyRampTexture(Material targetMat, string propertyName)
         {
-            targetMat.SetTexture(texturePropertyName, CreateGradientTexture(targetMat, mappedGradients[targetMat]));
+            targetMat.SetTexture(propertyName, CreateGradientTexture(targetMat, mappedGradients[targetMat]));
         }
 
         private static int width = 256;

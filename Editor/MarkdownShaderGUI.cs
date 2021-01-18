@@ -38,7 +38,7 @@ namespace Needle
             }
         }
         
-        private readonly Dictionary<string, MarkdownMaterialPropertyDrawer> drawerCache = new Dictionary<string, MarkdownMaterialPropertyDrawer>();
+        private static readonly Dictionary<string, MarkdownMaterialPropertyDrawer> drawerCache = new Dictionary<string, MarkdownMaterialPropertyDrawer>();
         private readonly List<MaterialProperty> referencedProperties = new List<MaterialProperty>();
 
         internal enum MarkdownProperty
@@ -59,12 +59,9 @@ namespace Needle
         private static string foldoutHeaderFormat = "#";
         private static string foldoutHeaderFormatStart = foldoutHeaderFormat + " ";
         private static string headerFormatStart = "##" + " ";
-        
-        internal static MarkdownProperty GetMarkdownType(string display)
-        {
-            // markdown blockquote: >
-            // markdown footnote: [^MyNote] Hello I'm a footnote
 
+        private static MarkdownProperty GetMarkdownTypeUncached(string display)
+        {
             if (display.StartsWith(refFormat))
                 return MarkdownProperty.Reference;
             if (display.StartsWith("[") && display.IndexOf("]", StringComparison.Ordinal) > -1 && display.IndexOf("(", StringComparison.Ordinal) > -1 && display.EndsWith(")"))
@@ -78,6 +75,19 @@ namespace Needle
             if (display.StartsWith(headerFormatStart))
                 return MarkdownProperty.Header;
             return MarkdownProperty.None;
+        }
+        
+        private static Dictionary<string, MarkdownProperty> propertyTypeCache = new Dictionary<string, MarkdownProperty>();
+        internal static MarkdownProperty GetMarkdownType(string display)
+        {
+            if (propertyTypeCache.ContainsKey(display)) return propertyTypeCache[display];
+            
+            // markdown blockquote: >
+            // markdown footnote: [^MyNote] Hello I'm a footnote
+
+            var type = GetMarkdownTypeUncached(display);
+            propertyTypeCache.Add(display, type);
+            return type;
         }
 
         internal static int GetIndentLevel(string display)
@@ -104,53 +114,115 @@ namespace Needle
             
             return keywordProp;
         }
+
+        private static MarkdownMaterialPropertyDrawer GetCachedDrawer(string objectName)
+        {
+            if(!drawerCache.ContainsKey(objectName)) {
+                var objectPath = AssetDatabase.FindAssets($"t:{nameof(MarkdownMaterialPropertyDrawer)} {objectName}").Select(AssetDatabase.GUIDToAssetPath).FirstOrDefault();
+                var scriptableObject = AssetDatabase.LoadAssetAtPath<MarkdownMaterialPropertyDrawer>(objectPath);
+                if (scriptableObject == null) {
+                    // create a drawer instance in memory
+                    var drawerType = TypeCache
+                        .GetTypesDerivedFrom<MarkdownMaterialPropertyDrawer>()
+                        .FirstOrDefault(x => x.Name.Equals(objectName, StringComparison.Ordinal));
+                    scriptableObject = (MarkdownMaterialPropertyDrawer) ScriptableObject.CreateInstance(drawerType);
+                }
+                drawerCache.Add(objectName, scriptableObject);
+            }
+
+            return drawerCache[objectName];
+        }
+
+        public override void OnClosed(Material material)
+        {
+            headerGroups = null;
+            lastHash = -1;
+            base.OnClosed(material);
+        }
         
+        private int lastHash;
+        private List<HeaderGroup> headerGroups = null;
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
             var targetMat = materialEditor.target as Material;
             if (!targetMat) return;
             
-            // referencedProperties.Clear();
+            int GetHashCode()
+            {
+                var hashCode = targetMat.name.GetHashCode();
+                hashCode = (hashCode * 397) ^ (targetMat.shader ? targetMat.shader.name.GetHashCode() : 0);
+                foreach(var prop in properties)
+                {
+                    hashCode = (hashCode * 397) ^ prop.name.GetHashCode();
+                    hashCode = (hashCode * 397) ^ prop.displayName.GetHashCode();
+                }
+                return hashCode;
+            }
+
+            int currentHash = GetHashCode();
+            if (lastHash != currentHash) {
+                lastHash = currentHash;
+                headerGroups = null;
+            }
             
             // split by header properties
-            var headerGroups = new List<HeaderGroup>();
-            headerGroups.Add(new HeaderGroup() { name = "Default" });
-            
-            foreach (var prop in properties)
+            if(headerGroups == null)
             {
-                if(prop.displayName.StartsWith(foldoutHeaderFormatStart) || prop.displayName.Equals(foldoutHeaderFormat, StringComparison.Ordinal))
+                headerGroups = new List<HeaderGroup>();
+                headerGroups.Add(new HeaderGroup() { name = "Default" });
+                
+                foreach (var prop in properties)
                 {
-                    if (prop.displayName.Equals(foldoutHeaderFormat, StringComparison.Ordinal)  || 
-                        (prop.displayName.StartsWith(foldoutHeaderFormatStart + "(", StringComparison.Ordinal) && prop.displayName.EndsWith(")", StringComparison.Ordinal))) // for multiple ## (1) foldout breakers)
-                        headerGroups.Add(new HeaderGroup() { name = null });
-                    else
-                        headerGroups.Add(new HeaderGroup() { name = prop.displayName.Substring(prop.displayName.IndexOf(' ') + 1) });
-                }
-                else
-                {
-                    var last = headerGroups.Last();
-                    if (last.properties == null) 
-                        last.properties = new List<MaterialProperty>();
-                    
-                    // need to process REF properties early so we can hide them properly if needed
-                    var display = prop.displayName;
-                    if (display.StartsWith(refFormat))
+                    if(prop.displayName.StartsWith(foldoutHeaderFormatStart) || prop.displayName.Equals(foldoutHeaderFormat, StringComparison.Ordinal))
                     {
-                        var split = display.Split(' ');
-                        if(split.Length > 1) {
-                            var keywordRef = split[1];
-                            var keywordProp = FindProperty(keywordRef, properties);
-                            if(keywordProp != null)
-                                referencedProperties.Add(keywordProp);
-                        }
+                        if (prop.displayName.Equals(foldoutHeaderFormat, StringComparison.Ordinal)  || 
+                            (prop.displayName.StartsWith(foldoutHeaderFormatStart + "(", StringComparison.Ordinal) && prop.displayName.EndsWith(")", StringComparison.Ordinal))) // for multiple ## (1) foldout breakers)
+                            headerGroups.Add(new HeaderGroup() { name = null });
+                        else
+                            headerGroups.Add(new HeaderGroup() { name = prop.displayName.Substring(prop.displayName.IndexOf(' ') + 1) });
                     }
+                    else
+                    {
+                        var last = headerGroups.Last();
+                        if (last.properties == null) 
+                            last.properties = new List<MaterialProperty>();
+                        
+                        // need to process REF/DRAWER properties early so we can hide them properly if needed
+                        var display = prop.displayName.TrimStart('-');
+                        
+                        if (display.StartsWith(refFormat))
+                        {
+                            var split = display.Split(' ');
+                            if(split.Length > 1) {
+                                var keywordRef = split[1];
+                                var keywordProp = FindProperty(keywordRef, properties);
+                                if(keywordProp != null)
+                                    referencedProperties.Add(keywordProp);
+                            }
+                        }
 
-                    last.properties.Add(prop);
+                        if (display.StartsWith(drawerFormat))
+                        {
+                            var split = display.Split(' ');
+                            if (split.Length > 1)
+                            {
+                                var objectName = split[1];
+                                var drawer = GetCachedDrawer(objectName);
+                                if (drawer != null)
+                                {
+                                    var referencedProps = drawer.GetReferencedProperties(materialEditor, properties, new MarkdownMaterialPropertyDrawer.DrawerParameters(split));
+                                    if(referencedProps != null)
+                                        referencedProperties.AddRange(referencedProps);
+                                }
+                            }
+                        }
+
+                        last.properties.Add(prop);
+                    }
                 }
+                headerGroups.Add(new HeaderGroup() { name = null, properties = null, customDrawer = DrawCustomGUI });
+                headerGroups.Add(new HeaderGroup() { name = "Debug", properties = null, customDrawer = DrawDebugGroupContent });
             }
-            headerGroups.Add(new HeaderGroup() { name = null, properties = null, customDrawer = DrawCustomGUI });
-            headerGroups.Add(new HeaderGroup() { name = "Debug", properties = null, customDrawer = DrawDebugGroupContent });
-
             string GetBetween(string str, char start, char end, bool last = false)
             {
                 var i0 = last ? str.LastIndexOf(start) : str.IndexOf(start);
@@ -232,16 +304,21 @@ namespace Needle
                         {
                             var keywordIsSet = Array.IndexOf(targetMat.shaderKeywords, condition) >= 0;
                             var boolIsSet = false;
+                            var textureIsSet = false;
                             
-                            // support for using bool/float values as conditionals
+                            // support for using bool/float/texture values as conditionals
                             if(!keywordIsSet && targetMat.shader.FindPropertyIndex(condition) > -1) {
                                 var propertyIndex = targetMat.shader.FindPropertyIndex(condition);
                                 var propertyType = targetMat.shader.GetPropertyType(propertyIndex);
+                                
                                 if(propertyType == ShaderPropertyType.Float && targetMat.GetFloat(condition) > 0.5f)
                                     boolIsSet = true;
+
+                                if (propertyType == ShaderPropertyType.Texture && targetMat.GetTexture(condition))
+                                    textureIsSet = true;
                             }
                             
-                            var conditionIsFulfilled = keywordIsSet || boolIsSet;
+                            var conditionIsFulfilled = keywordIsSet || boolIsSet || textureIsSet;
                             if (!conditionIsFulfilled)
                             {
                                 if(!debugConditionalProperties) {
@@ -279,14 +356,10 @@ namespace Needle
                             var parts = display.Split(' ');
                             if(parts.Length > 1) {
                                 var objectName = parts[1];
-                                if(!drawerCache.ContainsKey(objectName)) {
-                                    var objectPath = AssetDatabase.FindAssets($"t:{nameof(MarkdownMaterialPropertyDrawer)} {objectName}").Select(AssetDatabase.GUIDToAssetPath).FirstOrDefault();
-                                    var scriptableObject = AssetDatabase.LoadAssetAtPath<MarkdownMaterialPropertyDrawer>(objectPath);
-                                    drawerCache.Add(objectName, scriptableObject);
-                                }
-                                if(drawerCache[objectName]) {
+                                var drawer = GetCachedDrawer(objectName);
+                                if(drawer) {
                                     try {
-                                        drawerCache[objectName].OnDrawerGUI(materialEditor, properties);
+                                        drawer.OnDrawerGUI(materialEditor, properties, new MarkdownMaterialPropertyDrawer.DrawerParameters(parts));
                                     }
                                     catch (Exception e) {
                                         EditorGUILayout.HelpBox("Error in Custom Drawer \"" + objectName + "\": " + e, MessageType.Error);
@@ -309,8 +382,10 @@ namespace Needle
                         case MarkdownProperty.Reference:
                             var split = display.Split(' ');
                             if(split.Length > 1) {
-                                var keywordRef = display.Split(' ')[1];
+                                var keywordRef = split[1];
                                 var keywordProp = FindProperty(keywordRef, properties);
+                                // special case: this is a texture prop. 2nd argument could be a color or float, and we want to draw it inline
+                                // if it's a texture prop without 2nd arg, we still draw the "small texture" version
                                 if(keywordProp == null)
                                     EditorGUILayout.HelpBox("Could not find MaterialProperty: '" + keywordRef, MessageType.Error);
                                 else
