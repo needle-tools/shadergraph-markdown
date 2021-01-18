@@ -29,11 +29,35 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - Texture2D_964f4631ba7d497e94d8eb10e57ef114:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - Texture2D_d19dfc5915e54b24b14c63ef943d568a:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _BGTexture:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DoubleTex1:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _DoubleTex2:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MyOtherTexture:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _MyTexture:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _YetAnotherTexture:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
@@ -51,11 +75,24 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Floats:
     - Boolean_1: 0
+    - Boolean_10: 0
+    - Boolean_11: 0
+    - Boolean_12: 0
+    - Boolean_13: 0
+    - Boolean_14: 0
+    - Boolean_15: 0
     - Boolean_154f08e800204de482d649fbea24cb0a: 0
     - Boolean_2: 0
     - Boolean_3: 0
+    - Boolean_4: 0
+    - Boolean_5: 0
     - Boolean_5b03dc86eb2e496b9dd760faf6162b83: 0
+    - Boolean_6: 0
+    - Boolean_7: 0
+    - Boolean_7b21c9d2e42442c483220dbca68f1801: 0
     - Boolean_7d219f41571b4f2bb6122a5d13c66ae6: 0
+    - Boolean_8: 0
+    - Boolean_9: 0
     - Boolean_b33b62171e084c9f9c7664243b215c75: 0
     - Boolean_b33b62171e084c9f9c7664243b215c75_1: 0
     - Boolean_b33b62171e084c9f9c7664243b215c75_2: 0
@@ -70,6 +107,7 @@ Material:
     - Vector1_1: 4.41
     - Vector1_42a77b66dd9d4363a8336eb7f432188e: 0.75
     - _AddPrecomputedVelocity: 0
+    - _AdditionalValue: 0.5
     - _AlphaCutoffEnable: 0
     - _AlphaDstBlend: 0
     - _AlphaSrcBlend: 1
@@ -84,6 +122,9 @@ Material:
     - _DstBlend: 0
     - _EnableBlendModePreserveSpecularLighting: 1
     - _EnableFogOnTransparent: 1
+    - _MinMaxVal1: 0.1512098
+    - _MinMaxVal2: 0.3616109
+    - _MyTextureScale: 0.724
     - _NonKeywordOption: 1
     - _OpaqueCullMode: 2
     - _RayTracing: 0
@@ -133,10 +174,15 @@ Material:
     - _DayColor: {r: 0, g: 0, b: 0, a: 0}
     - _DoubleSidedConstants: {r: 1, g: 1, b: -1, a: 0}
     - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
+    - _MinMaxVector: {r: 0.3577745, g: 0.5443567, b: 0.27276194, a: 0.6536797}
+    - _MyTextureColor: {r: 0.8584906, g: 0.05264329, b: 0.05264329, a: 0}
     - _OptionalColor: {r: 0, g: 0, b: 0, a: 0}
     - _SomeColor: {r: 0, g: 0, b: 0, a: 0}
     - _SomeVector: {r: 0, g: 0, b: 0, a: 0}
+    - _VectorSliders: {r: 0.09, g: 0.522, b: 0.553, a: 0.644}
+    - _VectorSliders2: {r: 0.487, g: 0.703, b: 0.457, a: 0}
     - _YetAnotherColor: {r: 0, g: 0, b: 0, a: 0}
+    - _YetAnotherTextureScale: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
 --- !u!114 &7321153603198779248
 MonoBehaviour:
