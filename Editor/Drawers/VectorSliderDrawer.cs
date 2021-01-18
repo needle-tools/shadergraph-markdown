@@ -6,8 +6,10 @@ using UnityEngine;
 
 namespace Needle.ShaderGraphMarkdown
 {
-    public class VectorSlidersDrawer : MarkdownMaterialPropertyDrawer
+    public class VectorSliderDrawer : MarkdownMaterialPropertyDrawer
     {
+        public float minValue = 0, maxValue = 1;
+        
         static string[] defaultParts = new[] {"X", "Y", "Z", "W"};
         
         public override void OnDrawerGUI(MaterialEditor materialEditor, MaterialProperty[] properties, DrawerParameters parameters)
@@ -42,7 +44,7 @@ namespace Needle.ShaderGraphMarkdown
             var value = vectorProperty.vectorValue;
             for (int i = 0; i < Mathf.Min(parts.Length, 4); i++)
             {
-                value[i] = EditorGUILayout.Slider(parts[i], value[i], 0, 1);
+                value[i] = EditorGUILayout.Slider(parts[i], value[i], minValue, maxValue);
             }
 
             if (EditorGUI.EndChangeCheck())

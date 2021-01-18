@@ -101,7 +101,7 @@ namespace Needle
             return indent;
         }
 
-        private bool showOriginalPropertyList = false, debugConditionalProperties = false;
+        private bool showOriginalPropertyList = false, debugConditionalProperties = false, debugReferencedProperties = false;
 
         private new static MaterialProperty FindProperty(string keywordRef, MaterialProperty[] properties)
         {
@@ -126,8 +126,19 @@ namespace Needle
                         .GetTypesDerivedFrom<MarkdownMaterialPropertyDrawer>()
                         .FirstOrDefault(x => x.Name.Equals(objectName, StringComparison.Ordinal));
                     scriptableObject = (MarkdownMaterialPropertyDrawer) ScriptableObject.CreateInstance(drawerType);
+
+                    if (scriptableObject == null && !objectName.EndsWith("Drawer", StringComparison.Ordinal))
+                    {
+                        var longName = objectName + "Drawer";
+                        if (drawerCache.ContainsKey(longName))
+                            scriptableObject = drawerCache[longName];
+                        else
+                            scriptableObject = GetCachedDrawer(longName);
+                    }
                 }
-                drawerCache.Add(objectName, scriptableObject);
+                
+                if (drawerCache.ContainsKey(objectName)) drawerCache[objectName] = scriptableObject;
+                else drawerCache.Add(objectName, scriptableObject);
             }
 
             return drawerCache[objectName];
@@ -238,9 +249,15 @@ namespace Needle
                 if (EditorGUI.EndChangeCheck())
                     InitializeCustomGUI(targetMat);    
                 debugConditionalProperties = EditorGUILayout.Toggle("Debug Conditional Properties", debugConditionalProperties);
+                debugReferencedProperties = EditorGUILayout.Toggle("Debug Referenced Properties", debugReferencedProperties);
                 
                 EditorGUILayout.Space();
-                
+                if (GUILayout.Button("Clear Inspector Cache")) {
+                    drawerCache.Clear();
+                    headerGroups = null;
+                }                
+                EditorGUILayout.Space();
+
                 EditorGUILayout.LabelField("Shader Keywords", EditorStyles.boldLabel);
                 foreach (var kw in targetMat.shaderKeywords)
                 {
@@ -397,6 +414,12 @@ namespace Needle
                         default:
                             if(referencedProperties.Contains(prop))
                             {
+                                if (debugReferencedProperties)
+                                {
+                                    EditorGUI.BeginDisabledGroup(true);
+                                    materialEditor.ShaderProperty(prop, display);
+                                    EditorGUI.EndDisabledGroup();
+                                }
                                 previousPropertyWasDrawn = false;
                                 break;
                             }
