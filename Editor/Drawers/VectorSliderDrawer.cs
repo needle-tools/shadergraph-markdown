@@ -15,48 +15,87 @@ namespace Needle.ShaderGraphMarkdown
         public override void OnDrawerGUI(MaterialEditor materialEditor, MaterialProperty[] properties, DrawerParameters parameters)
         {
             if (parameters.Count < 1)
-                throw new System.ArgumentException("No parameters to " + nameof(InlineTextureDrawer) + ". Please provide _TextureProperty and optional _Float or _Color property names.");
+                throw new System.ArgumentException("No parameters to " + nameof(InlineTextureDrawer) + ". Please provide a vector property name or one or more float property names.");
             var vectorProperty = parameters.Get(0, properties);
             if (vectorProperty == null)
                 throw new System.ArgumentNullException("No property named " + parameters.Get(0, ""));
 
-            if (vectorProperty.type != MaterialProperty.PropType.Vector)
-                throw new System.ArgumentException("Property " + vectorProperty + " isn't a vector property, can't draw sliders for it.");
-
-            var display = vectorProperty.displayName;
-            var firstParen = display.IndexOf('(');
-            var lastParen = vectorProperty.displayName.LastIndexOf(')');
-            string[] parts = null;
-            if (firstParen >= 0 && lastParen >= 0 && lastParen > firstParen)
+            switch (vectorProperty.type)
             {
-                var betweenParens = display.Substring(firstParen + 1, lastParen - firstParen - 1);
-                parts = betweenParens.Split(',', ';');
-                display = display.Substring(0, firstParen).TrimEnd();
-            }
-            else
-            {
-                parts = defaultParts;
-            }
+                case MaterialProperty.PropType.Vector:
+                    var display = vectorProperty.displayName;
+                    var firstParen = display.IndexOf('(');
+                    var lastParen = vectorProperty.displayName.LastIndexOf(')');
+                    string[] parts = null;
+                    if (firstParen >= 0 && lastParen >= 0 && lastParen > firstParen)
+                    {
+                        var betweenParens = display.Substring(firstParen + 1, lastParen - firstParen - 1);
+                        parts = betweenParens.Split(',', ';');
+                        display = display.Substring(0, firstParen).TrimEnd();
+                    }
+                    else
+                    {
+                        parts = defaultParts;
+                    }
             
-            EditorGUILayout.LabelField(display);
-            EditorGUI.indentLevel++;
-            EditorGUI.BeginChangeCheck();
-            var value = vectorProperty.vectorValue;
-            for (int i = 0; i < Mathf.Min(parts.Length, 4); i++)
-            {
-                value[i] = EditorGUILayout.Slider(parts[i], value[i], minValue, maxValue);
-            }
+                    EditorGUILayout.LabelField(display);
+                    EditorGUI.indentLevel++;
+                    EditorGUI.BeginChangeCheck();
+                    var value = vectorProperty.vectorValue;
+                    for (int i = 0; i < Mathf.Min(parts.Length, 4); i++)
+                    {
+                        value[i] = EditorGUILayout.Slider(parts[i], value[i], minValue, maxValue);
+                    }
 
-            if (EditorGUI.EndChangeCheck())
-                vectorProperty.vectorValue = value;
-            EditorGUI.indentLevel--;
+                    if (EditorGUI.EndChangeCheck())
+                        vectorProperty.vectorValue = value;
+                    EditorGUI.indentLevel--;
+                    break;
+                case MaterialProperty.PropType.Float:
+                case MaterialProperty.PropType.Range:
+                    EditorGUILayout.LabelField("Group");
+                    EditorGUI.indentLevel++;
+                    for (int i = 0; i < parameters.Count; i++)
+                    {
+                        var param = parameters.Get(i, properties);
+                        if (param == null) {
+                            EditorGUILayout.HelpBox("Parameter " + parameters.Get(i, (string)null) + " does not exist.", MessageType.Error);
+                            continue;
+                        }
+                        materialEditor.ShaderProperty(param, param.displayName);
+                    }
+                    EditorGUI.indentLevel--;
+                    break;
+                default:
+                    throw new System.ArgumentException("Property " + vectorProperty + " isn't a vector or float property, can't draw sliders for it.");
+            }   
+
+            
         }
 
         public override IEnumerable<MaterialProperty> GetReferencedProperties(MaterialEditor materialEditor, MaterialProperty[] properties, DrawerParameters parameters)
         {
             var vectorProperty = parameters.Get(0, properties);
             if (vectorProperty == null) return null;
-            return new[] { vectorProperty };
+
+            switch (vectorProperty.type)
+            {
+                case MaterialProperty.PropType.Vector:
+                    return new[] { vectorProperty };
+                case MaterialProperty.PropType.Float:
+                case MaterialProperty.PropType.Range:
+                    var parameterList = new List<MaterialProperty>();
+                    for (int i = 0; i < parameters.Count; i++)
+                    {
+                        var param = parameters.Get(i, properties);
+                        if (param != null)
+                            parameterList.Add(param);
+                    }
+
+                    return parameterList;
+                default:
+                    return null;
+            }
         }
     }
 }
