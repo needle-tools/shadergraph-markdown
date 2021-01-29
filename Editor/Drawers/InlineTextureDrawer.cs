@@ -18,12 +18,17 @@ namespace Needle.ShaderGraphMarkdown
             var extraProperty = parameters.Get(1, properties);
             // var extraProperty2 = parameters.Get(2, properties);
             
+            OnDrawerGUI(materialEditor, textureProperty, textureProperty.displayName, extraProperty);
+        }
+
+        public void OnDrawerGUI(MaterialEditor materialEditor, MaterialProperty textureProperty, string displayName, MaterialProperty extraProperty)
+        {
             if(extraProperty == null)
-                materialEditor.TexturePropertySingleLine(new GUIContent(textureProperty.displayName), textureProperty);
+                materialEditor.TexturePropertySingleLine(new GUIContent(displayName), textureProperty);
             // else if (extraProperty2 != null)
             //     materialEditor.TexturePropertyTwoLines(new GUIContent(textureProperty.displayName), textureProperty, extraProperty, new GUIContent(extraProperty2.displayName), extraProperty2);
             else
-                materialEditor.TexturePropertySingleLine(new GUIContent(textureProperty.displayName), textureProperty, extraProperty);
+                materialEditor.TexturePropertySingleLine(new GUIContent(displayName), textureProperty, extraProperty);
             
             // workaround for Unity being weird
             if(extraProperty != null && extraProperty.type == MaterialProperty.PropType.Texture) {

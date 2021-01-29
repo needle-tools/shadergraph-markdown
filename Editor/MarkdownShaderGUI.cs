@@ -5,6 +5,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.Rendering;
 using Needle.ShaderGraphMarkdown;
+using UnityEditor.Experimental.GraphView;
 using UnityEditor.ShaderGraph;
 using UnityEngine.Rendering;
 #if HDRP_7_OR_NEWER
@@ -310,8 +311,9 @@ namespace Needle
             {
                 bool previousPropertyWasDrawn = true;
                 
-                foreach (var prop in group.properties)
+                for(int i = 0; i < group.properties.Count; i++)
                 {
+                    var prop = group.properties[i];
                     var display = prop.displayName;
                     var isDisabled = false;
                     var hasCondition = !display.StartsWith("[", StringComparison.Ordinal) && display.Contains('[') && display.EndsWith("]", StringComparison.Ordinal);
@@ -430,7 +432,38 @@ namespace Needle
                             if(prop.flags.HasFlag(MaterialProperty.PropFlags.PerRendererData))
                                 break;
 
-                            materialEditor.ShaderProperty(prop, display);
+                            // drawer shorthands
+                            if (display.EndsWith("&", StringComparison.Ordinal))
+                            {
+                                var trimmedDisplay = display.Trim(' ', '&');
+                                if(prop.type == MaterialProperty.PropType.Texture)
+                                {
+                                    // special drawer for inline textures: InlineTextureDrawer
+                                    var drawer = (InlineTextureDrawer) GetCachedDrawer(nameof(InlineTextureDrawer));
+                                    if (drawer)
+                                    {
+                                        MaterialProperty extraProperty = (i + 1 < group.properties.Count) ? group.properties[i + 1] : null;
+                                        if (extraProperty != null && !referencedProperties.Contains(extraProperty))
+                                        {
+                                            // add this to the referenced list so we don't draw it twice
+                                            referencedProperties.Add(extraProperty);
+                                        }
+                                        drawer.OnDrawerGUI(materialEditor, prop, trimmedDisplay, extraProperty);
+                                    }
+                                }
+                                else if (prop.type == MaterialProperty.PropType.Vector)
+                                {
+                                    var drawer = (VectorSliderDrawer) GetCachedDrawer(nameof(VectorSliderDrawer));
+                                    if (drawer)
+                                    {
+                                        drawer.OnDrawerGUI(materialEditor, prop, trimmedDisplay);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                materialEditor.ShaderProperty(prop, display);
+                            }
                             previousPropertyWasDrawn = true;
                             break;
                     }

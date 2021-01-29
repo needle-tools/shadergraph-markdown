@@ -63,11 +63,14 @@ namespace Needle.ShaderGraphMarkdown
                     styleSheet = Resources.Load<StyleSheet>("Styles/ShaderGraphMarkdown");
                 
                 var blackboardElements = blackboard.Query<BlackboardField>().Visible().ToList();
+                bool nextFieldShouldBeIndented = false;
                 foreach(var fieldView in blackboardElements)
                 {
 #if UNITY_2020_2_OR_NEWER
                     bool usesDefaultReferenceName = false;
                     bool usesRecommendedReferenceName = true;
+                    bool usesInlineTextureDrawerShorthand = false;
+                    bool isTextureProperty = false;
                     
                     // get shaderInput for this field
                     var element = (VisualElement) fieldView;
@@ -79,11 +82,22 @@ namespace Needle.ShaderGraphMarkdown
                         if (shaderInputs.ContainsKey(blackboardRow))
                         {
                             var shaderInput = shaderInputs[blackboardRow];
+                            
                             if (shaderInput.referenceName.Equals(shaderInput.GetDefaultReferenceName(), StringComparison.Ordinal))
                                 usesDefaultReferenceName = true;
 
                             if (!shaderInput.referenceName.StartsWith("_"))
                                 usesRecommendedReferenceName = false;
+
+                            if ((shaderInput is AbstractShaderProperty abstractShaderProperty && 
+                                 (abstractShaderProperty.propertyType == PropertyType.Texture2D || 
+                                  abstractShaderProperty.propertyType == PropertyType.Texture3D || 
+                                  abstractShaderProperty.propertyType == PropertyType.Texture2DArray || 
+                                  abstractShaderProperty.propertyType == PropertyType.VirtualTexture)))
+                                isTextureProperty = true;
+                            
+                            if (shaderInput.displayName.EndsWith("&", StringComparison.Ordinal))
+                                usesInlineTextureDrawerShorthand = true;
                         }
                     }
 #endif
@@ -92,6 +106,10 @@ namespace Needle.ShaderGraphMarkdown
                     var contentItem = fieldView.Q("contentItem");
 
                     var indentLevel = MarkdownShaderGUI.GetIndentLevel(displayName);
+                    if (nextFieldShouldBeIndented) {
+                        indentLevel++;
+                        nextFieldShouldBeIndented = false;
+                    }
                     displayName = displayName.TrimStart('-');
                     var markdownType = MarkdownShaderGUI.GetMarkdownType(displayName);
                     contentItem.ClearClassList();
@@ -106,6 +124,9 @@ namespace Needle.ShaderGraphMarkdown
                                 contentItem.AddToClassList("__markdown_DefaultReferenceWarning");
                             else if (!usesRecommendedReferenceName && ShaderGraphMarkdownSettings.instance.showNamingRecommendationHint)
                                 contentItem.AddToClassList("__markdown_NonRecommendedReferenceHint");
+                            
+                            if (isTextureProperty && usesInlineTextureDrawerShorthand)
+                                nextFieldShouldBeIndented = true;
 #endif
                             break;
                         default:
