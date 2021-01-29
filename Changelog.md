@@ -2,6 +2,10 @@
 All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.4.5-exp] - 2021-01-30
+- added shorthand for InlineTexture and VectorSliders - append & to property name
+- fixes and better error display for incorrect drawer usage
+
 ## [0.4.4-exp] - 2021-01-18
 - added auto-generation of drawer ScriptableObjects from their type name if no ScriptableObject with that name is found
 - added ability for drawers to specify which properties are used by them / should be hidden
