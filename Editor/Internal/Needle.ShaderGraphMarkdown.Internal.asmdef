@@ -1,5 +1,6 @@
 {
     "name": "Needle.ShaderGraphMarkdown.Internal",
+    "rootNamespace": "",
     "references": [],
     "includePlatforms": [
         "Editor"
@@ -22,7 +23,7 @@
             "define": "HDRP_7_OR_NEWER"
         },
         {
-            "name": "com.unity.render-pipelines.core",
+            "name": "com.unity.modules.ui",
             "expression": "0.0.0",
             "define": "NO_INTERNALS_ACCESS"
         }

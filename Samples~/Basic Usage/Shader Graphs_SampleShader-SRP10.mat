@@ -113,6 +113,7 @@ Material:
     - _AlphaSrcBlend: 1
     - _AlphaToMask: 0
     - _AlphaToMaskInspectorValue: 0
+    - _Amplitude: 0.5
     - _BlendMode: 0
     - _CullMode: 2
     - _CullModeForward: 2
@@ -122,11 +123,13 @@ Material:
     - _DstBlend: 0
     - _EnableBlendModePreserveSpecularLighting: 1
     - _EnableFogOnTransparent: 1
-    - _MinMaxVal1: 0.1512098
-    - _MinMaxVal2: 0.3616109
+    - _Frequency: 5
+    - _MinMaxVal1: 0.291424
+    - _MinMaxVal2: 0.49793023
     - _MyTextureScale: 0.724
     - _NonKeywordOption: 1
     - _OpaqueCullMode: 2
+    - _Pattern: 0
     - _RayTracing: 0
     - _ReceivesSSR: 1
     - _ReceivesSSRTransparent: 0
@@ -174,13 +177,15 @@ Material:
     - _DayColor: {r: 0, g: 0, b: 0, a: 0}
     - _DoubleSidedConstants: {r: 1, g: 1, b: -1, a: 0}
     - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
-    - _MinMaxVector: {r: 0.3577745, g: 0.5443567, b: 0.27276194, a: 0.6536797}
+    - _MinMaxVector: {r: 0.3188261, g: 0.5443567, b: 0.20906852, a: 0.6264159}
     - _MyTextureColor: {r: 0.8584906, g: 0.05264329, b: 0.05264329, a: 0}
     - _OptionalColor: {r: 0, g: 0, b: 0, a: 0}
     - _SomeColor: {r: 0, g: 0, b: 0, a: 0}
     - _SomeVector: {r: 0, g: 0, b: 0, a: 0}
     - _VectorSliders: {r: 0.09, g: 0.522, b: 0.553, a: 0.644}
     - _VectorSliders2: {r: 0.487, g: 0.703, b: 0.457, a: 0}
+    - _VectorSliders2_1: {r: 0, g: 0, b: 0, a: 0}
+    - _VectorSliders2_2: {r: 0, g: 0, b: 0, a: 0}
     - _YetAnotherColor: {r: 0, g: 0, b: 0, a: 0}
     - _YetAnotherTextureScale: {r: 0, g: 0, b: 0, a: 0}
   m_BuildTextureStacks: []
