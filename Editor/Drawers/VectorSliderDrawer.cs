@@ -54,7 +54,7 @@ namespace Needle.ShaderGraphMarkdown
             {
                 var betweenParens = display.Substring(firstParen + 1, lastParen - firstParen - 1);
                 parts = betweenParens.Split(',', ';');
-                display = display.Substring(0, firstParen).TrimEnd();
+                display = display.Substring(0, firstParen).Trim();
             }
             else
             {

@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.Rendering;
@@ -102,7 +103,16 @@ namespace Needle
             return indent;
         }
 
-        private bool showOriginalPropertyList = false, debugConditionalProperties = false, debugReferencedProperties = false;
+        private bool
+            showOriginalPropertyList = false,
+            debugConditionalProperties = false,
+            debugReferencedProperties = false;
+        
+        // property drawer debugging
+        private bool debugPropertyDrawers = false;
+        private static Type MaterialPropertyHandler;
+        private static MethodInfo GetHandler;
+        private static FieldInfo m_PropertyDrawer, m_DecoratorDrawers;
 
         private new static MaterialProperty FindProperty(string keywordRef, MaterialProperty[] properties)
         {
@@ -167,6 +177,8 @@ namespace Needle
                 {
                     hashCode = (hashCode * 397) ^ prop.name.GetHashCode();
                     hashCode = (hashCode * 397) ^ prop.displayName.GetHashCode();
+                    hashCode = (hashCode * 397) ^ prop.rangeLimits.GetHashCode();
+                    hashCode = (hashCode * 397) ^ prop.flags.GetHashCode();
                 }
                 return hashCode;
             }
@@ -278,7 +290,53 @@ namespace Needle
                 }
                 EditorGUILayout.Space();
                 #endif
+
                 
+                EditorGUILayout.Space();
+
+                debugPropertyDrawers = EditorGUILayout.Foldout(debugPropertyDrawers, "Property Drawers and Decorators");
+                if(debugPropertyDrawers)
+                {
+                    foreach (var prop in properties)
+                    {
+                        // TextureScaleOffsetProperty
+
+                        if(MaterialPropertyHandler == null) MaterialPropertyHandler = typeof(MaterialProperty).Assembly.GetType("UnityEditor.MaterialPropertyHandler");
+                        if (MaterialPropertyHandler != null)
+                        {
+                            if(GetHandler         == null) GetHandler         = MaterialPropertyHandler.GetMethod("GetHandler", (BindingFlags) (-1));
+                            var handler = GetHandler.Invoke(null, new object[] {((Material) materialEditor.target).shader, prop.name});
+                            if(m_PropertyDrawer   == null) m_PropertyDrawer   = MaterialPropertyHandler.GetField("m_PropertyDrawer", (BindingFlags) (-1));
+                            if(m_DecoratorDrawers == null) m_DecoratorDrawers = MaterialPropertyHandler.GetField("m_DecoratorDrawers", (BindingFlags) (-1));
+
+                            if(handler != null)
+                            {
+                                MaterialPropertyDrawer propertyDrawer = (MaterialPropertyDrawer) m_PropertyDrawer.GetValue(handler);
+                                List<MaterialPropertyDrawer> decoratorDrawers = (List<MaterialPropertyDrawer>) m_DecoratorDrawers.GetValue(handler);
+                                if (propertyDrawer != null || decoratorDrawers != null)
+                                {
+                                    EditorGUILayout.LabelField($@"{prop.name}(""{prop.displayName}"", {prop.type})");
+                                }
+                                EditorGUI.indentLevel++;
+                                if(propertyDrawer != null)
+                                {
+                                    EditorGUILayout.LabelField("Property Drawer", EditorStyles.miniLabel);
+                                    EditorGUILayout.LabelField(propertyDrawer.GetType() + " (height: " + propertyDrawer.GetPropertyHeight(prop, prop.displayName, materialEditor) + "px)");
+                                }
+                                if(decoratorDrawers != null)
+                                {
+                                    EditorGUILayout.LabelField("Decorator Drawers", EditorStyles.miniLabel);
+                                    foreach (var d in decoratorDrawers)
+                                    {
+                                        EditorGUILayout.LabelField(d.GetType() + " (height: " + d.GetPropertyHeight(prop, prop.displayName, materialEditor) + "px)");
+                                    }
+                                }
+                                EditorGUI.indentLevel--;
+                            }
+                        }
+                        // MaterialPropertyHandler handler = MaterialPropertyHandler.GetHandler(((Material) materialEditor.target).shader, prop.name);
+                    }
+                }
                 // #if HDRP_7_OR_NEWER
                 // EditorGUILayout.LabelField("ShaderGraph Info", EditorStyles.boldLabel);
                 // if (GUILayout.Button("Refresh"))
@@ -435,6 +493,7 @@ namespace Needle
                             // drawer shorthands
                             if (display.EndsWith("&", StringComparison.Ordinal))
                             {
+                                bool shouldDrawMultiplePropertiesInline = display.EndsWith("&&", StringComparison.Ordinal);
                                 var trimmedDisplay = display.Trim(' ', '&');
                                 if(prop.type == MaterialProperty.PropType.Texture)
                                 {
@@ -442,11 +501,24 @@ namespace Needle
                                     var drawer = (InlineTextureDrawer) GetCachedDrawer(nameof(InlineTextureDrawer));
                                     if (drawer)
                                     {
-                                        MaterialProperty extraProperty = (i + 1 < group.properties.Count) ? group.properties[i + 1] : null;
-                                        if (extraProperty != null && !referencedProperties.Contains(extraProperty))
+                                        MaterialProperty extraProperty = null;
+                                        if(shouldDrawMultiplePropertiesInline)
                                         {
-                                            // add this to the referenced list so we don't draw it twice
-                                            referencedProperties.Add(extraProperty);
+                                            extraProperty = (i + 1 < group.properties.Count) ? group.properties[i + 1] : null;
+                                            if(extraProperty != null)
+                                            {
+                                                // check if this is a special property, not supported right now
+                                                if (GetMarkdownType(extraProperty.displayName) != MarkdownProperty.None)
+                                                {
+                                                    extraProperty = null;
+                                                }
+                                                
+                                                // add this to the referenced list so we don't draw it twice
+                                                if (extraProperty != null && !referencedProperties.Contains(extraProperty))
+                                                {
+                                                    referencedProperties.Add(extraProperty);
+                                                }
+                                            }
                                         }
                                         drawer.OnDrawerGUI(materialEditor, prop, trimmedDisplay, extraProperty);
                                     }

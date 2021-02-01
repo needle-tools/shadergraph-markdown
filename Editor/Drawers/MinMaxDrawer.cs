@@ -87,6 +87,30 @@ namespace Needle.ShaderGraphMarkdown
             var parameterName1 = parameters.Get(0, (string) null);
             var parameterName2 = parameters.Get(1, (string) null);
 
+            if (parameterName2 == null)
+            {
+                // parameter 1 must be a vector, no swizzles
+                // we're using zw as limits
+                var vectorProp = properties.FirstOrDefault(x => x.name.Equals(parameterName1, StringComparison.Ordinal));
+                if (vectorProp == null || vectorProp.type != MaterialProperty.PropType.Vector)
+                {
+                    EditorGUILayout.HelpBox(nameof(MinMaxDrawer) + ": Parameter is not a Vector property (" + parameterName1 + ")", MessageType.Error);
+                    return;
+                }
+
+                EditorGUI.showMixedValue = vectorProp.hasMixedValue;
+                var vec = vectorProp.vectorValue;
+                EditorGUI.BeginChangeCheck();
+                EditorGUILayout.MinMaxSlider(vectorProp.displayName, ref vec.x, ref vec.y, vec.z, vec.w);
+                if (EditorGUI.EndChangeCheck())
+                {
+                    vectorProp.vectorValue = vec;
+                }
+
+                EditorGUI.showMixedValue = false;
+                return;
+            }
+
             if (parameterName1 == null || parameterName2 == null) {
                 EditorGUILayout.HelpBox(nameof(MinMaxDrawer) + ": Parameter names are incorrect (" + parameterName1 + ", " + parameterName2 + "), all: " + string.Join(",", parameters), MessageType.Error);
                 return;
