@@ -378,7 +378,7 @@ namespace Needle
             
                 if(baseShaderGui != null) {
                     EditorGUILayout.Space();
-                    CoreEditorUtils.DrawSplitter();
+                    // CoreEditorUtils.DrawSplitter();
                     EditorGUILayout.LabelField("Additional Options", EditorStyles.boldLabel);
                     EditorGUILayout.Space();
                 

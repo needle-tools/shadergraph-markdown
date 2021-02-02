@@ -96,7 +96,7 @@ namespace Needle.ShaderGraphMarkdown
                                   abstractShaderProperty.propertyType == PropertyType.VirtualTexture)))
                                 isTextureProperty = true;
                             
-                            if (shaderInput.displayName.EndsWith("&", StringComparison.Ordinal))
+                            if (shaderInput.displayName.EndsWith("&&", StringComparison.Ordinal))
                                 usesInlineTextureDrawerShorthand = true;
                         }
                     }
