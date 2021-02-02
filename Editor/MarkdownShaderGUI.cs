@@ -613,11 +613,13 @@ namespace Needle
              
             #if HDRP_7_OR_NEWER
             var defaultCustomInspector = MarkdownSGExtensions.GetDefaultCustomInspectorFromShader(targetMat.shader);
-            if (!defaultCustomInspector.StartsWith("UnityEditor."))
-                defaultCustomInspector = "UnityEditor." + defaultCustomInspector;
-            var litGui = typeof(HDShaderUtils).Assembly.GetType(defaultCustomInspector);
-            baseShaderGui = (ShaderGUI) Activator.CreateInstance(litGui);
-
+            if(!string.IsNullOrEmpty(defaultCustomInspector))
+            {
+                if (!defaultCustomInspector.StartsWith("UnityEditor."))
+                    defaultCustomInspector = "UnityEditor." + defaultCustomInspector;
+                var litGui = typeof(HDShaderUtils).Assembly.GetType(defaultCustomInspector);
+                baseShaderGui = (ShaderGUI) Activator.CreateInstance(litGui);
+            }
             // remove the "ShaderGraphUIBlock" uiBlock ("Exposed Properties") as we're rendering that ourselves
             // if(!showOriginalPropertyList)
             //     MarkdownHDExtensions.RemoveShaderGraphUIBlock(baseShaderGui);
