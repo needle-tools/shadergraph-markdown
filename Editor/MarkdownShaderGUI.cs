@@ -24,6 +24,21 @@ namespace Needle
             public string name;
             public List<MaterialProperty> properties;
             public Action customDrawer = null;
+            public bool expandedByDefault = true;
+            public string foldoutStateKeyName => $"{nameof(MarkdownShaderGUI)}.{name}";
+            
+            public HeaderGroup(string propertyDisplayName)
+            {
+                if (!string.IsNullOrEmpty(propertyDisplayName) && propertyDisplayName.EndsWith("-", StringComparison.Ordinal))
+                {
+                    expandedByDefault = false;
+                    name = propertyDisplayName.Substring(0, propertyDisplayName.Length - 1);
+                }
+                else
+                {
+                    name = propertyDisplayName;    
+                }
+            }
         }
 
         private static GUIStyle centeredGreyMiniLabel;
@@ -193,7 +208,7 @@ namespace Needle
             if(headerGroups == null)
             {
                 headerGroups = new List<HeaderGroup>();
-                headerGroups.Add(new HeaderGroup() { name = "Default" });
+                headerGroups.Add(new HeaderGroup("Default"));
                 
                 foreach (var prop in properties)
                 {
@@ -201,9 +216,9 @@ namespace Needle
                     {
                         if (prop.displayName.Equals(foldoutHeaderFormat, StringComparison.Ordinal)  || 
                             (prop.displayName.StartsWith(foldoutHeaderFormatStart + "(", StringComparison.Ordinal) && prop.displayName.EndsWith(")", StringComparison.Ordinal))) // for multiple ## (1) foldout breakers)
-                            headerGroups.Add(new HeaderGroup() { name = null });
+                            headerGroups.Add(new HeaderGroup(null));
                         else
-                            headerGroups.Add(new HeaderGroup() { name = prop.displayName.Substring(prop.displayName.IndexOf(' ') + 1) });
+                            headerGroups.Add(new HeaderGroup(prop.displayName.Substring(prop.displayName.IndexOf(' ') + 1)));
                     }
                     else
                     {
@@ -244,8 +259,8 @@ namespace Needle
                         last.properties.Add(prop);
                     }
                 }
-                headerGroups.Add(new HeaderGroup() { name = null, properties = null, customDrawer = DrawCustomGUI });
-                headerGroups.Add(new HeaderGroup() { name = "Debug", properties = null, customDrawer = DrawDebugGroupContent });
+                headerGroups.Add(new HeaderGroup(null) { properties = null, customDrawer = DrawCustomGUI });
+                headerGroups.Add(new HeaderGroup("Debug") { properties = null, customDrawer = DrawDebugGroupContent, expandedByDefault = false});
             }
             string GetBetween(string str, char start, char end, bool last = false)
             {
@@ -337,6 +352,16 @@ namespace Needle
                         // MaterialPropertyHandler handler = MaterialPropertyHandler.GetHandler(((Material) materialEditor.target).shader, prop.name);
                     }
                 }
+
+                EditorGUILayout.Space();
+                if (GUILayout.Button("Reset Foldout SessionState"))
+                {
+                    foreach(var group in headerGroups)
+                    {
+                        SessionState.EraseBool(group.foldoutStateKeyName);
+                    }
+                }
+                
                 // #if HDRP_7_OR_NEWER
                 // EditorGUILayout.LabelField("ShaderGraph Info", EditorStyles.boldLabel);
                 // if (GUILayout.Button("Refresh"))
@@ -562,8 +587,8 @@ namespace Needle
                 }
                 else
                 {
-                    var keyName = $"{nameof(MarkdownShaderGUI)}.{group.name}";
-                    var state = SessionState.GetBool(keyName, true);
+                    var keyName = group.foldoutStateKeyName;
+                    var state = SessionState.GetBool(keyName, group.expandedByDefault);
                     var newState = CoreEditorUtils.DrawHeaderFoldout(group.name, state);
                     if(newState != state) SessionState.SetBool(keyName, newState);
                     state = newState;
