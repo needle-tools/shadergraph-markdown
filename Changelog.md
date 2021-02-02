@@ -2,6 +2,13 @@
 All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.5.0-exp] - 2021-02-02
+- fixed errors on non-ShaderGraph HDRP shaders (e.g. from Amplify)
+- fixed UI not refreshing when changing some shader properties
+- fixed duplicate split line before Additional Options
+- changed inline texture format to "&" for inline texture and "&&" for inline texture + property
+- added ability to make foldouts closed by default, just append "-"
+
 ## [0.4.5-exp] - 2021-01-30
 - added shorthand for InlineTexture and VectorSliders - append & to property name
 - fixes and better error display for incorrect drawer usage

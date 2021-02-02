@@ -1,7 +1,7 @@
 {
   "name": "com.needle.shadergraph-markdown",
   "displayName": "ShaderGraph Markdown",
-  "version": "0.4.5-exp",
+  "version": "0.5.0-exp",
   "author": {
     "name": "Needle",
     "email": "hi@needle.tools",
@@ -20,8 +20,8 @@
   ],
   "type": "tool",
   "dependencies": {
-    "com.unity.render-pipelines.core": "7.0.0",
-    "com.unity.shadergraph": "7.0.0"
+    "com.unity.render-pipelines.core": "7.5.2",
+    "com.unity.shadergraph": "7.5.2"
   },
   "samples": [
     {
