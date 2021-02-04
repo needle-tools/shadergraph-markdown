@@ -128,7 +128,25 @@ namespace Needle
         private static Type MaterialPropertyHandler;
         private static MethodInfo GetHandler;
         private static FieldInfo m_PropertyDrawer, m_DecoratorDrawers;
+        // local / global keywords
+        private bool debugLocalAndGlobalKeywords = false;
 
+        private static MethodInfo getShaderLocalKeywords;
+        private static MethodInfo GetShaderLocalKeywords {
+            get {
+                if (getShaderLocalKeywords  == null) getShaderLocalKeywords  = typeof(ShaderUtil).GetMethod("GetShaderLocalKeywords",  (BindingFlags) (-1));
+                return getShaderLocalKeywords;
+            }
+        }
+
+        private static MethodInfo getShaderGlobalKeywords;
+        private static MethodInfo GetShaderGlobalKeywords {
+            get {
+                if (getShaderGlobalKeywords == null) getShaderGlobalKeywords = typeof(ShaderUtil).GetMethod("GetShaderGlobalKeywords", (BindingFlags) (-1));
+                return getShaderGlobalKeywords;
+            }
+        }
+             
         private new static MaterialProperty FindProperty(string keywordRef, MaterialProperty[] properties)
         {
             var keywordProp = ShaderGUI.FindProperty(keywordRef, properties, false);
@@ -306,6 +324,28 @@ namespace Needle
                 EditorGUILayout.Space();
                 #endif
 
+                EditorGUILayout.Space();
+
+                debugLocalAndGlobalKeywords = EditorGUILayout.Foldout(debugLocalAndGlobalKeywords, "Local and Global Keywords");
+                if(debugLocalAndGlobalKeywords)
+                {
+                    EditorGUILayout.LabelField("Local Keywords", EditorStyles.boldLabel);
+                    EditorGUI.indentLevel++;
+                    var localKeywords = (string[]) GetShaderLocalKeywords.Invoke(null, new object[] { targetMat.shader });
+                    foreach (var kw in localKeywords)
+                    {
+                        EditorGUILayout.LabelField(kw, EditorStyles.miniLabel);
+                    }
+                    EditorGUI.indentLevel--;
+                    EditorGUILayout.LabelField("Global Keywords", EditorStyles.boldLabel);
+                    EditorGUI.indentLevel++;
+                    var globalKeywords = (string[]) GetShaderGlobalKeywords.Invoke(null, new object[] { targetMat.shader });
+                    foreach (var kw in globalKeywords)
+                    {
+                        EditorGUILayout.LabelField(kw, EditorStyles.miniLabel);
+                    }
+                    EditorGUI.indentLevel--;
+                }
                 
                 EditorGUILayout.Space();
 
@@ -575,7 +615,7 @@ namespace Needle
             foreach(var group in headerGroups)
             {
                 if (group.properties == null && group.customDrawer == null) continue;
-
+                EditorGUI.BeginChangeCheck();
                 if (group.name == null || group.name.Equals("Default", StringComparison.OrdinalIgnoreCase)) {
                     if(group.customDrawer != null) {
                         group.customDrawer.Invoke();
@@ -605,6 +645,37 @@ namespace Needle
                         EditorGUI.indentLevel--;
                     }
                     CoreEditorUtils.DrawSplitter();
+                }
+
+                if (EditorGUI.EndChangeCheck())
+                    MaterialChanged(materialEditor, properties);
+            }
+        }
+        
+        protected virtual void MaterialChanged(MaterialEditor materialEditor, MaterialProperty[] properties)
+        {
+            foreach(var mat in materialEditor.targets)
+            {
+                var material = (Material) mat;
+                if (!material)
+                    throw new ArgumentNullException("material");
+
+                if (!material.shader) return;
+                
+                // set keywords based on texture names
+                var localKeywords = ((string[]) GetShaderLocalKeywords.Invoke(null, new[] { material.shader })).ToList();
+                
+                // loop through texture properties
+                foreach (var materialProperty in properties.Where(x => x.type == MaterialProperty.PropType.Texture))
+                {
+                    var uppercaseName = materialProperty.name.ToUpperInvariant();
+                    if (localKeywords.Contains(uppercaseName))
+                    {
+                        if (material.GetTexture(materialProperty.name))
+                            material.EnableKeyword(uppercaseName);
+                        else
+                            material.DisableKeyword(uppercaseName);
+                    }
                 }
             }
         }
