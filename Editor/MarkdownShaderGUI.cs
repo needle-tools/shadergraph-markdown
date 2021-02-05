@@ -201,6 +201,11 @@ namespace Needle
         {
             var targetMat = materialEditor.target as Material;
             if (!targetMat) return;
+
+            // proper widths for texture and label fields, same as ShaderGUI
+            // materialEditor.SetDefaultGUIWidths();
+            EditorGUIUtility.fieldWidth = 64f;
+            // materialEditor.PropertiesDefaultGUI(new MaterialProperty[0]);
             
             int GetHashCode()
             {
@@ -219,6 +224,7 @@ namespace Needle
             int currentHash = GetHashCode();
             if (lastHash != currentHash) {
                 lastHash = currentHash;
+                MaterialChanged(materialEditor, properties);
                 headerGroups = null;
             }
             
@@ -416,12 +422,20 @@ namespace Needle
                 if (!haveSearchedForCustomGUI)
                     InitializeCustomGUI(targetMat);
             
-                if(baseShaderGui != null) {
-                    EditorGUILayout.Space();
-                    // CoreEditorUtils.DrawSplitter();
-                    EditorGUILayout.LabelField("Additional Options", EditorStyles.boldLabel);
-                    EditorGUILayout.Space();
+                EditorGUILayout.Space();
+                EditorGUILayout.LabelField("Additional Options", EditorStyles.boldLabel);
+                EditorGUILayout.Space();
                 
+                // from MaterialEditor.PropertiesDefaultGUI(properties);
+                if (SupportedRenderingFeatures.active.editableMaterialRenderQueue)
+                    materialEditor.RenderQueueField();
+                materialEditor.EnableInstancingField();
+                materialEditor.DoubleSidedGIField();
+                EditorGUILayout.Space();
+                CoreEditorUtils.DrawSplitter();
+                
+                if(baseShaderGui != null)
+                {
                     // only pass in the properties that are hidden - this allows us to render all custom HDRP ShaderGraph UIs.
                     baseShaderGui?.OnGUI(materialEditor, showOriginalPropertyList ? properties : properties
                         .Where(x => x.flags.HasFlag(MaterialProperty.PropFlags.HideInInspector))
