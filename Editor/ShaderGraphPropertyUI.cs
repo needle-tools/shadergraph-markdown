@@ -83,7 +83,11 @@ namespace Needle.ShaderGraphMarkdown
                         {
                             var shaderInput = shaderInputs[blackboardRow];
                             
+                            #if UNITY_2021_1_OR_NEWER
+                            if (shaderInput.IsUsingNewDefaultRefName() || shaderInput.IsUsingOldDefaultRefName())
+                            #else
                             if (shaderInput.referenceName.Equals(shaderInput.GetDefaultReferenceName(), StringComparison.Ordinal))
+                            #endif
                                 usesDefaultReferenceName = true;
 
                             if (!shaderInput.referenceName.StartsWith("_"))
