@@ -46,7 +46,7 @@ namespace Needle.ShaderGraphMarkdown
         public ShaderGraphMarkdownSettingsProvider(string path, SettingsScope scopes, IEnumerable<string> keywords = null) : base(path, scopes, keywords) { }
     }
 
-    [FilePath("Project Settings/ShaderGraphMarkdownSettings.asset", FilePathAttribute.Location.ProjectFolder)]
+    [FilePath("ProjectSettings/ShaderGraphMarkdownSettings.asset", FilePathAttribute.Location.ProjectFolder)]
     internal class ShaderGraphMarkdownSettings : ScriptableSingleton<ShaderGraphMarkdownSettings>
     {
         [Tooltip("Shows a red bar next to properties that still have the default reference name. This is not recommended, as it will be hard to change to another shader in the future. Try to align your property names to Unity conventions (e.g. \"_BaseColor\")")]
