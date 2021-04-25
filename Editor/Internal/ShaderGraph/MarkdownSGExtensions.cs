@@ -16,22 +16,30 @@ namespace UnityEditor.ShaderGraph
     {
         internal static GraphData GetGraphData(AssetImporter importer)
         {
-            var path = importer.assetPath;
-            var textGraph = File.ReadAllText(path, Encoding.UTF8);
+            try
+            {
+                var path = importer.assetPath;
+                var textGraph = File.ReadAllText(path, Encoding.UTF8);
 
 #if UNITY_2020_2_OR_NEWER
-            var graph = new GraphData
-            {
-                assetGuid = AssetDatabase.AssetPathToGUID(path)
-            };
-            MultiJson.Deserialize(graph, textGraph);
+                var graph = new GraphData
+                {
+                    assetGuid = AssetDatabase.AssetPathToGUID(path)
+                };
+                MultiJson.Deserialize(graph, textGraph);
 #else
-            var graph = JsonUtility.FromJson<GraphData>(textGraph);
+                var graph = JsonUtility.FromJson<GraphData>(textGraph);
 #endif
 
-            graph.OnEnable();
-            graph.ValidateGraph();
-            return graph;
+                graph.OnEnable();
+                graph.ValidateGraph();
+                return graph;
+            }
+            catch (ArgumentException e)
+            {
+                Debug.LogError("Couldn't get graph data for " + importer.assetPath + ": " + e.ToString());
+                return null;
+            }
         }
 
         internal static GraphData GetGraphData(Shader shader)
