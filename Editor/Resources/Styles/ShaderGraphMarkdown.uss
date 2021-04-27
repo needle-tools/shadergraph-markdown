@@ -16,7 +16,7 @@
 
 .__markdown .__markdown_Link #contents > #top > #title-label {
     font-size:11px;
-    color: #5f7aff;
+    color: #6BBDEE;
     max-width:350px;
     white-space:normal;
 }
@@ -26,7 +26,7 @@
 }
 
 .__markdown .__markdown_Note #contents > #top > #title-label {
-    color: #ffdc30;
+    color: #fdc64d;
     max-width:350px;
     white-space:normal;
 }

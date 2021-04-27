@@ -64,9 +64,6 @@
             "m_Id": "e920ec25c475438e800ffc9c3847fc0d"
         },
         {
-            "m_Id": "7b21c9d2e42442c483220dbca68f1801"
-        },
-        {
             "m_Id": "964f4631ba7d497e94d8eb10e57ef114"
         },
         {
@@ -175,6 +172,9 @@
             "m_Id": "1ac840e98d6f414f8f4e80c6ae10751f"
         },
         {
+            "m_Id": "84b9eb1db68a4b25b80099df69715cec"
+        },
+        {
             "m_Id": "5b03dc86eb2e496b9dd760faf6162b83"
         },
         {
@@ -188,6 +188,18 @@
         },
         {
             "m_Id": "b3dac903f448497b916fdfae4d78dd0f"
+        },
+        {
+            "m_Id": "6a9bd61f292b4dbba0e67df6938fb777"
+        },
+        {
+            "m_Id": "bae861f145b4426bbc2262c7156b5179"
+        },
+        {
+            "m_Id": "7a82d5bb8c2948fa804a80870341da51"
+        },
+        {
+            "m_Id": "247e33d019ea46a4bfd22ac02c7c9178"
         }
     ],
     "m_Keywords": [
@@ -495,7 +507,7 @@
     "m_Guid": {
         "m_GuidSerialized": "53a2e8e0-d06d-4d99-aca1-11afb0ab7119"
     },
-    "m_Name": "!NOTE You can also add notes. These can be multiple lines long. You can include hints about your shader here!",
+    "m_Name": "!NOTE You can also add notes. You can include hints about your shader here!",
     "m_DefaultReferenceName": "",
     "m_OverrideReferenceName": "Boolean_b33b62171e084c9f9c7664243b215c75_7",
     "m_GeneratePropertyBlock": true,
@@ -602,6 +614,24 @@
         "a": 0.0
     },
     "m_ColorMode": 0
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.BooleanShaderProperty",
+    "m_ObjectId": "247e33d019ea46a4bfd22ac02c7c9178",
+    "m_Guid": {
+        "m_GuidSerialized": "b4f907e3-7fab-404b-b63f-38ebe6d00225"
+    },
+    "m_Name": "--!NOTE This color only shows up when both textures are set.",
+    "m_DefaultReferenceName": "",
+    "m_OverrideReferenceName": "Boolean_b33b62171e084c9f9c7664243b215c75_5",
+    "m_GeneratePropertyBlock": true,
+    "m_Precision": 0,
+    "overrideHLSLDeclaration": false,
+    "hlslDeclarationOverride": 0,
+    "m_Hidden": false,
+    "m_Value": false
 }
 
 {
@@ -1165,6 +1195,29 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.Texture2DShaderProperty",
+    "m_ObjectId": "6a9bd61f292b4dbba0e67df6938fb777",
+    "m_Guid": {
+        "m_GuidSerialized": "3e47827e-f5ea-4d82-a0ff-a4525f87b339"
+    },
+    "m_Name": "A Texture as Condition &",
+    "m_DefaultReferenceName": "Texture2D_6a9bd61f292b4dbba0e67df6938fb777",
+    "m_OverrideReferenceName": "_TextureWithCondition",
+    "m_GeneratePropertyBlock": true,
+    "m_Precision": 0,
+    "overrideHLSLDeclaration": false,
+    "hlslDeclarationOverride": 0,
+    "m_Hidden": false,
+    "m_Value": {
+        "m_SerializedTexture": "{\"texture\":{\"instanceID\":0}}",
+        "m_Guid": ""
+    },
+    "m_Modifiable": true,
+    "m_DefaultType": 0
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.Rendering.HighDefinition.ShaderGraph.HDLitSubTarget",
     "m_ObjectId": "6e1f51eba9e9412abe5c0fa484164166"
 }
@@ -1267,21 +1320,27 @@
 }
 
 {
-    "m_SGVersion": 0,
-    "m_Type": "UnityEditor.ShaderGraph.Internal.BooleanShaderProperty",
-    "m_ObjectId": "7b21c9d2e42442c483220dbca68f1801",
+    "m_SGVersion": 3,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.ColorShaderProperty",
+    "m_ObjectId": "7a82d5bb8c2948fa804a80870341da51",
     "m_Guid": {
-        "m_GuidSerialized": "3e471566-5512-4dbe-89d0-0bff04e3393b"
+        "m_GuidSerialized": "5c9d438c-9a8f-4483-9d76-0eb71ded9848"
     },
-    "m_Name": "!DRAWER InlineTexture _MyTexture _MyTextureColor",
-    "m_DefaultReferenceName": "Boolean_7b21c9d2e42442c483220dbca68f1801",
-    "m_OverrideReferenceName": "",
+    "m_Name": "--A Color [_AnotherTextureWithCondition]",
+    "m_DefaultReferenceName": "",
+    "m_OverrideReferenceName": "_OptionalColor_1",
     "m_GeneratePropertyBlock": true,
     "m_Precision": 0,
     "overrideHLSLDeclaration": false,
     "hlslDeclarationOverride": 0,
     "m_Hidden": false,
-    "m_Value": false
+    "m_Value": {
+        "r": 0.0,
+        "g": 0.0,
+        "b": 0.0,
+        "a": 0.0
+    },
+    "m_ColorMode": 0
 }
 
 {
@@ -1399,6 +1458,24 @@
         "z": 0.0,
         "w": 0.0
     }
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.BooleanShaderProperty",
+    "m_ObjectId": "84b9eb1db68a4b25b80099df69715cec",
+    "m_Guid": {
+        "m_GuidSerialized": "4586edae-ee44-4866-a386-b8131db9afd3"
+    },
+    "m_Name": "## Conditional Textures/Booleans",
+    "m_DefaultReferenceName": "",
+    "m_OverrideReferenceName": "Boolean_b33b62171e084c9f9c7664243b215c75_9",
+    "m_GeneratePropertyBlock": true,
+    "m_Precision": 0,
+    "overrideHLSLDeclaration": false,
+    "hlslDeclarationOverride": 0,
+    "m_Hidden": false,
+    "m_Value": false
 }
 
 {
@@ -1562,7 +1639,7 @@
     "m_Guid": {
         "m_GuidSerialized": "ec7f5f55-3a10-49a5-bd5e-f5050eca05a3"
     },
-    "m_Name": "My Texture",
+    "m_Name": "My Texture &&",
     "m_DefaultReferenceName": "Texture2D_964f4631ba7d497e94d8eb10e57ef114",
     "m_OverrideReferenceName": "_MyTexture",
     "m_GeneratePropertyBlock": true,
@@ -1978,6 +2055,29 @@
 }
 
 {
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.Texture2DShaderProperty",
+    "m_ObjectId": "bae861f145b4426bbc2262c7156b5179",
+    "m_Guid": {
+        "m_GuidSerialized": "25dc7d06-d812-47e7-80cd-c86e33e4c4c9"
+    },
+    "m_Name": "-Another Texture & [_TextureWithCondition]",
+    "m_DefaultReferenceName": "",
+    "m_OverrideReferenceName": "_AnotherTextureWithCondition",
+    "m_GeneratePropertyBlock": true,
+    "m_Precision": 0,
+    "overrideHLSLDeclaration": false,
+    "hlslDeclarationOverride": 0,
+    "m_Hidden": false,
+    "m_Value": {
+        "m_SerializedTexture": "{\"texture\":{\"instanceID\":0}}",
+        "m_Guid": ""
+    },
+    "m_Modifiable": true,
+    "m_DefaultType": 0
+}
+
+{
     "m_SGVersion": 3,
     "m_Type": "UnityEditor.ShaderGraph.Internal.ColorShaderProperty",
     "m_ObjectId": "bb0fd3a78c4c4806821da359fe068876",
@@ -2203,7 +2303,7 @@
     "m_Guid": {
         "m_GuidSerialized": "2a040183-7627-4756-b5cf-0515d7578dbd"
     },
-    "m_Name": "Yet Another Color",
+    "m_Name": "Important Color",
     "m_DefaultReferenceName": "Color_d5e98415abe042e7b7e8cd773fe20ab1",
     "m_OverrideReferenceName": "_YetAnotherColor",
     "m_GeneratePropertyBlock": true,
@@ -2302,7 +2402,7 @@
     "m_Guid": {
         "m_GuidSerialized": "e400efe0-1df2-4fff-8dc0-a7d80e68d5eb"
     },
-    "m_Name": "## Not in foldout",
+    "m_Name": "## Main Region",
     "m_DefaultReferenceName": "",
     "m_OverrideReferenceName": "Boolean_b33b62171e084c9f9c7664243b215c75_2",
     "m_GeneratePropertyBlock": true,
@@ -2497,7 +2597,7 @@
     "m_Guid": {
         "m_GuidSerialized": "b3bc52d7-a355-4f2a-882c-680648708d9d"
     },
-    "m_Name": "A Bool Value as Option",
+    "m_Name": "A Bool Value as Condition",
     "m_DefaultReferenceName": "Boolean_faafddfa9f5c4cbca6e7d1dad0d635c2",
     "m_OverrideReferenceName": "_NonKeywordOption",
     "m_GeneratePropertyBlock": true,
