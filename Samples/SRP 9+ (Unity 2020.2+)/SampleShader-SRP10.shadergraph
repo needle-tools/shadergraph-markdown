@@ -79,6 +79,21 @@
             "m_Id": "1c1565e01fa94900bf83aa8fdeb93098"
         },
         {
+            "m_Id": "098cad2b6cef41db83a8bcbfffd01e91"
+        },
+        {
+            "m_Id": "b3c9f6665b5945a495844fed3dd138fd"
+        },
+        {
+            "m_Id": "75dfaa42b6504da2b47b9b63bcc80e59"
+        },
+        {
+            "m_Id": "c4d38b9070344035a833086a3c0b20ad"
+        },
+        {
+            "m_Id": "a79f8b48ff8640d5ab369074918be20d"
+        },
+        {
             "m_Id": "a510d455849f4676b5eae637cad75236"
         },
         {
@@ -284,6 +299,7 @@
     },
     "m_Path": "Shader Graphs",
     "m_ConcretePrecision": 0,
+    "m_PreviewMode": 2,
     "m_OutputNode": {
         "m_Id": ""
     },
@@ -318,6 +334,24 @@
         "x": 0.0,
         "y": 1.0
     }
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.BooleanShaderProperty",
+    "m_ObjectId": "098cad2b6cef41db83a8bcbfffd01e91",
+    "m_Guid": {
+        "m_GuidSerialized": "fe6df22e-4dde-46aa-9022-badd48d759f8"
+    },
+    "m_Name": "## Gradients",
+    "m_DefaultReferenceName": "",
+    "m_OverrideReferenceName": "Boolean_4",
+    "m_GeneratePropertyBlock": true,
+    "m_Precision": 0,
+    "overrideHLSLDeclaration": false,
+    "hlslDeclarationOverride": 0,
+    "m_Hidden": false,
+    "m_Value": false
 }
 
 {
@@ -394,6 +428,7 @@
     "synonyms": [],
     "m_Precision": 0,
     "m_PreviewExpanded": true,
+    "m_PreviewMode": 0,
     "m_CustomColors": {
         "m_SerializableColors": []
     },
@@ -538,6 +573,7 @@
     "synonyms": [],
     "m_Precision": 0,
     "m_PreviewExpanded": true,
+    "m_PreviewMode": 0,
     "m_CustomColors": {
         "m_SerializableColors": []
     },
@@ -594,6 +630,7 @@
     "synonyms": [],
     "m_Precision": 0,
     "m_PreviewExpanded": true,
+    "m_PreviewMode": 0,
     "m_CustomColors": {
         "m_SerializableColors": []
     },
@@ -742,6 +779,7 @@
     "synonyms": [],
     "m_Precision": 0,
     "m_PreviewExpanded": true,
+    "m_PreviewMode": 0,
     "m_CustomColors": {
         "m_SerializableColors": []
     },
@@ -842,6 +880,7 @@
     "synonyms": [],
     "m_Precision": 0,
     "m_PreviewExpanded": true,
+    "m_PreviewMode": 0,
     "m_CustomColors": {
         "m_SerializableColors": []
     },
@@ -902,7 +941,7 @@
     "m_Guid": {
         "m_GuidSerialized": "f3717503-12a6-4479-8b1d-256c4cb50500"
     },
-    "m_Name": "!DRAWER MinMaxDrawer _MinMaxVal1 _MinMaxVal2",
+    "m_Name": "!DRAWER MinMax _MinMaxVal1 _MinMaxVal2",
     "m_DefaultReferenceName": "",
     "m_OverrideReferenceName": "Boolean_10",
     "m_GeneratePropertyBlock": true,
@@ -962,6 +1001,7 @@
     "synonyms": [],
     "m_Precision": 0,
     "m_PreviewExpanded": true,
+    "m_PreviewMode": 0,
     "m_CustomColors": {
         "m_SerializableColors": []
     },
@@ -1056,7 +1096,7 @@
     "m_Guid": {
         "m_GuidSerialized": "5e4c4f1a-5fd9-49fe-85c6-1f7f5235a256"
     },
-    "m_Name": "!DRAWER MinMaxDrawer _MinMaxVector.z _MinMaxVector.w",
+    "m_Name": "!DRAWER MinMax _MinMaxVector.z _MinMaxVector.w",
     "m_DefaultReferenceName": "",
     "m_OverrideReferenceName": "Boolean_12",
     "m_GeneratePropertyBlock": true,
@@ -1074,7 +1114,7 @@
     "m_Guid": {
         "m_GuidSerialized": "4919019c-2347-424c-bc9b-3cedc264ba6b"
     },
-    "m_Name": "!DRAWER VectorSliderDrawer _Amplitude _Frequency _Pattern",
+    "m_Name": "!DRAWER VectorSlider _Amplitude _Frequency _Pattern",
     "m_DefaultReferenceName": "",
     "m_OverrideReferenceName": "Boolean_15",
     "m_GeneratePropertyBlock": true,
@@ -1178,10 +1218,29 @@
     "synonyms": [],
     "m_Precision": 0,
     "m_PreviewExpanded": true,
+    "m_PreviewMode": 0,
     "m_CustomColors": {
         "m_SerializableColors": []
     },
     "m_SerializedDescriptor": "VertexDescription.Normal"
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.BooleanShaderProperty",
+    "m_ObjectId": "75dfaa42b6504da2b47b9b63bcc80e59",
+    "m_Guid": {
+        "m_GuidSerialized": "cc65991e-2625-4ba1-b14c-34e18337709d"
+    },
+    "m_Name": "!DRAWER Gradient _MyGradientTexture_2",
+    "m_DefaultReferenceName": "",
+    "m_OverrideReferenceName": "Boolean_6",
+    "m_GeneratePropertyBlock": true,
+    "m_Precision": 0,
+    "overrideHLSLDeclaration": false,
+    "hlslDeclarationOverride": 0,
+    "m_Hidden": false,
+    "m_Value": false
 }
 
 {
@@ -1214,7 +1273,7 @@
     "m_Guid": {
         "m_GuidSerialized": "3e471566-5512-4dbe-89d0-0bff04e3393b"
     },
-    "m_Name": "!DRAWER InlineTextureDrawer _MyTexture _MyTextureColor",
+    "m_Name": "!DRAWER InlineTexture _MyTexture _MyTextureColor",
     "m_DefaultReferenceName": "Boolean_7b21c9d2e42442c483220dbca68f1801",
     "m_OverrideReferenceName": "",
     "m_GeneratePropertyBlock": true,
@@ -1373,7 +1432,7 @@
     "m_Guid": {
         "m_GuidSerialized": "1cbe9632-5eda-4750-b527-2675dd706f5f"
     },
-    "m_Name": "Double Texture !! &",
+    "m_Name": "Double Texture &&",
     "m_DefaultReferenceName": "",
     "m_OverrideReferenceName": "_DoubleTex1",
     "m_GeneratePropertyBlock": true,
@@ -1410,7 +1469,7 @@
     "m_Guid": {
         "m_GuidSerialized": "6970040d-1eb2-4f89-b118-b0830f3139ae"
     },
-    "m_Name": "Some Texture",
+    "m_Name": "Some Texture &",
     "m_DefaultReferenceName": "Texture2D_8fd65cbf681547a190549617f2df0aee",
     "m_OverrideReferenceName": "",
     "m_GeneratePropertyBlock": true,
@@ -1545,6 +1604,7 @@
     "synonyms": [],
     "m_Precision": 0,
     "m_PreviewExpanded": true,
+    "m_PreviewMode": 0,
     "m_CustomColors": {
         "m_SerializableColors": []
     },
@@ -1558,7 +1618,7 @@
     "m_Guid": {
         "m_GuidSerialized": "0acb92a8-a9b8-48cf-b68a-a1f988efccdb"
     },
-    "m_Name": "!DRAWER VectorSliderDrawer _VectorSliders2",
+    "m_Name": "!DRAWER VectorSlider _VectorSliders2",
     "m_DefaultReferenceName": "",
     "m_OverrideReferenceName": "Boolean_14",
     "m_GeneratePropertyBlock": true,
@@ -1589,6 +1649,29 @@
 
 {
     "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.Texture2DShaderProperty",
+    "m_ObjectId": "a79f8b48ff8640d5ab369074918be20d",
+    "m_Guid": {
+        "m_GuidSerialized": "457de288-0489-40d9-899d-eb26e17c846e"
+    },
+    "m_Name": "My Gradient Texture 2",
+    "m_DefaultReferenceName": "",
+    "m_OverrideReferenceName": "_MyGradientTexture_2",
+    "m_GeneratePropertyBlock": true,
+    "m_Precision": 0,
+    "overrideHLSLDeclaration": false,
+    "hlslDeclarationOverride": 0,
+    "m_Hidden": false,
+    "m_Value": {
+        "m_SerializedTexture": "{\"texture\":{\"instanceID\":0}}",
+        "m_Guid": ""
+    },
+    "m_Modifiable": true,
+    "m_DefaultType": 0
+}
+
+{
+    "m_SGVersion": 0,
     "m_Type": "UnityEditor.ShaderGraph.BlockNode",
     "m_ObjectId": "a854ccdec6de419e8c2a0d19f4a7915e",
     "m_Group": {
@@ -1613,6 +1696,7 @@
     "synonyms": [],
     "m_Precision": 0,
     "m_PreviewExpanded": true,
+    "m_PreviewMode": 0,
     "m_CustomColors": {
         "m_SerializableColors": []
     },
@@ -1645,6 +1729,7 @@
     "synonyms": [],
     "m_Precision": 0,
     "m_PreviewExpanded": true,
+    "m_PreviewMode": 0,
     "m_CustomColors": {
         "m_SerializableColors": []
     },
@@ -1688,7 +1773,7 @@
     "m_Guid": {
         "m_GuidSerialized": "da919191-3b6e-4f08-bd67-6a7e63adf756"
     },
-    "m_Name": "!DRAWER VectorSliderDrawer _VectorSliders",
+    "m_Name": "!DRAWER VectorSlider _VectorSliders",
     "m_DefaultReferenceName": "",
     "m_OverrideReferenceName": "Boolean_13",
     "m_GeneratePropertyBlock": true,
@@ -1706,7 +1791,7 @@
     "m_Guid": {
         "m_GuidSerialized": "3d853ef7-ef78-4ab5-8a21-0af5f0b01e6c"
     },
-    "m_Name": "Yet Another Texture &",
+    "m_Name": "Yet Another Texture &&",
     "m_DefaultReferenceName": "",
     "m_OverrideReferenceName": "_YetAnotherTexture",
     "m_GeneratePropertyBlock": true,
@@ -1813,10 +1898,29 @@
     "synonyms": [],
     "m_Precision": 0,
     "m_PreviewExpanded": true,
+    "m_PreviewMode": 0,
     "m_CustomColors": {
         "m_SerializableColors": []
     },
     "m_SerializedDescriptor": "SurfaceDescription.Smoothness"
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.BooleanShaderProperty",
+    "m_ObjectId": "b3c9f6665b5945a495844fed3dd138fd",
+    "m_Guid": {
+        "m_GuidSerialized": "8ca7c598-bdde-41eb-a688-489af0d4d2c8"
+    },
+    "m_Name": "!DRAWER Gradient _MyGradientTexture_1",
+    "m_DefaultReferenceName": "",
+    "m_OverrideReferenceName": "Boolean_5",
+    "m_GeneratePropertyBlock": true,
+    "m_Precision": 0,
+    "overrideHLSLDeclaration": false,
+    "hlslDeclarationOverride": 0,
+    "m_Hidden": false,
+    "m_Value": false
 }
 
 {
@@ -1947,6 +2051,7 @@
     "synonyms": [],
     "m_Precision": 0,
     "m_PreviewExpanded": true,
+    "m_PreviewMode": 0,
     "m_CustomColors": {
         "m_SerializableColors": []
     },
@@ -1975,6 +2080,29 @@
         "a": 0.0
     },
     "m_ColorMode": 0
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.Internal.Texture2DShaderProperty",
+    "m_ObjectId": "c4d38b9070344035a833086a3c0b20ad",
+    "m_Guid": {
+        "m_GuidSerialized": "968abd13-8612-495c-a3cb-e1e196aa86bc"
+    },
+    "m_Name": "My Gradient Texture 1",
+    "m_DefaultReferenceName": "",
+    "m_OverrideReferenceName": "_MyGradientTexture_1",
+    "m_GeneratePropertyBlock": true,
+    "m_Precision": 0,
+    "overrideHLSLDeclaration": false,
+    "hlslDeclarationOverride": 0,
+    "m_Hidden": false,
+    "m_Value": {
+        "m_SerializedTexture": "{\"texture\":{\"instanceID\":0}}",
+        "m_Guid": ""
+    },
+    "m_Modifiable": true,
+    "m_DefaultType": 0
 }
 
 {
@@ -2025,7 +2153,7 @@
     "m_Guid": {
         "m_GuidSerialized": "e1f37dbe-9501-4728-b356-9d94bd5dc66b"
     },
-    "m_Name": "!DRAWER MinMaxDrawer _MinMaxVector.x _MinMaxVector.y",
+    "m_Name": "!DRAWER MinMax _MinMaxVector.x _MinMaxVector.y",
     "m_DefaultReferenceName": "",
     "m_OverrideReferenceName": "Boolean_11",
     "m_GeneratePropertyBlock": true,
@@ -2192,7 +2320,7 @@
     "m_Guid": {
         "m_GuidSerialized": "ef0d33f6-80a6-4a6e-be29-0f6a2ef09c6c"
     },
-    "m_Name": "Some Texture &",
+    "m_Name": "Some Texture &&",
     "m_DefaultReferenceName": "",
     "m_OverrideReferenceName": "_MyOtherTexture",
     "m_GeneratePropertyBlock": true,

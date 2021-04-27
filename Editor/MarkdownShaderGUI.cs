@@ -6,8 +6,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.Rendering;
 using Needle.ShaderGraphMarkdown;
-using UnityEditor.Experimental.GraphView;
-using UnityEditor.ShaderGraph;
+using UnityEditorInternal;
 using UnityEngine.Rendering;
 #if HDRP_7_OR_NEWER
 using UnityEditor.Rendering.HighDefinition;
@@ -203,9 +202,7 @@ namespace Needle
             if (!targetMat) return;
 
             // proper widths for texture and label fields, same as ShaderGUI
-            // materialEditor.SetDefaultGUIWidths();
             EditorGUIUtility.fieldWidth = 64f;
-            // materialEditor.PropertiesDefaultGUI(new MaterialProperty[0]);
             
             int GetHashCode()
             {
@@ -297,45 +294,41 @@ namespace Needle
             void DrawDebugGroupContent()
             {
                 EditorGUI.BeginChangeCheck();
-                showOriginalPropertyList = EditorGUILayout.Toggle("Show Original Properties", showOriginalPropertyList);
+                showOriginalPropertyList = EditorGUILayout.Toggle(ShowOriginalProperties, showOriginalPropertyList);
                 if (EditorGUI.EndChangeCheck())
                     InitializeCustomGUI(targetMat);    
-                debugConditionalProperties = EditorGUILayout.Toggle("Debug Conditional Properties", debugConditionalProperties);
-                debugReferencedProperties = EditorGUILayout.Toggle("Debug Referenced Properties", debugReferencedProperties);
+                debugConditionalProperties = EditorGUILayout.Toggle(DebugConditionalProperties, debugConditionalProperties);
+                debugReferencedProperties = EditorGUILayout.Toggle(DebugReferencedProperties, debugReferencedProperties);
                 
                 EditorGUILayout.Space();
-                if (GUILayout.Button("Clear Inspector Cache")) {
+                if (GUILayout.Button(RedrawInspector)) {
                     drawerCache.Clear();
                     headerGroups = null;
                 }                
                 EditorGUILayout.Space();
 
-                EditorGUILayout.LabelField("Shader Keywords", EditorStyles.boldLabel);
+                EditorGUILayout.LabelField(ShaderKeywords, EditorStyles.boldLabel);
                 foreach (var kw in targetMat.shaderKeywords)
                 {
                     EditorGUILayout.LabelField(kw, EditorStyles.miniLabel);
                 }
 
-                if (GUILayout.Button("Clear Keywords"))
+                if (GUILayout.Button(ClearKeywords))
                 {
                     foreach (var kw in targetMat.shaderKeywords)
                         targetMat.DisableKeyword(kw);
-                }
-
-                #if HDRP_7_OR_NEWER
-                if (GUILayout.Button("Reset Keywords"))
-                {
+                    
+#if HDRP_7_OR_NEWER
                     HDShaderUtils.ResetMaterialKeywords(targetMat);
+#endif
                 }
-                EditorGUILayout.Space();
-                #endif
 
                 EditorGUILayout.Space();
 
-                debugLocalAndGlobalKeywords = EditorGUILayout.Foldout(debugLocalAndGlobalKeywords, "Local and Global Keywords");
+                debugLocalAndGlobalKeywords = EditorGUILayout.Foldout(debugLocalAndGlobalKeywords, LocalAndGlobalKeywords);
                 if(debugLocalAndGlobalKeywords)
                 {
-                    EditorGUILayout.LabelField("Local Keywords", EditorStyles.boldLabel);
+                    EditorGUILayout.LabelField(LocalKeywords, EditorStyles.boldLabel);
                     EditorGUI.indentLevel++;
                     var localKeywords = (string[]) GetShaderLocalKeywords.Invoke(null, new object[] { targetMat.shader });
                     foreach (var kw in localKeywords)
@@ -343,7 +336,7 @@ namespace Needle
                         EditorGUILayout.LabelField(kw, EditorStyles.miniLabel);
                     }
                     EditorGUI.indentLevel--;
-                    EditorGUILayout.LabelField("Global Keywords", EditorStyles.boldLabel);
+                    EditorGUILayout.LabelField(GlobalKeywords, EditorStyles.boldLabel);
                     EditorGUI.indentLevel++;
                     var globalKeywords = (string[]) GetShaderGlobalKeywords.Invoke(null, new object[] { targetMat.shader });
                     foreach (var kw in globalKeywords)
@@ -354,57 +347,60 @@ namespace Needle
                 }
                 
                 EditorGUILayout.Space();
-
-                debugPropertyDrawers = EditorGUILayout.Foldout(debugPropertyDrawers, "Property Drawers and Decorators");
-                if(debugPropertyDrawers)
+                
+                if(Unsupported.IsDeveloperMode())
                 {
-                    foreach (var prop in properties)
+                    debugPropertyDrawers = EditorGUILayout.Foldout(debugPropertyDrawers, PropertyDrawersAndDecorators);
+                    if(debugPropertyDrawers)
                     {
-                        // TextureScaleOffsetProperty
-
-                        if(MaterialPropertyHandler == null) MaterialPropertyHandler = typeof(MaterialProperty).Assembly.GetType("UnityEditor.MaterialPropertyHandler");
-                        if (MaterialPropertyHandler != null)
+                        foreach (var prop in properties)
                         {
-                            if(GetHandler         == null) GetHandler         = MaterialPropertyHandler.GetMethod("GetHandler", (BindingFlags) (-1));
-                            var handler = GetHandler.Invoke(null, new object[] {((Material) materialEditor.target).shader, prop.name});
-                            if(m_PropertyDrawer   == null) m_PropertyDrawer   = MaterialPropertyHandler.GetField("m_PropertyDrawer", (BindingFlags) (-1));
-                            if(m_DecoratorDrawers == null) m_DecoratorDrawers = MaterialPropertyHandler.GetField("m_DecoratorDrawers", (BindingFlags) (-1));
+                            // TextureScaleOffsetProperty
 
-                            if(handler != null)
+                            if(MaterialPropertyHandler == null) MaterialPropertyHandler = typeof(MaterialProperty).Assembly.GetType("UnityEditor.MaterialPropertyHandler");
+                            if (MaterialPropertyHandler != null)
                             {
-                                MaterialPropertyDrawer propertyDrawer = (MaterialPropertyDrawer) m_PropertyDrawer.GetValue(handler);
-                                List<MaterialPropertyDrawer> decoratorDrawers = (List<MaterialPropertyDrawer>) m_DecoratorDrawers.GetValue(handler);
-                                if (propertyDrawer != null || decoratorDrawers != null)
-                                {
-                                    EditorGUILayout.LabelField($@"{prop.name}(""{prop.displayName}"", {prop.type})");
-                                }
-                                EditorGUI.indentLevel++;
-                                if(propertyDrawer != null)
-                                {
-                                    EditorGUILayout.LabelField("Property Drawer", EditorStyles.miniLabel);
-                                    EditorGUILayout.LabelField(propertyDrawer.GetType() + " (height: " + propertyDrawer.GetPropertyHeight(prop, prop.displayName, materialEditor) + "px)");
-                                }
-                                if(decoratorDrawers != null)
-                                {
-                                    EditorGUILayout.LabelField("Decorator Drawers", EditorStyles.miniLabel);
-                                    foreach (var d in decoratorDrawers)
-                                    {
-                                        EditorGUILayout.LabelField(d.GetType() + " (height: " + d.GetPropertyHeight(prop, prop.displayName, materialEditor) + "px)");
-                                    }
-                                }
-                                EditorGUI.indentLevel--;
-                            }
-                        }
-                        // MaterialPropertyHandler handler = MaterialPropertyHandler.GetHandler(((Material) materialEditor.target).shader, prop.name);
-                    }
-                }
+                                if(GetHandler         == null) GetHandler         = MaterialPropertyHandler.GetMethod("GetHandler", (BindingFlags) (-1));
+                                var handler = GetHandler.Invoke(null, new object[] {((Material) materialEditor.target).shader, prop.name});
+                                if(m_PropertyDrawer   == null) m_PropertyDrawer   = MaterialPropertyHandler.GetField("m_PropertyDrawer", (BindingFlags) (-1));
+                                if(m_DecoratorDrawers == null) m_DecoratorDrawers = MaterialPropertyHandler.GetField("m_DecoratorDrawers", (BindingFlags) (-1));
 
-                EditorGUILayout.Space();
-                if (GUILayout.Button("Reset Foldout SessionState"))
-                {
-                    foreach(var group in headerGroups)
+                                if(handler != null)
+                                {
+                                    MaterialPropertyDrawer propertyDrawer = (MaterialPropertyDrawer) m_PropertyDrawer.GetValue(handler);
+                                    List<MaterialPropertyDrawer> decoratorDrawers = (List<MaterialPropertyDrawer>) m_DecoratorDrawers.GetValue(handler);
+                                    if (propertyDrawer != null || decoratorDrawers != null)
+                                    {
+                                        EditorGUILayout.LabelField($@"{prop.name}(""{prop.displayName}"", {prop.type})");
+                                    }
+                                    EditorGUI.indentLevel++;
+                                    if(propertyDrawer != null)
+                                    {
+                                        EditorGUILayout.LabelField("Property Drawer", EditorStyles.miniLabel);
+                                        EditorGUILayout.LabelField(propertyDrawer.GetType() + " (height: " + propertyDrawer.GetPropertyHeight(prop, prop.displayName, materialEditor) + "px)");
+                                    }
+                                    if(decoratorDrawers != null)
+                                    {
+                                        EditorGUILayout.LabelField("Decorator Drawers", EditorStyles.miniLabel);
+                                        foreach (var d in decoratorDrawers)
+                                        {
+                                            EditorGUILayout.LabelField(d.GetType() + " (height: " + d.GetPropertyHeight(prop, prop.displayName, materialEditor) + "px)");
+                                        }
+                                    }
+                                    EditorGUI.indentLevel--;
+                                }
+                            }
+                            // MaterialPropertyHandler handler = MaterialPropertyHandler.GetHandler(((Material) materialEditor.target).shader, prop.name);
+                        }
+                    }
+                    
+                    EditorGUILayout.Space();
+                    if (GUILayout.Button(ResetFoldoutSessionState))
                     {
-                        SessionState.EraseBool(group.foldoutStateKeyName);
+                        foreach(var group in headerGroups)
+                        {
+                            SessionState.EraseBool(group.foldoutStateKeyName);
+                        }
                     }
                 }
                 
@@ -423,7 +419,7 @@ namespace Needle
                     InitializeCustomGUI(targetMat);
             
                 EditorGUILayout.Space();
-                EditorGUILayout.LabelField("Additional Options", EditorStyles.boldLabel);
+                EditorGUILayout.LabelField(AdditionalOptions, EditorStyles.boldLabel);
                 EditorGUILayout.Space();
                 
                 // from MaterialEditor.PropertiesDefaultGUI(properties);
@@ -454,7 +450,8 @@ namespace Needle
                     var display = prop.displayName;
                     var isDisabled = false;
                     var hasCondition = !display.StartsWith("[", StringComparison.Ordinal) && display.Contains('[') && display.EndsWith("]", StringComparison.Ordinal);
-                    if(hasCondition) {
+                    if(hasCondition)
+                    {
                         var condition = GetBetween(display, '[', ']', true);
                         if (!string.IsNullOrEmpty(condition))
                         {
@@ -696,6 +693,20 @@ namespace Needle
 
         private ShaderGUI baseShaderGui = null;
         private bool haveSearchedForCustomGUI = false;
+        
+        private static readonly GUIContent AdditionalOptions = new GUIContent("Additional Options", "Options from the shader that are not part of the usual shader properties, e.g. instancing.");
+        private static readonly GUIContent ShowOriginalProperties = new GUIContent("Show Original Properties", "Enable this option to show all properties, even those marked with [HideInInspector].");
+        private static readonly GUIContent DebugConditionalProperties = new GUIContent("Debug Conditional Properties", "Enable this option to show properties that are conditionally filtered out with [SOME_CONDITION].");
+        private static readonly GUIContent DebugReferencedProperties = new GUIContent("Debug Referenced Properties", "Enable this option to show properties that are filtered out because they are referenced by drawers (!DRAWER) or inline properties (&&).");
+        private static readonly GUIContent RedrawInspector = new GUIContent("Redraw Shader Inspector", "After updating some properties and drawers, Unity caches some editor/inspector details. Clicking this button forces a regeneration of the Shader Inspector in such cases.");
+        private static readonly GUIContent ShaderKeywords = new GUIContent("Shader Keywords");
+        private static readonly GUIContent ClearKeywords = new GUIContent("Clear Keywords", "Reset keywords currently set on this shader.");
+        private static readonly GUIContent LocalKeywords = new GUIContent("Local Keywords");
+        private static readonly GUIContent GlobalKeywords = new GUIContent("Global Keywords");
+        private static readonly GUIContent PropertyDrawersAndDecorators = new GUIContent("Property Drawers and Decorators");
+        private static readonly GUIContent ResetFoldoutSessionState = new GUIContent("Reset Foldout SessionState");
+        private static readonly GUIContent LocalAndGlobalKeywords = new GUIContent("Local and Global Keywords", "All keywords that are defined/used by this shader.");
+
         private void InitializeCustomGUI(Material targetMat)
         {
             // instead of calling base, we need to draw the right inspector here.
