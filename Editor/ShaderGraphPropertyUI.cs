@@ -1,3 +1,5 @@
+#if SHADERGRAPH_7_OR_NEWER
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -208,3 +210,5 @@ namespace Needle.ShaderGraphMarkdown
 #endif
     }
 }
+
+#endif
