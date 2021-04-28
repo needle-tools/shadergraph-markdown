@@ -101,9 +101,6 @@ namespace Needle
         {
             if (propertyTypeCache.ContainsKey(display)) return propertyTypeCache[display];
             
-            // markdown blockquote: >
-            // markdown footnote: [^MyNote] Hello I'm a footnote
-
             var type = GetMarkdownTypeUncached(display);
             propertyTypeCache.Add(display, type);
             return type;
