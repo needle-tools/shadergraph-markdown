@@ -79,6 +79,9 @@
     "m_Keywords": [
         {
             "m_Id": "15ae6e1056b04d429cf5ecb2cd65fa69"
+        },
+        {
+            "m_Id": "469a5a311e704bab9fcbc45e9898131d"
         }
     ],
     "m_Nodes": [
@@ -321,7 +324,7 @@
 }
 
 {
-    "m_SGVersion": 0,
+    "m_SGVersion": 1,
     "m_Type": "UnityEditor.ShaderGraph.ShaderKeyword",
     "m_ObjectId": "15ae6e1056b04d429cf5ecb2cd65fa69",
     "m_Guid": {
@@ -538,6 +541,25 @@
         "x": 0.0,
         "y": 1.0
     }
+}
+
+{
+    "m_SGVersion": 0,
+    "m_Type": "UnityEditor.ShaderGraph.ShaderKeyword",
+    "m_ObjectId": "469a5a311e704bab9fcbc45e9898131d",
+    "m_Guid": {
+        "m_GuidSerialized": "1ecf637c-8b93-487f-bed2-e44ea22906b4"
+    },
+    "m_Name": "Another Important Option",
+    "m_DefaultReferenceName": "BOOLEAN_469A5A311E704BAB9FCBC45E9898131D_ON",
+    "m_OverrideReferenceName": "_SOME_BOOL_KEYWORD_ON",
+    "m_GeneratePropertyBlock": true,
+    "m_KeywordType": 0,
+    "m_KeywordDefinition": 0,
+    "m_KeywordScope": 0,
+    "m_Entries": [],
+    "m_Value": 0,
+    "m_IsEditable": true
 }
 
 {
