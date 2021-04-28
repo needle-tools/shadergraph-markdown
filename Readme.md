@@ -1,6 +1,6 @@
 # Shader Graph Markdown
 
-![Unity Version Compatibility](https://img.shields.io/badge/Unity-2019.4%20%E2%80%94%202021.1-brightgreen) [![openupm](https://img.shields.io/npm/v/com.needle.shadergraph-markdown?label=openupm&registry_uri=https://package.openupm.com)](https://openupm.com/packages/com.needle.shadergraph-markdown/)
+![Unity Version Compatibility](https://img.shields.io/badge/Unity-2019.4%20%E2%80%94%202021.1-brightgreen) 
 
 ## What's this?
 
