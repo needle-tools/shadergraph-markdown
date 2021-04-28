@@ -1,7 +1,7 @@
 {
   "name": "com.needle.shadergraph-markdown",
   "displayName": "Shader Graph Markdown",
-  "version": "0.5.1-exp",
+  "version": "1.0.0",
   "author": {
     "name": "Needle",
     "email": "hi@needle.tools",
@@ -12,7 +12,7 @@
     "url": "https://github.com/needle-tools/shadergraph-markdown.git"
   },
   "unity": "2019.4",
-  "description": "Markdown-like syntax for Shader Graph properties, to make better material inspectors.",
+  "description": "Markdown-like syntax for Shader Graph properties, to make better material inspectors. Can also be used for other shaders!",
   "keywords": [
     "shadergraph",
     "markdown",

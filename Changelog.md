@@ -2,6 +2,15 @@
 All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2021-04-28
+- fixed settings location which had an incorrect space in the path
+- added more samples for SRP 10+, Amplify, Built-In RP
+- added ability to collapse/expand all foldouts in SRP 7 with alt+click
+- added texture property parameter to GradientGenerator
+- added 2021.1 / SRP 11+ support
+- removed Shader Graph/Core RP dependencies, works with Built-in as well
+- adjusted colors
+
 ## [0.5.1-exp] - 2021-02-10
 - fixed texture field not being square in some cases
 - added tiling/offset inline drawer. Usage:
