@@ -20,19 +20,32 @@
   ],
   "type": "tool",
   "dependencies": {
-    "com.unity.render-pipelines.core": "7.5.2",
-    "com.unity.shadergraph": "7.5.2"
   },
   "samples": [
     {
-      "displayName": "Samples for SRP 7+ (Unity 2019.4+)",
+      "displayName": "URP and HDRP 10+ (Unity 2020.2+)",
       "description": "Shows how to use Shader Graph Markdown annotations.",
-      "path": "Samples~/SRP 7+ (Unity 2019.4+)"
+      "path": "Samples~/URP and HDRP 10+ (Unity 2020.2+)"
     },
     {
-      "displayName": "Samples for SRP 9+ (Unity 2020.2+)",
-      "description": "Shows how to use Shader Graph Markdown annotations.",
-      "path": "Samples~/SRP 9+ (Unity 2020.2+)"
+      "displayName": "URP 7+ (Unity 2019.4+)",
+      "description": "Shows how to use Shader Graph Markdown.",
+      "path": "Samples~/URP 7+ (Unity 2019.4+)"
+    },
+    {
+      "displayName": "HDRP 7+ (Unity 2019.4+)",
+      "description": "Shows how to use Shader Graph Markdown.",
+      "path": "Samples~/HDRP 7+ (Unity 2019.4+)"
+    },
+    {
+      "displayName": "Built-In",
+      "description": "Shows how to use Shader Graph Markdown in Surface Shaders.",
+      "path": "Samples~/Build-In"
+    },
+    {
+      "displayName": "Amplify",
+      "description": "Shows how to use Shader Graph Markdown in Amplify Shader Editor.",
+      "path": "Samples~/Amplify"
     }
   ]
 }
