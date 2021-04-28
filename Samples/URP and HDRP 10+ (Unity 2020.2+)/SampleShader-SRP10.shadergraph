@@ -466,7 +466,7 @@
 }
 
 {
-    "m_SGVersion": 0,
+    "m_SGVersion": 1,
     "m_Type": "UnityEditor.ShaderGraph.ShaderKeyword",
     "m_ObjectId": "15ae6e1056b04d429cf5ecb2cd65fa69",
     "m_Guid": {
