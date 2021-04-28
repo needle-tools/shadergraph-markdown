@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.Rendering;
 using Needle.ShaderGraphMarkdown;
+using UnityEditor.ShaderGraph;
 using UnityEditorInternal;
 using UnityEngine.Rendering;
 #if HDRP_7_OR_NEWER

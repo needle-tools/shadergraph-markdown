@@ -22,7 +22,7 @@ namespace Needle.ShaderGraphMarkdown
         private static StyleSheet styleSheet;
         private static PropertyInfo _graphEditorView, _blackboardProvider, _blackboard;
         private static FieldInfo m_InputRows;
-        
+
         private static void EditorUpdate()
         {
             i = (i + 1) % 100; // only run every 100 frames for now
@@ -61,8 +61,42 @@ namespace Needle.ShaderGraphMarkdown
 #endif
                 if (!styleSheet)
                     styleSheet = Resources.Load<StyleSheet>("Styles/ShaderGraphMarkdown");
-                
+
                 var blackboardElements = blackboard.Query<BlackboardField>().Visible().ToList();
+                
+#if !UNITY_2020_2_OR_NEWER
+                BlackboardRow GetRowForElement(VisualElement fieldView)
+                {
+                    if (fieldView == null) return null;
+                    var p = fieldView.parent;
+                    while (p != null && !(p is BlackboardRow))
+                        p = p.parent;
+                    if (p is BlackboardRow row)
+                        return row;
+                    return null;
+                }
+                
+                void ToggleExpand(EventBase eventBase)
+                {
+                    var target = eventBase.target as Button;
+                    var currentRow = GetRowForElement(target);
+                    if (target == null || currentRow == null || blackboardElements == null) return;
+                    
+                    // expanded state has already been updated at this point since our event is always appended later as the default event
+                    var currentState = currentRow.expanded;
+
+                    // only react to Alt click
+                    if (!(eventBase is MouseUpEvent downEvent) || !downEvent.altKey) return;
+                    
+                    foreach (var fieldView in blackboardElements)
+                    {
+                        var row = GetRowForElement(fieldView);
+                        if(row != null)
+                            row.expanded = currentState;
+                    }
+                }
+#endif
+                
                 bool nextFieldShouldBeIndented = false;
                 foreach(var fieldView in blackboardElements)
                 {
@@ -118,8 +152,24 @@ namespace Needle.ShaderGraphMarkdown
                     var markdownType = MarkdownShaderGUI.GetMarkdownType(displayName);
                     contentItem.ClearClassList();
                     if (!fieldView.styleSheets.Contains(styleSheet))
+                    {
                         fieldView.styleSheets.Add(styleSheet);
-                    
+                        
+#if !UNITY_2020_2_OR_NEWER
+                        // attach to the Blackboard expandButton for each item and add the typical Alt+Click handler
+                        // to expand/collapse all items.
+                        var row = GetRowForElement(fieldView);
+                        if (row != null)
+                        {
+                            var expand = row.Q<Button>("expandButton");
+                            expand.clickable.activators.Remove(ExpandManipulatorFilter);
+                            expand.clickable.activators.Add(ExpandManipulatorFilter);
+                            expand.clickable.clickedWithEventInfo -= ToggleExpand;
+                            expand.clickable.clickedWithEventInfo += ToggleExpand;
+                        }
+#endif
+                    }
+
                     switch (markdownType)
                     {
                         case MarkdownShaderGUI.MarkdownProperty.None:
@@ -148,5 +198,13 @@ namespace Needle.ShaderGraphMarkdown
                 }
             }
         }
+        
+#if !UNITY_2020_2_OR_NEWER
+        private static readonly ManipulatorActivationFilter ExpandManipulatorFilter = new ManipulatorActivationFilter()
+        {
+            button = MouseButton.LeftMouse,
+            modifiers = EventModifiers.Alt
+        };
+#endif
     }
 }
