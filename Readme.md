@@ -4,7 +4,7 @@
 
 ## What's this?
 
-**Shader Graph Markdown** contains a custom ShaderGUI to use with Unity's Shader Graph.  
+**Shader Graph Markdown** supercharges your creativity by allowing you to create great-looking, easy-to-use custom shader editors right from Unity's Shader Graph.  
 It uses "dummy properties" to draw a nice inspector for your materials, and decorates the Blackboard (where you edit properties) so that the markdown is readable and looks good.  
 
 The property naming syntax is inspired by the simplicity of markdown. Please see the [Attribute Reference](#attribute-reference)! 
