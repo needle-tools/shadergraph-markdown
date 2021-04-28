@@ -90,6 +90,9 @@ Especially the option to `Debug Conditional Properties` is helpful when you're s
 
 ![Debug Section](https://github.com/needle-tools/shadergraph-markdown/wiki/Images/09_Debug.png)  
 
+### Expand/Collapse All Properties for URP/HDRP 7
+In URP and HDRP 7, properties are configured right in the Blackboard, taking up lots of space. They can be expanded/collapsed, but that takes forever... Shader Graph Markdown fixes this by allowing you to Alt + Click on the foldouts to expand/collapse all properties.
+
 #### Keywords
 
 Shader Variants in Unity are controlled through [Shader Keywords](https://docs.unity3d.com/Manual/SL-MultipleProgramVariants.html). URP and HDRP use these extensively to control shader behaviour (basically all the produced shaders are "Uber Shaders"). If something goes wrong that can result in wrong rendering, so the options here help you to
