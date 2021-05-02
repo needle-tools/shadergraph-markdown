@@ -6,6 +6,7 @@ using UnityEngine;
 using UnityEditor;
 using UnityEditor.Rendering;
 using Needle.ShaderGraphMarkdown;
+using Unity.Profiling;
 #if SHADERGRAPH_7_OR_NEWER
 using UnityEditor.ShaderGraph;
 #endif
@@ -189,6 +190,7 @@ namespace Needle
 
         public override void OnClosed(Material material)
         {
+            headerGroups.Clear();
             headerGroups = null;
             lastHash = -1;
             base.OnClosed(material);
@@ -196,11 +198,14 @@ namespace Needle
         
         private int lastHash;
         private List<HeaderGroup> headerGroups = null;
+        
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
             var targetMat = materialEditor.target as Material;
             if (!targetMat) return;
 
+            onGUI.Begin();
+            
             // proper widths for texture and label fields, same as ShaderGUI
             EditorGUIUtility.fieldWidth = 64f;
             
@@ -214,21 +219,33 @@ namespace Needle
                     hashCode = (hashCode * 397) ^ prop.displayName.GetHashCode();
                     hashCode = (hashCode * 397) ^ prop.rangeLimits.GetHashCode();
                     hashCode = (hashCode * 397) ^ prop.flags.GetHashCode();
+                    
+                    // need to hash values as well since it seems MaterialProperties are changing whenever a value is changed/undone etc.
+                    hashCode = (hashCode * 397) ^ prop.floatValue.GetHashCode();
+                    hashCode = (hashCode * 397) ^ prop.colorValue.GetHashCode();
+                    hashCode = (hashCode * 397) ^ prop.vectorValue.GetHashCode();
+                    if(prop.textureValue) hashCode = (hashCode * 397) ^ prop.textureValue.GetHashCode();
+                    hashCode = (hashCode * 397) ^ prop.textureScaleAndOffset.GetHashCode();
                 }
                 return hashCode;
             }
 
+            getHashCode.Begin();
             int currentHash = GetHashCode();
             if (lastHash != currentHash) {
                 lastHash = currentHash;
                 MaterialChanged(materialEditor, properties);
-                headerGroups = null;
+                headerGroups?.Clear();
             }
+            getHashCode.End();
+
+            if (headerGroups == null)
+                headerGroups = new List<HeaderGroup>();
             
             // split by header properties
-            if(headerGroups == null)
+            if(headerGroups.Count < 1)
             {
-                headerGroups = new List<HeaderGroup>();
+                generateHeaderGroups.Begin();
                 headerGroups.Add(new HeaderGroup("Default"));
                 
                 foreach (var prop in properties)
@@ -282,7 +299,10 @@ namespace Needle
                 }
                 headerGroups.Add(new HeaderGroup(null) { properties = null, customDrawer = DrawCustomGUI });
                 headerGroups.Add(new HeaderGroup("Debug") { properties = null, customDrawer = DrawDebugGroupContent, expandedByDefault = false});
+                
+                generateHeaderGroups.End();
             }
+            
             string GetBetween(string str, char start, char end, bool last = false)
             {
                 var i0 = last ? str.LastIndexOf(start) : str.IndexOf(start);
@@ -293,6 +313,8 @@ namespace Needle
             
             void DrawDebugGroupContent()
             {
+                drawDebugGroupContent.Begin();
+                
                 EditorGUI.BeginChangeCheck();
                 showOriginalPropertyList = EditorGUILayout.Toggle(ShowOriginalProperties, showOriginalPropertyList);
                 if (EditorGUI.EndChangeCheck())
@@ -303,7 +325,7 @@ namespace Needle
                 EditorGUILayout.Space();
                 if (GUILayout.Button(RedrawInspector)) {
                     drawerCache.Clear();
-                    headerGroups = null;
+                    headerGroups.Clear();
                 }                
                 EditorGUILayout.Space();
 
@@ -411,10 +433,14 @@ namespace Needle
                 //     Debug.Log(MarkdownHDExtensions.GetDefaultCustomInspectorFromShader(targetMat.shader));
                 // }
                 // #endif
+                
+                drawDebugGroupContent.End();
             }
             
             void DrawCustomGUI()
             {
+                drawCustomGUI.Begin();
+                
                 if (!haveSearchedForCustomGUI)
                     InitializeCustomGUI(targetMat);
             
@@ -438,10 +464,14 @@ namespace Needle
                         .ToArray());
                     CoreEditorUtils.DrawSplitter();
                 }
+                
+                drawCustomGUI.End();
             }
 
             void DrawGroup(HeaderGroup group)
             {
+                drawGroup.Begin();
+                
                 bool previousPropertyWasDrawn = true;
                 
                 for(int i = 0; i < group.properties.Count; i++)
@@ -621,11 +651,14 @@ namespace Needle
                         EditorGUI.EndDisabledGroup();
                 }    
                 EditorGUILayout.Space();
+                
+                drawGroup.End();
             }
-            
+
             foreach(var group in headerGroups)
             {
                 if (group.properties == null && group.customDrawer == null) continue;
+                drawHeaderGroup.Begin();
                 EditorGUI.BeginChangeCheck();
                 if (group.name == null || group.name.Equals("Default", StringComparison.OrdinalIgnoreCase)) {
                     if(group.customDrawer != null) {
@@ -660,11 +693,16 @@ namespace Needle
 
                 if (EditorGUI.EndChangeCheck())
                     MaterialChanged(materialEditor, properties);
+
+                drawHeaderGroup.End();
             }
+            
+            onGUI.End();
         }
         
         protected virtual void MaterialChanged(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
+            materialChanged.Begin();
             foreach(var mat in materialEditor.targets)
             {
                 var material = (Material) mat;
@@ -689,6 +727,7 @@ namespace Needle
                     }
                 }
             }
+            materialChanged.End();
         }
 
         private ShaderGUI baseShaderGui = null;
@@ -706,7 +745,16 @@ namespace Needle
         private static readonly GUIContent PropertyDrawersAndDecorators = new GUIContent("Property Drawers and Decorators");
         private static readonly GUIContent ResetFoldoutSessionState = new GUIContent("Reset Foldout SessionState");
         private static readonly GUIContent LocalAndGlobalKeywords = new GUIContent("Local and Global Keywords", "All keywords that are defined/used by this shader.");
-
+        
+        private static readonly ProfilerMarker onGUI = new ProfilerMarker("OnGUI");
+        private static readonly ProfilerMarker getHashCode = new ProfilerMarker("Get Hash Code");
+        private static readonly ProfilerMarker generateHeaderGroups = new ProfilerMarker("Generate Header Groups");
+        private static readonly ProfilerMarker drawGroup = new ProfilerMarker("Draw Group");
+        private static readonly ProfilerMarker drawCustomGUI = new ProfilerMarker("Draw Custom GUI");
+        private static readonly ProfilerMarker drawDebugGroupContent = new ProfilerMarker("Draw Debug Group Content");
+        private static readonly ProfilerMarker drawHeaderGroup = new ProfilerMarker("Draw Header Groups");
+        private static readonly ProfilerMarker materialChanged = new ProfilerMarker("Material Changed");
+        
         private void InitializeCustomGUI(Material targetMat)
         {
             // instead of calling base, we need to draw the right inspector here.
