@@ -2,6 +2,15 @@
 All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2021-05-03
+- fixed Undo not showing changed values in some cases
+- fixed disappearing custom drawers when exiting play mode with Domain Reload disabled
+- fixed vector sliders not showing animation state (red/blue overlay)
+- fixed hidden lightmap texture array being displayed as texture property in some case
+- added `### Label` to show a non-bold label without space above, useful for indented properties coming afterwards
+- added ability to use inline textures with custom drawers
+- added MultiPropertyDrawer that can draw multiple properties on a single line (experimental)
+
 ## [1.0.0] - 2021-04-28
 - fixed settings location which had an incorrect space in the path
 - added more samples for SRP 10+, Amplify, Built-In RP
@@ -10,6 +19,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 - added 2021.1 / SRP 11+ support
 - removed Shader Graph/Core RP dependencies, works with Built-in as well
 - adjusted colors
+- changed license to Asset Store License, if SG Markdown is aquired elsewhere you many only use it for non-commercial purposes.
 
 ## [0.5.1-exp] - 2021-02-10
 - fixed texture field not being square in some cases
