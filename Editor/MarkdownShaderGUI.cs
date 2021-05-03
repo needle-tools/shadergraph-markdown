@@ -72,13 +72,14 @@ namespace Needle
             Foldout
         }
 
-        private static string refFormat = "!REF";
-        private static string noteFormat = "!NOTE";
-        private static string alternateNoteFormat = "* ";
-        private static string drawerFormat = "!DRAWER";
-        private static string foldoutHeaderFormat = "#";
-        private static string foldoutHeaderFormatStart = foldoutHeaderFormat + " ";
-        private static string headerFormatStart = "##" + " ";
+        private static readonly string refFormat = "!REF";
+        private static readonly string noteFormat = "!NOTE";
+        private static readonly string alternateNoteFormat = "* ";
+        private static readonly string drawerFormat = "!DRAWER";
+        private static readonly string foldoutHeaderFormat = "#";
+        private static readonly string foldoutHeaderFormatStart = foldoutHeaderFormat + " ";
+        private static readonly string headerFormat = "##";
+        private static readonly string headerFormatStart = headerFormat + " ";
 
         private static MarkdownProperty GetMarkdownTypeUncached(string display)
         {
@@ -92,7 +93,7 @@ namespace Needle
                 return MarkdownProperty.Drawer;
             if (display.StartsWith(foldoutHeaderFormatStart) || display.Equals(foldoutHeaderFormat, StringComparison.Ordinal))
                 return MarkdownProperty.Foldout;
-            if (display.StartsWith(headerFormatStart))
+            if (display.StartsWith(headerFormatStart) || display.Equals(headerFormat, StringComparison.Ordinal))
                 return MarkdownProperty.Header;
             return MarkdownProperty.None;
         }
@@ -101,7 +102,6 @@ namespace Needle
         internal static MarkdownProperty GetMarkdownType(string display)
         {
             if (propertyTypeCache.ContainsKey(display)) return propertyTypeCache[display];
-            
             var type = GetMarkdownTypeUncached(display);
             propertyTypeCache.Add(display, type);
             return type;
@@ -159,9 +159,10 @@ namespace Needle
             return keywordProp;
         }
 
-        private static MarkdownMaterialPropertyDrawer GetCachedDrawer(string objectName)
+        internal static MarkdownMaterialPropertyDrawer GetCachedDrawer(string objectName)
         {
-            if(!drawerCache.ContainsKey(objectName)) {
+            if(!drawerCache.ContainsKey(objectName) || !drawerCache[objectName])
+            {
                 var objectPath = AssetDatabase.FindAssets($"t:{nameof(MarkdownMaterialPropertyDrawer)} {objectName}").Select(AssetDatabase.GUIDToAssetPath).FirstOrDefault();
                 var scriptableObject = AssetDatabase.LoadAssetAtPath<MarkdownMaterialPropertyDrawer>(objectPath);
                 if (scriptableObject == null) {
@@ -323,9 +324,11 @@ namespace Needle
                 debugReferencedProperties = EditorGUILayout.Toggle(DebugReferencedProperties, debugReferencedProperties);
                 
                 EditorGUILayout.Space();
-                if (GUILayout.Button(RedrawInspector)) {
+                if (GUILayout.Button(RedrawInspector))
+                {
                     drawerCache.Clear();
                     headerGroups.Clear();
+                    GUIUtility.ExitGUI();
                 }                
                 EditorGUILayout.Space();
 
@@ -471,6 +474,7 @@ namespace Needle
                 drawGroup.Begin();
                 
                 bool previousPropertyWasDrawn = true;
+                bool nextPropertyDrawerShouldBeInline = false;
                 
                 for(int i = 0; i < group.properties.Count; i++)
                 {
@@ -539,11 +543,32 @@ namespace Needle
                                 var objectName = parts[1];
                                 var drawer = GetCachedDrawer(objectName);
                                 if(drawer) {
-                                    try {
-                                        drawer.OnDrawerGUI(materialEditor, properties, new MarkdownMaterialPropertyDrawer.DrawerParameters(parts));
+                                    try
+                                    {
+                                        if (nextPropertyDrawerShouldBeInline)
+                                        {
+                                            if(drawer.SupportsInlineDrawing)
+                                            {
+                                                drawer.OnInlineDrawerGUI(InlineTextureDrawer.LastInlineTextureRect, materialEditor, properties, new MarkdownMaterialPropertyDrawer.DrawerParameters(parts));
+                                            }
+                                            else
+                                            {
+                                                EditorGUI.LabelField(InlineTextureDrawer.LastInlineTextureRect, drawer + " doesn't support inline drawing", EditorStyles.miniLabel);
+                                                drawer.OnDrawerGUI(materialEditor, properties, new MarkdownMaterialPropertyDrawer.DrawerParameters(parts));
+                                            }
+                                        }
+                                        else
+                                        {
+                                            drawer.OnDrawerGUI(materialEditor, properties, new MarkdownMaterialPropertyDrawer.DrawerParameters(parts));
+                                        }
                                     }
-                                    catch (Exception e) {
-                                        EditorGUILayout.HelpBox("Error in Custom Drawer \"" + objectName + "\": " + e, MessageType.Error);
+                                    catch (Exception e)
+                                    {
+                                        EditorGUILayout.HelpBox("Error in Custom Drawer \"" + objectName + "\":\n" + e.Message, MessageType.Error);
+                                    }
+                                    finally
+                                    {
+                                        nextPropertyDrawerShouldBeInline = false;
                                     }
                                 }
                                 else
@@ -555,9 +580,13 @@ namespace Needle
                             previousPropertyWasDrawn = true;
                             break;
                         case MarkdownProperty.Header:
-                            var labelName = display.Substring(display.IndexOf(' ') + 1);
+                            var stringIndex = display.IndexOf(' ') + 1;
                             EditorGUILayout.Space();
-                            EditorGUILayout.LabelField(labelName, EditorStyles.boldLabel);
+                            if(stringIndex > 0)
+                            {
+                                var labelName = display.Substring(stringIndex);
+                                EditorGUILayout.LabelField(labelName, EditorStyles.boldLabel);
+                            }
                             previousPropertyWasDrawn = true;
                             break;
                         case MarkdownProperty.Reference:
@@ -601,7 +630,6 @@ namespace Needle
                                 var trimmedDisplay = display.Trim(' ', '&');
                                 if(prop.type == MaterialProperty.PropType.Texture)
                                 {
-                                    // special drawer for inline textures: InlineTextureDrawer
                                     var drawer = (InlineTextureDrawer) GetCachedDrawer(nameof(InlineTextureDrawer));
                                     if (drawer)
                                     {
@@ -611,9 +639,18 @@ namespace Needle
                                             extraProperty = (i + 1 < group.properties.Count) ? group.properties[i + 1] : null;
                                             if(extraProperty != null)
                                             {
+                                                if (extraProperty.flags.HasFlag(MaterialProperty.PropFlags.HideInInspector))
+                                                {
+                                                    extraProperty = null;
+                                                }
+                                                else if (GetMarkdownType(extraProperty.displayName) == MarkdownProperty.Drawer)
+                                                {
+                                                    extraProperty = null;
+                                                    nextPropertyDrawerShouldBeInline = true;
+                                                }
                                                 // check if this is a special property, not supported right now
                                                 // also we don't want to draw if hidden (e.g. unity_Lightmaps)
-                                                if (GetMarkdownType(extraProperty.displayName) != MarkdownProperty.None || extraProperty.flags.HasFlag(MaterialProperty.PropFlags.HideInInspector))
+                                                else if (GetMarkdownType(extraProperty.displayName) != MarkdownProperty.None)
                                                 {
                                                     extraProperty = null;
                                                 }
@@ -625,12 +662,12 @@ namespace Needle
                                                 }
                                             }
                                         }
-                                        drawer.OnDrawerGUI(materialEditor, prop, trimmedDisplay, extraProperty);
+                                        drawer.OnDrawerGUI(materialEditor, properties, prop, trimmedDisplay, extraProperty);
                                     }
                                 }
                                 else if (prop.type == MaterialProperty.PropType.Vector)
                                 {
-                                    var drawer = (VectorSliderDrawer) GetCachedDrawer(nameof(VectorSliderDrawer));
+                                    var drawer = (VectorSliderDrawer) GetCachedDrawer(nameof(VectorSliderDrawer)); 
                                     if (drawer)
                                     {
                                         drawer.OnDrawerGUI(materialEditor, prop, trimmedDisplay);

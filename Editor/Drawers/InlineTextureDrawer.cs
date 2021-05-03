@@ -16,33 +16,22 @@ namespace Needle.ShaderGraphMarkdown
                 throw new ArgumentNullException("No property named " + parameters.Get(0, ""));
             
             var extraProperty = parameters.Get(1, properties);
-            // var extraProperty2 = parameters.Get(2, properties);
-
-            // don't think that's necessary
-            // if (extraProperty == null && textureProperty.type == MaterialProperty.PropType.Texture)
-            // {
-            //     for (int i = 0; i < properties.Length; i++)
-            //     {
-            //         if(properties[i].type != MaterialProperty.PropType.Vector) continue;
-            //         if (properties[i].name.Equals(textureProperty.name + "_ST", StringComparison.Ordinal))
-            //         {
-            //             extraProperty = properties[i];
-            //             break;
-            //         }
-            //     }
-            // }
             
-            OnDrawerGUI(materialEditor, textureProperty, textureProperty.displayName, extraProperty);
+            OnDrawerGUI(materialEditor, properties, textureProperty, textureProperty.displayName, extraProperty);
         }
 
-        public void OnDrawerGUI(MaterialEditor materialEditor, MaterialProperty textureProperty, string displayName, MaterialProperty extraProperty)
+        private static Rect lastInlineTextureRect; 
+        internal static Rect LastInlineTextureRect => lastInlineTextureRect;
+        
+        internal void OnDrawerGUI(MaterialEditor materialEditor, MaterialProperty[] properties, MaterialProperty textureProperty, string displayName, MaterialProperty extraProperty)
         {
+            lastInlineTextureRect = Rect.zero;
             if(extraProperty == null)
             {
-                materialEditor.TexturePropertySingleLine(new GUIContent(displayName), textureProperty);
+                var rect = materialEditor.TexturePropertySingleLine(new GUIContent(displayName), textureProperty);
+                lastInlineTextureRect = rect;
+                lastInlineTextureRect.xMin += EditorGUIUtility.labelWidth;
             }
-            // else if (extraProperty2 != null)
-            //     materialEditor.TexturePropertyTwoLines(new GUIContent(textureProperty.displayName), textureProperty, extraProperty, new GUIContent(extraProperty2.displayName), extraProperty2);
             else if(extraProperty.type == MaterialProperty.PropType.Vector && (extraProperty.name.Equals(textureProperty.name + "_ST", StringComparison.Ordinal)))
             {
                 materialEditor.TextureProperty(textureProperty, displayName, true);
@@ -62,7 +51,7 @@ namespace Needle.ShaderGraphMarkdown
         {
             var textureProperty = parameters.Get(0, properties);
             var extraProperty = parameters.Get(1, properties);
-
+            
             return new[] { textureProperty, extraProperty };
         }
     }

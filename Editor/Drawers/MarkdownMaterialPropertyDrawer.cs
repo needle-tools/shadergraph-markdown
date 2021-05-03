@@ -48,9 +48,21 @@ namespace Needle.ShaderGraphMarkdown
         /// the others are optional parameters passed to the drawer.
         public abstract void OnDrawerGUI(MaterialEditor materialEditor, MaterialProperty[] properties, DrawerParameters parameters);
 
+        public virtual void OnInlineDrawerGUI(Rect rect, MaterialEditor materialEditor, MaterialProperty[] properties, DrawerParameters parameters)
+        {
+            
+        }
+
+        public virtual bool SupportsInlineDrawing => false;
+        
         public virtual IEnumerable<MaterialProperty> GetReferencedProperties(MaterialEditor materialEditor, MaterialProperty[] properties, DrawerParameters parameters)
         {
             return null;
+        }
+
+        public override string ToString()
+        {
+            return this.GetType().ToString();
         }
     }
 }
