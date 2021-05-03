@@ -165,18 +165,23 @@ namespace Needle
             if(!drawerCache.ContainsKey(objectName) || !drawerCache[objectName])
             {
                 var objectPath = AssetDatabase.FindAssets($"t:{nameof(MarkdownMaterialPropertyDrawer)} {objectName}").Select(AssetDatabase.GUIDToAssetPath).FirstOrDefault();
-                var scriptableObject = AssetDatabase.LoadAssetAtPath<MarkdownMaterialPropertyDrawer>(objectPath);
-                if (scriptableObject == null) {
+                var scriptableObject = default(MarkdownMaterialPropertyDrawer);
+                
+                if(!string.IsNullOrEmpty(objectPath))
+                    scriptableObject = AssetDatabase.LoadAssetAtPath<MarkdownMaterialPropertyDrawer>(objectPath);
+                
+                if (!scriptableObject)
+                {
                     // create a drawer instance in memory
                     var drawerType = TypeCache
                         .GetTypesDerivedFrom<MarkdownMaterialPropertyDrawer>()
                         .FirstOrDefault(x => x.Name.Equals(objectName, StringComparison.Ordinal));
                     scriptableObject = (MarkdownMaterialPropertyDrawer) ScriptableObject.CreateInstance(drawerType);
 
-                    if (scriptableObject == null && !objectName.EndsWith("Drawer", StringComparison.Ordinal))
+                    if (!scriptableObject && !objectName.EndsWith("Drawer", StringComparison.Ordinal))
                     {
                         var longName = objectName + "Drawer";
-                        if (drawerCache.ContainsKey(longName))
+                        if (drawerCache.ContainsKey(longName) && drawerCache[objectName])
                             scriptableObject = drawerCache[longName];
                         else
                             scriptableObject = GetCachedDrawer(longName);
