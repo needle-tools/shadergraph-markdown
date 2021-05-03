@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace Needle.ShaderGraphMarkdown
 {
@@ -14,7 +16,7 @@ namespace Needle.ShaderGraphMarkdown
         public override void OnDrawerGUI(MaterialEditor materialEditor, MaterialProperty[] properties, DrawerParameters parameters)
         {
             if (parameters.Count < 1)
-                throw new System.ArgumentException("No parameters to " + nameof(InlineTextureDrawer) + ". Please provide a vector property name or one or more float property names.");
+                throw new System.ArgumentException("No parameters to " + nameof(VectorSliderDrawer) + ". Please provide a vector property name or one or more float property names.");
             var vectorProperty = parameters.Get(0, properties);
             if (vectorProperty == null)
                 throw new System.ArgumentNullException("No property named " + parameters.Get(0, ""));
@@ -46,6 +48,18 @@ namespace Needle.ShaderGraphMarkdown
 
         public void OnDrawerGUI(MaterialEditor materialEditor, MaterialProperty vectorProperty, string display)
         {
+            if (vectorProperty.name.StartsWith("_Tile", StringComparison.Ordinal) || vectorProperty.name.StartsWith("_Tiling", StringComparison.Ordinal) || vectorProperty.name.EndsWith("_ST", StringComparison.Ordinal))
+            {
+                var rect = EditorGUILayout.GetControlRect(true, 18 * 2);
+                materialEditor.BeginAnimatedCheck(rect, vectorProperty);
+                EditorGUI.BeginChangeCheck();
+                var newVector = MaterialEditor.TextureScaleOffsetProperty(rect, vectorProperty.vectorValue);
+                if (EditorGUI.EndChangeCheck())
+                    vectorProperty.vectorValue = newVector;
+                materialEditor.EndAnimatedCheck();
+                return;
+            }
+            
             var firstParen = display.IndexOf('(');
             var lastParen = vectorProperty.displayName.LastIndexOf(')');
             string[] parts;
