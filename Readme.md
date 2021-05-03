@@ -2,6 +2,11 @@
 
 ![Unity Version Compatibility](https://img.shields.io/badge/Unity-2019.4%20%E2%80%94%202021.1-brightgreen) 
 
+## License
+
+Shader Graph Markdown is [available on the Asset Store](http://u3d.as/2was) for commercial use.  
+Other versions are only allowed to be used non-commercially and only if you're entitled to use Unity Personal (the same restrictions apply).
+
 ## What's this?
 
 **Shader Graph Markdown** supercharges your creativity by allowing you to create great-looking, easy-to-use custom shader editors right from Unity's Shader Graph.  
@@ -74,7 +79,7 @@ Other properties can specify a "condition" in which to draw them; this is very u
 
 ![Conditional Properties](https://github.com/needle-tools/shadergraph-markdown/wiki/Images/02_ConditionalProperties.gif)  
 
-Boolean/Enum keyword conditions are specified in the form  `KeywordReference_OptionSuffix`.
+Boolean/Enum keyword conditions are specified in the form  `KEYWORD_OPTION`.
 
 You can also use boolean properties and textures as conditionals:
 
@@ -106,17 +111,27 @@ A context menu entry on every Shader Graph-based material allows to quickly swit
 
 ### Custom Drawers
 
-You can totally make your own and go crazy, the system is pretty extendable. The shipped ones (`MinMaxDrawer`, `VectorSlidersDrawer`, `GradientDrawer` etc.) should be a pretty good starting point. Feel free to jump into our support discord and let us know if you need help or something isn't working as expected!
+You can totally make your own and go crazy, the system is pretty extendable. The shipped ones (`MinMaxDrawer`, `VectorSlidersDrawer`, `GradientDrawer` etc.) should be a pretty good starting point. 
+When referencing a custom drawer, you can both use `!DRAWER DoSomethingDrawer` and `!DRAWER DoSomething`.  
+Drawers are ScriptableObjects and can thus have persistent settings; an example of that is the `GradientDrawer`.
+
+Feel free to jump into our support discord and let us know if you need help or something isn't working as expected!
 
 ## Attribute Reference
 1. `# Foldout`  
    A foldout header
 6. `## Header`
    A header, similar to the `[Header]` attribute in scripts
-1. Append `&&` to Texture properties - this will render the _next_ property inline (most useful for Color or Float properties)
+4. `### Label`
+   A regular label, not bold and with no extra space.   
+   Useful before indented properties.
+1. Append `&&` to Texture properties
+    - this will render the _next_ property inline (most useful for Color or Float properties)
+    - if the next property is named `_MyTex_ST` (with `_MyTex` matching the texture property name), a tiling/offset field will be drawn
 3. Append `&` to Vector properties to have them display as 0..1 sliders
     - You can optionally specify the slider names: `Vector with Sliders (Amplitude, Frequency, Pattern) &`
     - If you leave them out you'll simply get a bunch of X,Y,Z,W sliders
+    - If the vector property starts with `_Tiling` or `_Tile` or ends with `_ST`, it will be drawn as Tiling/Offset property field
 3. Append `&` to Texture properties to render them as small texture slot  
   (not the monstrous default Shader Graph one, the nice one that URP/HDRP use for everything)
 8. Prepend a number of dashes (e.g. `-` or `---`) to indent properties.  
@@ -131,7 +146,7 @@ You can totally make your own and go crazy, the system is pretty extendable. The
     - enum keywords
     - texture properties (when the texture is not null)
     - boolean properties (when the bool is true)
-7. `!DRAWER SubclassOfMarkdownMaterialPropertyDrawer`  
+7. `!DRAWER MyDrawer`  
   This will draw custom code, similar to a `PropertyDrawer` for the Inspector. Drawers are specified as subclasses of `MarkdownMaterialPropertyDrawer`.
     Example:
     - Define `Some Vector (Amplitude, Frequency, Pattern)` with reference name `_SomeVector`.  
@@ -158,7 +173,7 @@ HDRP Shader Graphs are supported. A speciality there is that these already have 
 
 That being said, HDRP does some keyword magic (resetting material keywords at times); if you find something doesn't work as expected, you can use the "Debug" section to reset keywords and/or show the original property list.  
 
-### Amplify Support
+### Amplify Shader Editor Support
 Amplify works as-is, you can specify `Needle.MarkdownShaderGUI` as custom shader inspector and then create properties as usual. You'll have to arrange them somewhere on the board though (they need to be somewhere). Also, turn on "Auto-Register" on the markdown properties, otherwise they'll be stripped away since they are not actually "used" in the shader.
 
 ![Amplify Properties](https://github.com/needle-tools/shadergraph-markdown/wiki/Images/sgmarkdown-amplify-01.png)  
@@ -166,6 +181,24 @@ Amplify works as-is, you can specify `Needle.MarkdownShaderGUI` as custom shader
 
 ### Built-In and other Shaders
 Nothing about the custom shader inspector in Shader Graph Markdown is actually Shader Graph-specific! You can use the same properties and drawers for all shaders, be it built-in, surface shaders, BetterShaders, other editors... In many cases, you could also use custom attributes, but especially for foldouts and drawers, Shader Graph Markdown gives a lot of flexibility.
+
+### Why isn't there Feature X?
+A design goal of Shader Graph Markdown was to keep simplicity to allow for a fast workflow and nice editors, without writing any code. Custom drawers, on the other hand, give a lot of flexibility. The in-between, where you use some kind of markup to describe very complex behaviour, is explicitly not in scope for Shader Graph Markdown.  
+
+This is also the reason why there's no options to change header colors, specify pixel spacing values, ... and do other purely stylistic changes.  
+If you want that, there's other options; one that allows for tons of customization (and thus has a steeper learning curve) is the [Thry Editor](https://github.com/Thryrallo/ThryEditor).  
+
+With the above in mind, feel free to reach out via Discord and request features that fit to this philosophy – and please submit bugs if you find them!
+
+## Known Issues
+
+- _Changing keyword property entries does not refresh the Enum dropdown in the inspector_  
+  This is a Unity bug. [Case 1176077](https://issuetracker.unity3d.com/product/unity/issues/guid/1176077)  
+  Workaround: reimport any script (Rightclick > Reimport) to trigger a domain reload.
+- _Vector fields don't show animation state (blue/red overlay)_  
+  This is a Unity bug. Case 1333416
+- _Conditionally excluded properties can't be inline properties_
+  The condition will be ignored inside an inlined property. Don't inline them if you want them to use the condition.
 
 ## Contact
 <b>[needle — tools for unity](https://needle.tools)</b> • 
