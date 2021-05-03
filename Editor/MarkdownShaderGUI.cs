@@ -80,6 +80,7 @@ namespace Needle
         private static readonly string foldoutHeaderFormatStart = foldoutHeaderFormat + " ";
         private static readonly string headerFormat = "##";
         private static readonly string headerFormatStart = headerFormat + " ";
+        private static readonly string headerFormatStartLabel = headerFormat + "# ";
 
         private static MarkdownProperty GetMarkdownTypeUncached(string display)
         {
@@ -93,7 +94,7 @@ namespace Needle
                 return MarkdownProperty.Drawer;
             if (display.StartsWith(foldoutHeaderFormatStart) || display.Equals(foldoutHeaderFormat, StringComparison.Ordinal))
                 return MarkdownProperty.Foldout;
-            if (display.StartsWith(headerFormatStart) || display.Equals(headerFormat, StringComparison.Ordinal))
+            if (display.StartsWith(headerFormatStart) || display.StartsWith(headerFormatStartLabel) || display.Equals(headerFormat, StringComparison.Ordinal))
                 return MarkdownProperty.Header;
             return MarkdownProperty.None;
         }
@@ -581,11 +582,22 @@ namespace Needle
                             break;
                         case MarkdownProperty.Header:
                             var stringIndex = display.IndexOf(' ') + 1;
-                            EditorGUILayout.Space();
                             if(stringIndex > 0)
                             {
                                 var labelName = display.Substring(stringIndex);
-                                EditorGUILayout.LabelField(labelName, EditorStyles.boldLabel);
+                                if(display.StartsWith(headerFormatStartLabel))
+                                {
+                                    EditorGUILayout.LabelField(labelName);
+                                }
+                                else
+                                {
+                                    EditorGUILayout.Space();
+                                    EditorGUILayout.LabelField(labelName, EditorStyles.boldLabel);
+                                }
+                            }
+                            else
+                            {
+                                EditorGUILayout.Space();
                             }
                             previousPropertyWasDrawn = true;
                             break;

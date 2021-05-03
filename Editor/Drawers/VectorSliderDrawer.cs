@@ -57,6 +57,7 @@ namespace Needle.ShaderGraphMarkdown
                 if (EditorGUI.EndChangeCheck())
                     vectorProperty.vectorValue = newVector;
                 materialEditor.EndAnimatedCheck();
+                EditorGUILayout.Space(1);
                 return;
             }
             
