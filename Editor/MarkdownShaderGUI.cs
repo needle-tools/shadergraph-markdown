@@ -377,9 +377,7 @@ namespace Needle
                     {
                         foreach (var prop in properties)
                         {
-                            // TextureScaleOffsetProperty
-
-                            if(MaterialPropertyHandler == null) MaterialPropertyHandler = typeof(MaterialProperty).Assembly.GetType("UnityEditor.MaterialPropertyHandler");
+                            if (MaterialPropertyHandler == null) MaterialPropertyHandler = typeof(MaterialProperty).Assembly.GetType("UnityEditor.MaterialPropertyHandler");
                             if (MaterialPropertyHandler != null)
                             {
                                 if(GetHandler         == null) GetHandler         = MaterialPropertyHandler.GetMethod("GetHandler", (BindingFlags) (-1));
@@ -614,7 +612,8 @@ namespace Needle
                                             if(extraProperty != null)
                                             {
                                                 // check if this is a special property, not supported right now
-                                                if (GetMarkdownType(extraProperty.displayName) != MarkdownProperty.None)
+                                                // also we don't want to draw if hidden (e.g. unity_Lightmaps)
+                                                if (GetMarkdownType(extraProperty.displayName) != MarkdownProperty.None || extraProperty.flags.HasFlag(MaterialProperty.PropFlags.HideInInspector))
                                                 {
                                                     extraProperty = null;
                                                 }
