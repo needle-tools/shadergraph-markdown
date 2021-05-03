@@ -1,6 +1,5 @@
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
@@ -49,7 +48,7 @@ namespace Needle.ShaderGraphMarkdown
         {
             var firstParen = display.IndexOf('(');
             var lastParen = vectorProperty.displayName.LastIndexOf(')');
-            string[] parts = null;
+            string[] parts;
             if (firstParen >= 0 && lastParen >= 0 && lastParen > firstParen)
             {
                 var betweenParens = display.Substring(firstParen + 1, lastParen - firstParen - 1);
@@ -60,19 +59,60 @@ namespace Needle.ShaderGraphMarkdown
             {
                 parts = defaultParts;
             }
-            
+
             EditorGUILayout.LabelField(display);
             EditorGUI.indentLevel++;
+            materialEditor.BeginAnimatedCheck(vectorProperty);
+            // we need to do our own OverridePropertyColor check as this seems to be broken for Vector4 properties in Unity.
+            if (OverridePropertyColor(materialEditor, "material." + vectorProperty.name + ".x", out var bgColor))
+                GUI.backgroundColor = bgColor;
             EditorGUI.BeginChangeCheck();
             var value = vectorProperty.vectorValue;
             for (int i = 0; i < Mathf.Min(parts.Length, 4); i++)
             {
-                value[i] = EditorGUILayout.Slider(parts[i], value[i], minValue, maxValue);
+                materialEditor.BeginAnimatedCheck(vectorProperty);
+                var rect = EditorGUILayout.GetControlRect(true, 18f);
+                value[i] = EditorGUI.Slider(rect, parts[i], value[i], minValue, maxValue);
+                materialEditor.EndAnimatedCheck();
             }
 
             if (EditorGUI.EndChangeCheck())
                 vectorProperty.vectorValue = value;
+            materialEditor.EndAnimatedCheck();
             EditorGUI.indentLevel--;
+        }
+
+        // ReSharper disable InconsistentNaming
+        private static MethodInfo InAnimationRecording, IsPropertyCandidate;
+        // ReSharper restore InconsistentNaming
+        private static PropertyInfo rendererForAnimationMode; 
+        // This is incredibly ugly, but seems Vector4 animation colors are broken in Unity,
+        // this gets them to work for our custom editor here.
+        bool OverridePropertyColor(MaterialEditor editor, string path, out Color color)
+        {
+            if (rendererForAnimationMode == null) rendererForAnimationMode = typeof(MaterialEditor).GetProperty("rendererForAnimationMode", (BindingFlags) (-1));
+            if (InAnimationRecording == null) InAnimationRecording = typeof(AnimationMode).GetMethod("InAnimationRecording", (BindingFlags) (-1));
+            if (IsPropertyCandidate == null) IsPropertyCandidate = typeof(AnimationMode).GetMethod("IsPropertyCandidate", (BindingFlags) (-1));
+            
+            if (rendererForAnimationMode == null || InAnimationRecording == null || IsPropertyCandidate == null)
+            {
+                color = Color.white;
+                return false;
+            }
+            
+            var target = (Object) rendererForAnimationMode.GetValue(editor);
+            if (AnimationMode.IsPropertyAnimated(target, path))
+            {
+                color = AnimationMode.animatedPropertyColor;
+                if ((bool) InAnimationRecording.Invoke(null, null))
+                    color = AnimationMode.recordedPropertyColor;
+                else if ((bool) IsPropertyCandidate.Invoke(null, new object[]{ target, path }))
+                    color = AnimationMode.candidatePropertyColor;
+                return true;
+            }
+            
+            color = Color.white;
+            return false;
         }
         
         public override IEnumerable<MaterialProperty> GetReferencedProperties(MaterialEditor materialEditor, MaterialProperty[] properties, DrawerParameters parameters)
