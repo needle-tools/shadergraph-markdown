@@ -30,7 +30,8 @@ namespace Needle.ShaderGraphMarkdown
             {
                 var rect = materialEditor.TexturePropertySingleLine(new GUIContent(displayName), textureProperty);
                 lastInlineTextureRect = rect;
-                lastInlineTextureRect.xMin += EditorGUIUtility.labelWidth;
+                lastInlineTextureRect.x += EditorGUIUtility.labelWidth;
+                lastInlineTextureRect.width -= EditorGUIUtility.labelWidth;
             }
             else if(extraProperty.type == MaterialProperty.PropType.Vector && (extraProperty.name.Equals(textureProperty.name + "_ST", StringComparison.Ordinal)))
             {

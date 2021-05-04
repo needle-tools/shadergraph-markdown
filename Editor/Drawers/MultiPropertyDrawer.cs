@@ -8,7 +8,12 @@ public class MultiPropertyDrawer : MarkdownMaterialPropertyDrawer
     public override void OnDrawerGUI(MaterialEditor materialEditor, MaterialProperty[] properties, DrawerParameters parameters)
     {
         var controlRect = EditorGUILayout.GetControlRect(false, 18f);
+        
+        controlRect.xMin += EditorGUI.indentLevel * 15f;
+        var previousIndent = EditorGUI.indentLevel;
+        EditorGUI.indentLevel = 0;
         OnInlineDrawerGUI(controlRect, materialEditor, properties, parameters);
+        EditorGUI.indentLevel = previousIndent;
     }
 
     public override IEnumerable<MaterialProperty> GetReferencedProperties(MaterialEditor materialEditor, MaterialProperty[] properties, DrawerParameters parameters)
@@ -23,11 +28,14 @@ public class MultiPropertyDrawer : MarkdownMaterialPropertyDrawer
 
     public override void OnInlineDrawerGUI(Rect rect, MaterialEditor materialEditor, MaterialProperty[] properties, DrawerParameters parameters)
     {
-        var partRect = rect;
+        // GUI.DrawTexture(rect, Texture2D.whiteTexture);
+
         var entryCount = parameters.Count;
+        var partRect = rect;
         partRect.width = partRect.width / entryCount - 5;
-        var previousWidth = EditorGUIUtility.labelWidth; 
+        var previousWidth = EditorGUIUtility.labelWidth;
         EditorGUIUtility.labelWidth = partRect.width / 3;
+        
         for(int i = 0; i < parameters.Count; i++)
         {
             var param = parameters.Get(i, properties);
@@ -35,7 +43,7 @@ public class MultiPropertyDrawer : MarkdownMaterialPropertyDrawer
             {
                 throw new System.ArgumentException("Parameter " + i + " is invalid: " + parameters.Get(i, ""));
             }
-            else if (param.type == MaterialProperty.PropType.Texture)
+            if (param.type == MaterialProperty.PropType.Texture)
             {
                 var miniTexRect = partRect;
                 miniTexRect.width += 100;

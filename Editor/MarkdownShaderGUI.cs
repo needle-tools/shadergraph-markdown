@@ -181,7 +181,7 @@ namespace Needle
                     if (!scriptableObject && !objectName.EndsWith("Drawer", StringComparison.Ordinal))
                     {
                         var longName = objectName + "Drawer";
-                        if (drawerCache.ContainsKey(longName) && drawerCache[objectName])
+                        if (drawerCache.ContainsKey(longName) && drawerCache[longName])
                             scriptableObject = drawerCache[longName];
                         else
                             scriptableObject = GetCachedDrawer(longName);
@@ -260,7 +260,7 @@ namespace Needle
                     if(prop.displayName.StartsWith(foldoutHeaderFormatStart) || prop.displayName.Equals(foldoutHeaderFormat, StringComparison.Ordinal))
                     {
                         if (prop.displayName.Equals(foldoutHeaderFormat, StringComparison.Ordinal)  || 
-                            (prop.displayName.StartsWith(foldoutHeaderFormatStart + "(", StringComparison.Ordinal) && prop.displayName.EndsWith(")", StringComparison.Ordinal))) // for multiple ## (1) foldout breakers)
+                            (prop.displayName.StartsWith(foldoutHeaderFormatStart + "(", StringComparison.Ordinal) && prop.displayName.EndsWith(")", StringComparison.Ordinal))) // for multiple # (1) foldout breakers)
                             headerGroups.Add(new HeaderGroup(null));
                         else
                             headerGroups.Add(new HeaderGroup(prop.displayName.Substring(prop.displayName.IndexOf(' ') + 1)));
@@ -555,7 +555,12 @@ namespace Needle
                                         {
                                             if(drawer.SupportsInlineDrawing)
                                             {
+                                                var rect = InlineTextureDrawer.LastInlineTextureRect;
+                                                rect.xMin += EditorGUI.indentLevel * 15f;
+                                                var previousIndent = EditorGUI.indentLevel;
+                                                EditorGUI.indentLevel = 0;
                                                 drawer.OnInlineDrawerGUI(InlineTextureDrawer.LastInlineTextureRect, materialEditor, properties, new MarkdownMaterialPropertyDrawer.DrawerParameters(parts));
+                                                EditorGUI.indentLevel = previousIndent;
                                             }
                                             else
                                             {
@@ -587,7 +592,7 @@ namespace Needle
                             break;
                         case MarkdownProperty.Header:
                             var stringIndex = display.IndexOf(' ') + 1;
-                            if(stringIndex > 0)
+                            if(stringIndex > 0 && !(display.StartsWith(headerFormatStart + "(", StringComparison.Ordinal) && display.EndsWith(")", StringComparison.Ordinal)))
                             {
                                 var labelName = display.Substring(stringIndex);
                                 if(display.StartsWith(headerFormatStartLabel))
