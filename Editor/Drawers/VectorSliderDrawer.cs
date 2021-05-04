@@ -67,7 +67,7 @@ namespace Needle.ShaderGraphMarkdown
             if (firstParen >= 0 && lastParen >= 0 && lastParen > firstParen)
             {
                 var betweenParens = display.Substring(firstParen + 1, lastParen - firstParen - 1);
-                parts = betweenParens.Split(',', ';');
+                parts = betweenParens.Split(new []{',', ';'}, StringSplitOptions.RemoveEmptyEntries);
                 display = display.Substring(0, firstParen).Trim();
             }
             else
@@ -87,7 +87,7 @@ namespace Needle.ShaderGraphMarkdown
             {
                 materialEditor.BeginAnimatedCheck(vectorProperty);
                 var rect = EditorGUILayout.GetControlRect(true, 18f);
-                value[i] = EditorGUI.Slider(rect, parts[i], value[i], minValue, maxValue);
+                value[i] = EditorGUI.Slider(rect, parts[i].Trim(), value[i], minValue, maxValue);
                 materialEditor.EndAnimatedCheck();
             }
 

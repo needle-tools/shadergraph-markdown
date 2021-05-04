@@ -287,7 +287,7 @@ namespace Needle
 
                         if (display.StartsWith(drawerFormat))
                         {
-                            var split = display.Split(' ');
+                            var split = display.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
                             if (split.Length > 1)
                             {
                                 var objectName = split[1];

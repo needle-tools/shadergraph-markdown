@@ -9,14 +9,14 @@ namespace Needle.ShaderGraphMarkdown
 {
     public abstract class MarkdownMaterialPropertyDrawer : ScriptableObject
     {
-        public struct DrawerParameters
+        public readonly struct DrawerParameters
         {
             public override string ToString()
             {
                 return string.Join(",", parts);
             }
 
-            private string[] parts;
+            private readonly string[] parts;
 
             public DrawerParameters(string[] parts) {
                 this.parts = parts;
