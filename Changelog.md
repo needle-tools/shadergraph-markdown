@@ -4,6 +4,9 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 
 ## [1.0.2] - 2021-05-03
 - fixed short-named drawers going amiss after leaving Play mode with domain reload disabled
+- fixed indentation issues with inline drawers
+- improved string trimming for drawer parameters and vector slider names
+- added ability to use duplicated empty headers `## (1)`
 
 ## [1.0.1] - 2021-05-03
 - fixed Undo not showing changed values in some cases
