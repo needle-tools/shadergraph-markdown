@@ -1,9 +1,7 @@
-using System;
 using System.Collections.Generic;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace Needle.ShaderGraphMarkdown
 {
@@ -48,7 +46,7 @@ namespace Needle.ShaderGraphMarkdown
 
         public void OnDrawerGUI(MaterialEditor materialEditor, MaterialProperty vectorProperty, string display)
         {
-            if (vectorProperty.name.StartsWith("_Tile", StringComparison.Ordinal) || vectorProperty.name.StartsWith("_Tiling", StringComparison.Ordinal) || vectorProperty.name.EndsWith("_ST", StringComparison.Ordinal))
+            if (vectorProperty.name.StartsWith("_Tile", System.StringComparison.Ordinal) || vectorProperty.name.StartsWith("_Tiling", System.StringComparison.Ordinal) || vectorProperty.name.EndsWith("_ST", System.StringComparison.Ordinal))
             {
                 var rect = EditorGUILayout.GetControlRect(true, 18 * 2);
                 materialEditor.BeginAnimatedCheck(rect, vectorProperty);
@@ -67,7 +65,7 @@ namespace Needle.ShaderGraphMarkdown
             if (firstParen >= 0 && lastParen >= 0 && lastParen > firstParen)
             {
                 var betweenParens = display.Substring(firstParen + 1, lastParen - firstParen - 1);
-                parts = betweenParens.Split(new []{',', ';'}, StringSplitOptions.RemoveEmptyEntries);
+                parts = betweenParens.Split(new []{',', ';'}, System.StringSplitOptions.RemoveEmptyEntries);
                 display = display.Substring(0, firstParen).Trim();
             }
             else
