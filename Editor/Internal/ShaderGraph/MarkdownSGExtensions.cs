@@ -6,6 +6,7 @@ using System.IO;
 using System.Text;
 using UnityEngine;
 #if UNITY_2020_2_OR_NEWER
+using UnityEditor.Rendering.BuiltIn.ShaderGraph;
 using UnityEditor.ShaderGraph.Serialization;
 #else
 #endif
@@ -14,6 +15,28 @@ namespace UnityEditor.ShaderGraph
 {
     public static partial class MarkdownSGExtensions
     {
+#if UNITY_2021_2_OR_NEWER
+        [InitializeOnLoadMethod]
+        static void RegisterMarkdownHelpers()
+        {
+            MarkdownSGExtensions.RegisterCustomInspectorSetter(SetDefaultCustomInspector);
+        }
+        
+        static bool SetDefaultCustomInspector(Target target, string customInspector)
+        {
+            if (target is BuiltInTarget builtInTarget)
+            {
+                if (builtInTarget.customEditorGUI.Equals(customInspector, StringComparison.Ordinal))
+                    builtInTarget.customEditorGUI = null;
+                else
+                    builtInTarget.customEditorGUI = customInspector;
+                return true;
+            }
+
+            return false;
+        }
+#endif
+        
         internal static GraphData GetGraphData(AssetImporter importer)
         {
             try
@@ -116,13 +139,7 @@ namespace UnityEditor.ShaderGraph
                 {
                     foreach (var setter in CustomInspectorSetters)
                     {
-                        if (setter(target, CustomEditorGUI))
-                        {
-                            haveSetInspector = true;
-                            break;
-                        }
-
-                        if (haveSetInspector) break;
+                        setter(target, CustomEditorGUI);
                     }
                 }
 #else
