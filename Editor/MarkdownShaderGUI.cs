@@ -197,7 +197,7 @@ namespace Needle
 
         public override void OnClosed(Material material)
         {
-            headerGroups.Clear();
+            headerGroups?.Clear();
             headerGroups = null;
             lastHash = -1;
             base.OnClosed(material);
