@@ -8,6 +8,7 @@ using UnityEngine.UIElements;
 using UnityEditor;
 using UnityEditor.Experimental.GraphView;
 using System.Reflection;
+using UnityEditor.ShaderGraph;
 using UnityEditor.ShaderGraph.Internal;
 
 namespace Needle.ShaderGraphMarkdown
@@ -23,7 +24,6 @@ namespace Needle.ShaderGraphMarkdown
         private static int i = 0;
         private static StyleSheet styleSheet;
         private static PropertyInfo _graphEditorView, _blackboardProvider, _blackboard;
-        private static FieldInfo m_InputRows;
 
         private static void EditorUpdate()
         {
@@ -47,7 +47,13 @@ namespace Needle.ShaderGraphMarkdown
 
                 if (_blackboardProvider == null) _blackboardProvider = GraphEditorView.GetProperty("blackboardProvider", (BindingFlags) (-1));
                 var blackboardProvider = _blackboardProvider?.GetValue(graphEditorView);
-                if (blackboardProvider == null) continue;
+                if (blackboardProvider == null)
+                {
+                    _blackboardProvider = GraphEditorView.GetProperty("blackboardController", (BindingFlags) (-1));
+                    blackboardProvider = _blackboardProvider?.GetValue(graphEditorView);
+                    if(blackboardProvider == null)
+                        continue;
+                }
 
                 var BlackboardProvider = blackboardProvider.GetType();
 
@@ -57,15 +63,19 @@ namespace Needle.ShaderGraphMarkdown
                 
 #if UNITY_2020_2_OR_NEWER
                 // get inputRows as well so we can access actual shader property data, not just UI
-                if(m_InputRows == null) m_InputRows = BlackboardProvider.GetField("m_InputRows", (BindingFlags) (-1));
-                var inputRows = (Dictionary<ShaderInput, BlackboardRow>) m_InputRows.GetValue(blackboardProvider);
+                var inputRows = MarkdownSGExtensions.GetInputRowDictionaryFromController(blackboardProvider);
+                if(inputRows == null)
+                    continue;
+                
                 var shaderInputs = inputRows.ToDictionary(x => x.Value, x => x.Key);
 #endif
                 if (!styleSheet)
                     styleSheet = Resources.Load<StyleSheet>("Styles/ShaderGraphMarkdown");
 
-                var blackboardElements = blackboard.Query<BlackboardField>().Visible().ToList();
-                
+                var blackboardElements = blackboard.Query<BlackboardField>().Visible().ToList().Cast<VisualElement>().ToList();
+                if (!blackboardElements.Any())
+                    blackboardElements = MarkdownSGExtensions.GetBlackboardElements(blackboard);
+                    
 #if !UNITY_2020_2_OR_NEWER
                 BlackboardRow GetRowForElement(VisualElement fieldView)
                 {
@@ -110,11 +120,13 @@ namespace Needle.ShaderGraphMarkdown
                     
                     // get shaderInput for this field
                     var element = (VisualElement) fieldView;
-                    while (!(element is BlackboardRow) && element.parent != null)
+                    while (!MarkdownSGExtensions.ElementIsBlackboardRow(element) && element.parent != null)
                         element = element.parent;
                     
-                    if(element is BlackboardRow blackboardRow)
+                    if(MarkdownSGExtensions.ElementIsBlackboardRow(element)) // element is BlackboardRow blackboardRow)
                     {
+                        var blackboardRow = element;
+                        
                         if (shaderInputs.ContainsKey(blackboardRow))
                         {
                             var shaderInput = shaderInputs[blackboardRow];
@@ -126,7 +138,11 @@ namespace Needle.ShaderGraphMarkdown
                             #endif
                                 usesDefaultReferenceName = true;
 
-                            if (!shaderInput.referenceName.StartsWith("_"))
+                            // some properties already have "good" default reference names, we shouldn't warn in that case.
+                            if (usesDefaultReferenceName && shaderInput.referenceName.StartsWith("_", StringComparison.Ordinal))
+                                usesDefaultReferenceName = false;
+
+                            if (!shaderInput.referenceName.StartsWith("_", StringComparison.Ordinal))
                                 usesRecommendedReferenceName = false;
 
                             if ((shaderInput is AbstractShaderProperty abstractShaderProperty && 
@@ -142,7 +158,7 @@ namespace Needle.ShaderGraphMarkdown
                     }
 #endif
                     
-                    var displayName = fieldView.text;
+                    var displayName = MarkdownSGExtensions.GetBlackboardFieldText(fieldView);
                     var contentItem = fieldView.Q("contentItem");
 
                     var indentLevel = MarkdownShaderGUI.GetIndentLevel(displayName);
@@ -190,8 +206,8 @@ namespace Needle.ShaderGraphMarkdown
                     
                             if (!fieldView.ClassListContains("__markdown"))
                                 fieldView.AddToClassList("__markdown");
-                            
-                            fieldView.typeText = markdownType.ToString();
+
+                            MarkdownSGExtensions.SetBlackboardFieldTypeText(fieldView, markdownType.ToString());
                             break;
                     }
                     
