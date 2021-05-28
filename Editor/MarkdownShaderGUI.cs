@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
+using B83.LogicExpressionParser;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.Rendering;
@@ -493,24 +494,7 @@ namespace Needle
                         var condition = GetBetween(display, '[', ']', true);
                         if (!string.IsNullOrEmpty(condition))
                         {
-                            var keywordIsSet = Array.IndexOf(targetMat.shaderKeywords, condition) >= 0;
-                            var boolIsSet = false;
-                            var textureIsSet = false;
-                            
-                            // support for using bool/float/texture values as conditionals
-                            if(!keywordIsSet && targetMat.shader.FindPropertyIndex(condition) > -1) {
-                                var propertyIndex = targetMat.shader.FindPropertyIndex(condition);
-                                var propertyType = targetMat.shader.GetPropertyType(propertyIndex);
-                                
-                                if(propertyType == ShaderPropertyType.Float && targetMat.GetFloat(condition) > 0.5f)
-                                    boolIsSet = true;
-
-                                if (propertyType == ShaderPropertyType.Texture && targetMat.GetTexture(condition))
-                                    textureIsSet = true;
-                            }
-                            
-                            var conditionIsFulfilled = keywordIsSet || boolIsSet || textureIsSet;
-                            if (!conditionIsFulfilled)
+                            if (!ConditionIsFulfilled(targetMat, condition))
                             {
                                 if(!debugConditionalProperties) {
                                     previousPropertyWasDrawn = false;
@@ -756,6 +740,79 @@ namespace Needle
             }
             
             onGUI.End();
+        }
+
+        private static B83.LogicExpressionParser.Parser parser;
+        private static Dictionary<string, LogicExpression> expressionCache = new Dictionary<string, LogicExpression>();
+        private static bool ConditionIsFulfilled(Material targetMaterial, string condition)
+        {
+            bool SetValueForCondition(ExpressionVariable variable, string condition)
+            {
+                var keywordIsSet = Array.IndexOf(targetMaterial.shaderKeywords, condition) >= 0;
+                if (keywordIsSet)
+                {
+                    variable.Set(true);
+                    return true;
+                }
+                
+                var propertyIndex = targetMaterial.shader.FindPropertyIndex(condition);
+                if (propertyIndex <= -1)
+                {
+                    // property not found -
+                    // we could search harder (e.g. assume Vector.x/y/z/w or Color.r/g/b/a)
+                    // or we warn.
+                    // we should still set the value here
+                    // variable.Set(0);
+                    return false;
+                }
+                
+                var propertyType = targetMaterial.shader.GetPropertyType(propertyIndex);
+
+                switch (propertyType)
+                {
+                    case ShaderPropertyType.Float:
+                    case ShaderPropertyType.Range:
+                        variable.Set(targetMaterial.GetFloat(condition));
+                        break;
+                    case ShaderPropertyType.Texture:
+                        variable.Set(targetMaterial.GetTexture(condition));
+                        break;
+                    case ShaderPropertyType.Vector:
+                        variable.Set(targetMaterial.GetVector(condition).magnitude);
+                        break;
+                    case ShaderPropertyType.Color:
+                        variable.Set(targetMaterial.GetColor(condition).maxColorComponent);
+                        break;
+                    default:
+                        // weird property type in comparison
+                        return false;
+                        break;
+                }
+
+                return true;
+            }
+
+            // TODO Cache properly
+            var parser = new B83.LogicExpressionParser.Parser();
+            // if (!expressionCache.TryGetValue(condition, out var expression))
+            // {
+                var expression = parser.Parse(condition);
+            //     expressionCache.Add(condition, expression);
+            // }
+
+            bool allConditionsResolved = true;
+            foreach (var v in expression.Context.Variables)
+            {
+                allConditionsResolved &= SetValueForCondition(v.Value, v.Key);
+            }
+
+            if (!allConditionsResolved)
+            {
+                // TODO show warning
+                // TODO how to see which expressions are actually needed?
+            }
+
+            return expression.GetResult();
         }
         
         protected virtual void MaterialChanged(MaterialEditor materialEditor, MaterialProperty[] properties)

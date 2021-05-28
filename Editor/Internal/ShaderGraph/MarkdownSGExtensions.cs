@@ -203,8 +203,8 @@ namespace UnityEditor.ShaderGraph
             if (provider != null)
             {
                 if(m_InputRows == null) m_InputRows = typeof(BlackboardProvider).GetField("m_InputRows", (BindingFlags) (-1));
-                var inputRows = (Dictionary<ShaderInput, VisualElement>) m_InputRows?.GetValue(provider);
-                return inputRows;
+                var inputRows = (Dictionary<ShaderInput, BlackboardRow>) m_InputRows?.GetValue(provider);
+                return inputRows?.ToDictionary(x => x.Key, x => (VisualElement) x.Value);
             }
 #endif
             
