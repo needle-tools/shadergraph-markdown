@@ -144,7 +144,16 @@ namespace Needle.ShaderGraphMarkdown
             var parameterName1 = parameters.Get(0, (string) null);
             var parameterName2 = parameters.Get(1, (string) null);
 
-            if (parameterName1 == null || parameterName2 == null)
+            if (parameterName1 != null && parameterName2 == null)
+            {
+                var vectorProp = properties.FirstOrDefault(x => x.name.Equals(parameterName1, StringComparison.Ordinal));
+                if (vectorProp == null || vectorProp.type != MaterialProperty.PropType.Vector)
+                    return null;
+
+                return new [] { vectorProp };
+            }
+
+            if (parameterName1 == null)
                 return null;
             
             GetPropertyNameAndSwizzle(parameterName1, out var propertyName1, out var swizzle1);
