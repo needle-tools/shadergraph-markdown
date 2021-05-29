@@ -279,6 +279,8 @@ namespace Needle
                     }
                     else
                     {
+                        // TODO keywords should probably be their own group by default (and only pulled into foldouts via REF)
+                        
                         var last = headerGroups.Last();
                         if (last.properties == null) 
                             last.properties = new List<MaterialProperty>();
@@ -814,7 +816,6 @@ namespace Needle
                     default:
                         // weird property type in comparison
                         return false;
-                        break;
                 }
 
                 return true;
