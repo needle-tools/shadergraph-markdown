@@ -11,7 +11,7 @@
 * "ParseNumber" - returns a NumberExpression instance. This should be used
 *                 when the expression should evaluate to a numeric value.
 * 
-* Multiple expression objects can share one ExpressionContex which is 
+* Multiple expression objects can share one ExpressionContext which is 
 * responsible for resolving variables and constants.
 * 
 * 
@@ -45,7 +45,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace B83.LogicExpressionParser
+namespace Needle.ShaderGraphMarkdown.LogicExpressionParser
 {
     public interface ILogicResult
     {
@@ -646,10 +646,11 @@ namespace B83.LogicExpressionParser
         public ParsingContext ParsingContext { get { return m_ParsingContext; } set { m_ParsingContext = value; } }
         public ExpressionContext ExpressionContext { get { return context; } set { context = value; } }
 
-        public Parser() : this(new ParsingContext()) { }
-        public Parser(ParsingContext aParsingContext)
+        public Parser() : this(new ParsingContext(), new ExpressionContext()) { }
+        public Parser(ParsingContext aParsingContext) : this(aParsingContext, new ExpressionContext()) { }
+        public Parser(ParsingContext aParsingContext, ExpressionContext context)
         {
-            context = new ExpressionContext();
+            this.context = context;
             m_ParsingContext = aParsingContext;
         }
 

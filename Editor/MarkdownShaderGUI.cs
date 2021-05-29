@@ -2,11 +2,11 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
-using B83.LogicExpressionParser;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.Rendering;
 using Needle.ShaderGraphMarkdown;
+using Needle.ShaderGraphMarkdown.LogicExpressionParser;
 using Unity.Profiling;
 #if SHADERGRAPH_7_OR_NEWER
 using UnityEditor.ShaderGraph;
@@ -25,23 +25,26 @@ namespace Needle
     {
         private class HeaderGroup
         {
-            public string name;
+            public readonly string name;
+            public readonly string condition;
             public List<MaterialProperty> properties;
             public Action customDrawer = null;
             public bool expandedByDefault = true;
-            public string foldoutStateKeyName => $"{nameof(MarkdownShaderGUI)}.{name}";
+            public string FoldoutStateKeyName => $"{nameof(MarkdownShaderGUI)}.{name}";
             
-            public HeaderGroup(string propertyDisplayName)
+            public HeaderGroup(string displayName, string condition = null)
             {
-                if (!string.IsNullOrEmpty(propertyDisplayName) && propertyDisplayName.EndsWith("-", StringComparison.Ordinal))
+                if (!string.IsNullOrEmpty(displayName) && displayName.EndsWith("-", StringComparison.Ordinal))
                 {
                     expandedByDefault = false;
-                    name = propertyDisplayName.Substring(0, propertyDisplayName.Length - 1);
+                    name = displayName.Substring(0, displayName.Length - 1);
                 }
                 else
                 {
-                    name = propertyDisplayName;    
+                    name = displayName;    
                 }
+
+                this.condition = condition;
             }
         }
 
@@ -258,13 +261,21 @@ namespace Needle
                 
                 foreach (var prop in properties)
                 {
-                    if(prop.displayName.StartsWith(foldoutHeaderFormatStart) || prop.displayName.Equals(foldoutHeaderFormat, StringComparison.Ordinal))
+                    var display = prop.displayName;
+                    if(display.StartsWith(foldoutHeaderFormatStart) || display.Equals(foldoutHeaderFormat, StringComparison.Ordinal))
                     {
-                        if (prop.displayName.Equals(foldoutHeaderFormat, StringComparison.Ordinal)  || 
-                            (prop.displayName.StartsWith(foldoutHeaderFormatStart + "(", StringComparison.Ordinal) && prop.displayName.EndsWith(")", StringComparison.Ordinal))) // for multiple # (1) foldout breakers)
-                            headerGroups.Add(new HeaderGroup(null));
+                        var condition = GetBetween(display, '[', ']', true);
+                        if (!string.IsNullOrWhiteSpace(condition))
+                            display = display.Substring(0, display.LastIndexOf('[')).TrimEnd();
+                        if (display.Equals(foldoutHeaderFormat, StringComparison.Ordinal)  || 
+                            (display.StartsWith(foldoutHeaderFormatStart + "(", StringComparison.Ordinal) && display.EndsWith(")", StringComparison.Ordinal))) // for multiple # (1) foldout breakers)
+                            headerGroups.Add(new HeaderGroup(null, condition));
                         else
-                            headerGroups.Add(new HeaderGroup(prop.displayName.Substring(prop.displayName.IndexOf(' ') + 1)));
+                        {
+                            // remove "# " from start
+                            display = display.Substring(display.IndexOf(' ') + 1);
+                            headerGroups.Add(new HeaderGroup(display, condition));
+                        }
                     }
                     else
                     {
@@ -273,7 +284,7 @@ namespace Needle
                             last.properties = new List<MaterialProperty>();
                         
                         // need to process REF/DRAWER properties early so we can hide them properly if needed
-                        var display = prop.displayName.TrimStart('-');
+                        display = display.TrimStart('-');
                         
                         if (display.StartsWith(refFormat))
                         {
@@ -309,14 +320,6 @@ namespace Needle
                 headerGroups.Add(new HeaderGroup("Debug") { properties = null, customDrawer = DrawDebugGroupContent, expandedByDefault = false});
                 
                 generateHeaderGroups.End();
-            }
-            
-            string GetBetween(string str, char start, char end, bool last = false)
-            {
-                var i0 = last ? str.LastIndexOf(start) : str.IndexOf(start);
-                var i1 = last ? str.LastIndexOf(end)   : str.IndexOf(end);
-                if (i0 < 0 || i1 < 0) return null;
-                return str.Substring(i0 + 1, i1 - i0 - 1);
             }
             
             void DrawDebugGroupContent()
@@ -429,7 +432,7 @@ namespace Needle
                     {
                         foreach(var group in headerGroups)
                         {
-                            SessionState.EraseBool(group.foldoutStateKeyName);
+                            SessionState.EraseBool(group.FoldoutStateKeyName);
                         }
                     }
                 }
@@ -700,7 +703,21 @@ namespace Needle
             foreach(var group in headerGroups)
             {
                 if (group.properties == null && group.customDrawer == null) continue;
+                bool isDisabled = false;
+                if (group.condition != null)
+                {
+                    if (!ConditionIsFulfilled(targetMat, group.condition))
+                    {
+                        if (debugConditionalProperties)
+                            isDisabled = true;
+                        else
+                            continue;
+                    }
+                }
+
                 drawHeaderGroup.Begin();
+                if (isDisabled)
+                    EditorGUI.BeginDisabledGroup(true);
                 EditorGUI.BeginChangeCheck();
                 if (group.name == null || group.name.Equals("Default", StringComparison.OrdinalIgnoreCase)) {
                     if(group.customDrawer != null) {
@@ -713,7 +730,7 @@ namespace Needle
                 }
                 else
                 {
-                    var keyName = group.foldoutStateKeyName;
+                    var keyName = group.FoldoutStateKeyName;
                     var state = SessionState.GetBool(keyName, group.expandedByDefault);
                     var newState = CoreEditorUtils.DrawHeaderFoldout(group.name, state);
                     if(newState != state) SessionState.SetBool(keyName, newState);
@@ -736,13 +753,24 @@ namespace Needle
                 if (EditorGUI.EndChangeCheck())
                     MaterialChanged(materialEditor, properties);
 
+                if(isDisabled)
+                    EditorGUI.EndDisabledGroup();
+                
                 drawHeaderGroup.End();
             }
             
             onGUI.End();
         }
+        
+        private static string GetBetween(string str, char start, char end, bool last = false)
+        {
+            var i0 = last ? str.LastIndexOf(start) : str.IndexOf(start);
+            var i1 = last ? str.LastIndexOf(end)   : str.IndexOf(end);
+            if (i0 < 0 || i1 < 0) return null;
+            return str.Substring(i0 + 1, i1 - i0 - 1);
+        }
 
-        private static B83.LogicExpressionParser.Parser parser;
+        private static Parser parser;
         private static Dictionary<string, LogicExpression> expressionCache = new Dictionary<string, LogicExpression>();
         private static bool ConditionIsFulfilled(Material targetMaterial, string condition)
         {
@@ -792,8 +820,11 @@ namespace Needle
                 return true;
             }
 
+            conditionCheck.Begin();
+            
             // TODO Cache properly
-            var parser = new B83.LogicExpressionParser.Parser();
+            var parser = new Parser(new ParsingContext(false), new ExpressionContext(false));
+            // parser.ExpressionContext.GetVariable()
             // if (!expressionCache.TryGetValue(condition, out var expression))
             // {
                 var expression = parser.Parse(condition);
@@ -812,7 +843,9 @@ namespace Needle
                 // TODO how to see which expressions are actually needed?
             }
 
-            return expression.GetResult();
+            var result = expression.GetResult();
+            conditionCheck.End();
+            return result;
         }
         
         protected virtual void MaterialChanged(MaterialEditor materialEditor, MaterialProperty[] properties)
@@ -869,6 +902,7 @@ namespace Needle
         private static readonly ProfilerMarker drawDebugGroupContent = new ProfilerMarker("Draw Debug Group Content");
         private static readonly ProfilerMarker drawHeaderGroup = new ProfilerMarker("Draw Header Groups");
         private static readonly ProfilerMarker materialChanged = new ProfilerMarker("Material Changed");
+        private static readonly ProfilerMarker conditionCheck = new ProfilerMarker("Condition Check");
         
         private void InitializeCustomGUI(Material targetMat)
         {
