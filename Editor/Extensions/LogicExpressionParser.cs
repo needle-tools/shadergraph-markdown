@@ -587,7 +587,7 @@ namespace Needle.ShaderGraphMarkdown.LogicExpressionParser
         }
         private bool ParseToken(ref string aExpression, out char aTokenType, out int aIndex)
         {
-            int index2a = aExpression.IndexOf("$");
+            int index2a = aExpression.IndexOf('$');
             int index2b = aExpression.IndexOf(';');
             if (index2a >= 0 && index2b >= 3)
             {
@@ -908,7 +908,7 @@ namespace Needle.ShaderGraphMarkdown.LogicExpressionParser
                 return new OperationPower(val, pow);
             }
 
-            int p = aExpression.IndexOf("$B");
+            int p = aExpression.IndexOf("$B", StringComparison.Ordinal);
             if (p > 0)
             {
                 string fName = aExpression.Substring(0, p).Trim();

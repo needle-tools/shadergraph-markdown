@@ -28,6 +28,11 @@
             "define": "SHADERGRAPH_10_OR_NEWER"
         },
         {
+            "name": "com.unity.shadergraph",
+            "expression": "12.0.0",
+            "define": "SHADERGRAPH_12_OR_NEWER"
+        },
+        {
             "name": "com.unity.render-pipelines.high-definition",
             "expression": "7.0.0",
             "define": "HDRP_7_OR_NEWER"

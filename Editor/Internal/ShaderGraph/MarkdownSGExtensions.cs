@@ -7,18 +7,17 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using UnityEditor.Experimental.GraphView;
+using UnityEditor.ShaderGraph.Drawing;
+using UnityEditor.ShaderGraph.Internal;
 using UnityEngine;
+using UnityEngine.UIElements;
 #if UNITY_2020_2_OR_NEWER
 #if UNITY_2021_2_OR_NEWER
 using UnityEditor.Rendering.BuiltIn.ShaderGraph;
 #else
 using UnityEditor.ShaderGraph.Drawing.Views.Blackboard;
 #endif
-using UnityEditor.ShaderGraph.Drawing;
-using UnityEditor.ShaderGraph.Internal;
 using UnityEditor.ShaderGraph.Serialization;
-using UnityEngine.UIElements;
-
 #else
 #endif
 
@@ -71,7 +70,7 @@ namespace UnityEditor.ShaderGraph
             }
             catch (ArgumentException e)
             {
-                Debug.LogError("Couldn't get graph data for " + importer.assetPath + ": " + e.ToString());
+                Debug.LogError("Couldn't get graph data for " + importer.assetPath + ": " + e);
                 return null;
             }
         }
@@ -145,7 +144,6 @@ namespace UnityEditor.ShaderGraph
                 var graphData = MarkdownSGExtensions.GetGraphData(mat.shader);
 
 #if UNITY_2020_2_OR_NEWER
-                var haveSetInspector = false;
                 foreach (var target in graphData.activeTargets)
                 {
                     foreach (var setter in CustomInspectorSetters)
@@ -225,8 +223,9 @@ namespace UnityEditor.ShaderGraph
                 return blackboardFieldQuery.Cast<VisualElement>().ToList();
 #if UNITY_2021_2_OR_NEWER
             return blackboard.Query<SGBlackboardField>().Visible().ToList().Cast<VisualElement>().ToList();
-#endif
+#else
             return new List<VisualElement>();
+#endif
         }
         
         public static string GetBlackboardFieldText(VisualElement fieldView)

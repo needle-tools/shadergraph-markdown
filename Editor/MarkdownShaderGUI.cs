@@ -8,10 +8,10 @@ using UnityEditor.Rendering;
 using Needle.ShaderGraphMarkdown;
 using Needle.ShaderGraphMarkdown.LogicExpressionParser;
 using Unity.Profiling;
+using UnityEditorInternal;
 #if SHADERGRAPH_7_OR_NEWER
 using UnityEditor.ShaderGraph;
 #endif
-using UnityEditorInternal;
 using UnityEngine.Rendering;
 #if HDRP_7_OR_NEWER
 using UnityEditor.Rendering.HighDefinition;
@@ -21,6 +21,7 @@ using UnityEditor.Rendering.HighDefinition;
 // has to be included in the ShaderGraph custom ui field.
 namespace Needle
 {
+    // ReSharper disable once ClassNeverInstantiated.Global
     public class MarkdownShaderGUI : ShaderGUI
     {
         private class HeaderGroup
@@ -128,12 +129,13 @@ namespace Needle
             debugConditionalProperties = false,
             debugReferencedProperties = false;
         
-        // property drawer debugging
         private bool debugPropertyDrawers = false;
+        
+        // Reflection Access
+        // ReSharper disable InconsistentNaming
         private static Type MaterialPropertyHandler;
         private static MethodInfo GetHandler;
         private static FieldInfo m_PropertyDrawer, m_DecoratorDrawers;
-        // local / global keywords
         private bool debugLocalAndGlobalKeywords = false;
 
         private static MethodInfo getShaderLocalKeywords;
@@ -151,6 +153,7 @@ namespace Needle
                 return getShaderGlobalKeywords;
             }
         }
+        // ReSharper restore InconsistentNaming
              
         private new static MaterialProperty FindProperty(string keywordRef, MaterialProperty[] properties)
         {
@@ -215,12 +218,12 @@ namespace Needle
             var targetMat = materialEditor.target as Material;
             if (!targetMat) return;
 
-            onGUI.Begin();
+            OnGUIMarker.Begin();
             
             // proper widths for texture and label fields, same as ShaderGUI
             EditorGUIUtility.fieldWidth = 64f;
             
-            int GetHashCode()
+            int GetTargetMaterialHashCode()
             {
                 var hashCode = targetMat.name.GetHashCode();
                 hashCode = (hashCode * 397) ^ (targetMat.shader ? targetMat.shader.name.GetHashCode() : 0);
@@ -241,14 +244,14 @@ namespace Needle
                 return hashCode;
             }
 
-            getHashCode.Begin();
-            int currentHash = GetHashCode();
+            GetHashCodeMarker.Begin();
+            int currentHash = GetTargetMaterialHashCode();
             if (lastHash != currentHash) {
                 lastHash = currentHash;
                 MaterialChanged(materialEditor, properties);
                 headerGroups?.Clear();
             }
-            getHashCode.End();
+            GetHashCodeMarker.End();
 
             if (headerGroups == null)
                 headerGroups = new List<HeaderGroup>();
@@ -256,7 +259,7 @@ namespace Needle
             // split by header properties
             if(headerGroups.Count < 1)
             {
-                generateHeaderGroups.Begin();
+                GenerateHeaderGroupsMarker.Begin();
                 headerGroups.Add(new HeaderGroup("Default"));
                 
                 foreach (var prop in properties)
@@ -279,8 +282,6 @@ namespace Needle
                     }
                     else
                     {
-                        // TODO keywords should probably be their own group by default (and only pulled into foldouts via REF)
-                        
                         var last = headerGroups.Last();
                         if (last.properties == null) 
                             last.properties = new List<MaterialProperty>();
@@ -301,7 +302,7 @@ namespace Needle
 
                         if (display.StartsWith(drawerFormat))
                         {
-                            var split = display.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+                            var split = display.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries);
                             if (split.Length > 1)
                             {
                                 var objectName = split[1];
@@ -321,12 +322,12 @@ namespace Needle
                 headerGroups.Add(new HeaderGroup(null) { properties = null, customDrawer = DrawCustomGUI });
                 headerGroups.Add(new HeaderGroup("Debug") { properties = null, customDrawer = DrawDebugGroupContent, expandedByDefault = false});
                 
-                generateHeaderGroups.End();
+                GenerateHeaderGroupsMarker.End();
             }
             
             void DrawDebugGroupContent()
             {
-                drawDebugGroupContent.Begin();
+                DrawDebugGroupContentMarker.Begin();
                 
                 EditorGUI.BeginChangeCheck();
                 showOriginalPropertyList = EditorGUILayout.Toggle(ShowOriginalProperties, showOriginalPropertyList);
@@ -447,12 +448,12 @@ namespace Needle
                 // }
                 // #endif
                 
-                drawDebugGroupContent.End();
+                DrawDebugGroupContentMarker.End();
             }
             
             void DrawCustomGUI()
             {
-                drawCustomGUI.Begin();
+                DrawCustomGUIMarker.Begin();
                 
                 if (!haveSearchedForCustomGUI)
                     InitializeCustomGUI(targetMat);
@@ -468,7 +469,8 @@ namespace Needle
                 materialEditor.DoubleSidedGIField();
                 EditorGUILayout.Space();
                 CoreEditorUtils.DrawSplitter();
-                
+        
+#if HDRP_7_OR_NEWER
                 if(baseShaderGui != null)
                 {
                     // only pass in the properties that are hidden - this allows us to render all custom HDRP ShaderGraph UIs.
@@ -477,13 +479,13 @@ namespace Needle
                         .ToArray());
                     CoreEditorUtils.DrawSplitter();
                 }
-                
-                drawCustomGUI.End();
+#endif        
+                DrawCustomGUIMarker.End();
             }
 
             void DrawGroup(HeaderGroup group)
             {
-                drawGroup.Begin();
+                DrawGroupMarker.Begin();
                 
                 bool previousPropertyWasDrawn = true;
                 bool nextPropertyDrawerShouldBeInline = false;
@@ -614,7 +616,7 @@ namespace Needle
                             }
                             previousPropertyWasDrawn = true;
                             break;
-                        case MarkdownProperty.None:
+                        // case MarkdownProperty.None:
                         default:
                             if(referencedProperties.Contains(prop))
                             {
@@ -633,9 +635,10 @@ namespace Needle
                             
                             if(prop.flags.HasFlag(MaterialProperty.PropFlags.PerRendererData))
                                 break;
-
+                            
                             // drawer shorthands
-                            if (display.EndsWith("&", StringComparison.Ordinal))
+                            if (display.EndsWith("&", StringComparison.Ordinal) ||
+                                (prop.type == MaterialProperty.PropType.Texture && prop.flags.HasFlag(MaterialProperty.PropFlags.NonModifiableTextureData))) // display non-modifiable textures inlined by default
                             {
                                 bool shouldDrawMultiplePropertiesInline = display.EndsWith("&&", StringComparison.Ordinal);
                                 var trimmedDisplay = display.Trim(' ', '&');
@@ -699,7 +702,7 @@ namespace Needle
                 }    
                 EditorGUILayout.Space();
                 
-                drawGroup.End();
+                DrawGroupMarker.End();
             }
 
             foreach(var group in headerGroups)
@@ -717,7 +720,7 @@ namespace Needle
                     }
                 }
 
-                drawHeaderGroup.Begin();
+                DrawHeaderGroupMarker.Begin();
                 if (isDisabled)
                     EditorGUI.BeginDisabledGroup(true);
                 EditorGUI.BeginChangeCheck();
@@ -758,10 +761,10 @@ namespace Needle
                 if(isDisabled)
                     EditorGUI.EndDisabledGroup();
                 
-                drawHeaderGroup.End();
+                DrawHeaderGroupMarker.End();
             }
             
-            onGUI.End();
+            OnGUIMarker.End();
         }
         
         private static string GetBetween(string str, char start, char end, bool last = false)
@@ -773,8 +776,8 @@ namespace Needle
         }
 
         private static Parser parser;
-        private static Dictionary<string, LogicExpression> expressionCache = new Dictionary<string, LogicExpression>();
-        private static bool ConditionIsFulfilled(Material targetMaterial, string condition)
+        // private static Dictionary<string, LogicExpression> expressionCache = new Dictionary<string, LogicExpression>();
+        private static bool ConditionIsFulfilled(Material targetMaterial, string conditionExpression)
         {
             bool SetValueForCondition(ExpressionVariable variable, string condition)
             {
@@ -821,16 +824,12 @@ namespace Needle
                 return true;
             }
 
-            conditionCheck.Begin();
+            ConditionCheckMarker.Begin();
             
             // TODO Cache properly
-            var parser = new Parser(new ParsingContext(false), new ExpressionContext(false));
-            // parser.ExpressionContext.GetVariable()
-            // if (!expressionCache.TryGetValue(condition, out var expression))
-            // {
-                var expression = parser.Parse(condition);
-            //     expressionCache.Add(condition, expression);
-            // }
+            // if(parser == null)
+            parser = new Parser(new ParsingContext(false), new ExpressionContext(false));
+            var expression = parser.Parse(conditionExpression);
 
             bool allConditionsResolved = true;
             foreach (var v in expression.Context.Variables)
@@ -845,23 +844,23 @@ namespace Needle
             }
 
             var result = expression.GetResult();
-            conditionCheck.End();
+            ConditionCheckMarker.End();
             return result;
         }
         
         protected virtual void MaterialChanged(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
-            materialChanged.Begin();
+            MaterialChangedMarker.Begin();
             foreach(var mat in materialEditor.targets)
             {
                 var material = (Material) mat;
                 if (!material)
-                    throw new ArgumentNullException("material");
+                    throw new ArgumentNullException(nameof(materialEditor), "Target material is null for " + materialEditor);
 
                 if (!material.shader) return;
                 
                 // set keywords based on texture names
-                var localKeywords = ((string[]) GetShaderLocalKeywords.Invoke(null, new[] { material.shader })).ToList();
+                var localKeywords = ((string[]) GetShaderLocalKeywords.Invoke(null, new object[] { material.shader })).ToList();
                 
                 // loop through texture properties
                 foreach (var materialProperty in properties.Where(x => x.type == MaterialProperty.PropType.Texture))
@@ -876,12 +875,15 @@ namespace Needle
                     }
                 }
             }
-            materialChanged.End();
+            MaterialChangedMarker.End();
         }
 
+#if HDRP_7_OR_NEWER
         private ShaderGUI baseShaderGui = null;
+#endif
         private bool haveSearchedForCustomGUI = false;
         
+        // ReSharper disable InconsistentNaming
         private static readonly GUIContent AdditionalOptions = new GUIContent("Additional Options", "Options from the shader that are not part of the usual shader properties, e.g. instancing.");
         private static readonly GUIContent ShowOriginalProperties = new GUIContent("Show Original Properties", "Enable this option to show all properties, even those marked with [HideInInspector].");
         private static readonly GUIContent DebugConditionalProperties = new GUIContent("Debug Conditional Properties", "Enable this option to show properties that are conditionally filtered out with [SOME_CONDITION].");
@@ -894,16 +896,17 @@ namespace Needle
         private static readonly GUIContent PropertyDrawersAndDecorators = new GUIContent("Property Drawers and Decorators");
         private static readonly GUIContent ResetFoldoutSessionState = new GUIContent("Reset Foldout SessionState");
         private static readonly GUIContent LocalAndGlobalKeywords = new GUIContent("Local and Global Keywords", "All keywords that are defined/used by this shader.");
-        
-        private static readonly ProfilerMarker onGUI = new ProfilerMarker("OnGUI");
-        private static readonly ProfilerMarker getHashCode = new ProfilerMarker("Get Hash Code");
-        private static readonly ProfilerMarker generateHeaderGroups = new ProfilerMarker("Generate Header Groups");
-        private static readonly ProfilerMarker drawGroup = new ProfilerMarker("Draw Group");
-        private static readonly ProfilerMarker drawCustomGUI = new ProfilerMarker("Draw Custom GUI");
-        private static readonly ProfilerMarker drawDebugGroupContent = new ProfilerMarker("Draw Debug Group Content");
-        private static readonly ProfilerMarker drawHeaderGroup = new ProfilerMarker("Draw Header Groups");
-        private static readonly ProfilerMarker materialChanged = new ProfilerMarker("Material Changed");
-        private static readonly ProfilerMarker conditionCheck = new ProfilerMarker("Condition Check");
+
+        private static ProfilerMarker OnGUIMarker = new ProfilerMarker("OnGUI");
+        private static ProfilerMarker GetHashCodeMarker = new ProfilerMarker("Get Hash Code");
+        private static ProfilerMarker GenerateHeaderGroupsMarker = new ProfilerMarker("Generate Header Groups");
+        private static ProfilerMarker DrawGroupMarker = new ProfilerMarker("Draw Group");
+        private static ProfilerMarker DrawCustomGUIMarker = new ProfilerMarker("Draw Custom GUI");
+        private static ProfilerMarker DrawDebugGroupContentMarker = new ProfilerMarker("Draw Debug Group Content");
+        private static ProfilerMarker DrawHeaderGroupMarker = new ProfilerMarker("Draw Header Groups");
+        private static ProfilerMarker MaterialChangedMarker = new ProfilerMarker("Material Changed");
+        private static ProfilerMarker ConditionCheckMarker = new ProfilerMarker("Condition Check");
+        // ReSharper restore InconsistentNaming
         
         private void InitializeCustomGUI(Material targetMat)
         {
