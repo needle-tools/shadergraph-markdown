@@ -12,7 +12,7 @@ Shader "Markdown Amplify Shader"
 		_MyVectorMetallicSmoothness("My Vector (Metallic,Smoothness) &", Vector) = (0,0,0,0)
 		_NOTEMarkdowninAmplifyShaders("!NOTE Markdown in Amplify Shaders!", Int) = 0
 		[RemapSliders]_Vector0("Vector 0", Vector) = (0,0,0,0)
-		[RemapSlidersFull]_Vector1("Vector 1", Vector) = (0,0,0,0)
+		[RemapSlidersFull]_Vector1("Vector 1", Vector) = (0,0,0,1)
 		_Texture0("Texture 0 &&", 2D) = "white" {}
 		_DRAWERMinMax_Vector1("!DRAWER MinMax _Vector1", Float) = 0
 		[ASEEnd]_Texture1("Texture 1", 2D) = "white" {}

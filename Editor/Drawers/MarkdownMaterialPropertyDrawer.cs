@@ -51,7 +51,7 @@ namespace Needle.ShaderGraphMarkdown
 
         public virtual void OnInlineDrawerGUI(Rect rect, MaterialEditor materialEditor, MaterialProperty[] properties, DrawerParameters parameters)
         {
-            
+            OnDrawerGUI(materialEditor, properties, parameters);
         }
 
         public virtual bool SupportsInlineDrawing => false;

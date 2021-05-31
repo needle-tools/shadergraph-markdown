@@ -78,6 +78,9 @@ namespace Needle.ShaderGraphMarkdown
                 propertyName = parameterName;
             }
         }
+
+        private bool isInline = false;
+        private Rect inlineRect;
         
         public override void OnDrawerGUI(MaterialEditor materialEditor, MaterialProperty[] properties, DrawerParameters parameters)
         {
@@ -94,14 +97,20 @@ namespace Needle.ShaderGraphMarkdown
                 var vectorProp = properties.FirstOrDefault(x => x.name.Equals(parameterName1, StringComparison.Ordinal));
                 if (vectorProp == null || vectorProp.type != MaterialProperty.PropType.Vector)
                 {
-                    EditorGUILayout.HelpBox(nameof(MinMaxDrawer) + ": Parameter is not a Vector property (" + parameterName1 + ")", MessageType.Error);
+                    if(!isInline)
+                        EditorGUILayout.HelpBox(nameof(MinMaxDrawer) + ": Parameter is not a Vector property (" + parameterName1 + ")", MessageType.Error);
                     return;
                 }
 
                 EditorGUI.showMixedValue = vectorProp.hasMixedValue;
                 var vec = vectorProp.vectorValue;
                 EditorGUI.BeginChangeCheck();
-                EditorGUILayout.MinMaxSlider(vectorProp.displayName, ref vec.x, ref vec.y, vec.z, vec.w);
+                
+                if(isInline)
+                    EditorGUI.MinMaxSlider(inlineRect, ref vec.x, ref vec.y, vec.z, vec.w);
+                else
+                    EditorGUILayout.MinMaxSlider(vectorProp.displayName, ref vec.x, ref vec.y, vec.z, vec.w);
+                
                 if (EditorGUI.EndChangeCheck())
                 {
                     vectorProp.vectorValue = vec;
@@ -112,7 +121,8 @@ namespace Needle.ShaderGraphMarkdown
             }
 
             if (parameterName1 == null || parameterName2 == null) {
-                EditorGUILayout.HelpBox(nameof(MinMaxDrawer) + ": Parameter names are incorrect (" + parameterName1 + ", " + parameterName2 + "), all: " + string.Join(",", parameters), MessageType.Error);
+                if(!isInline)
+                    EditorGUILayout.HelpBox(nameof(MinMaxDrawer) + ": Parameter names are incorrect (" + parameterName1 + ", " + parameterName2 + "), all: " + string.Join(",", parameters), MessageType.Error);
                 return;
             }
             
@@ -123,7 +133,8 @@ namespace Needle.ShaderGraphMarkdown
             var param2 = properties.FirstOrDefault(x => x.name.Equals(propertyName2, StringComparison.Ordinal));
 
             if (param1 == null || param2 == null) {
-                EditorGUILayout.HelpBox(nameof(MinMaxDrawer) + ": Parameter names are incorrect (" + propertyName1 + ", " + propertyName2 + "), all: " + string.Join(",", parameters), MessageType.Error);
+                if(!isInline)
+                    EditorGUILayout.HelpBox(nameof(MinMaxDrawer) + ": Parameter names are incorrect (" + propertyName1 + ", " + propertyName2 + "), all: " + string.Join(",", parameters), MessageType.Error);
                 return;
             }
             
@@ -133,12 +144,27 @@ namespace Needle.ShaderGraphMarkdown
             var display = param1 == param2 ? (param1.displayName + " (" + swizzle1 + swizzle2 + ")") : param1.displayName + " - " + param2.displayName;
             
             EditorGUI.BeginChangeCheck();
-            EditorGUILayout.MinMaxSlider(display, ref value1, ref value2, 0.0f, 1.0f);
+            
+            if(isInline)
+                EditorGUI.MinMaxSlider(inlineRect, ref value1, ref value2, 0.0f, 1.0f);
+            else
+                EditorGUILayout.MinMaxSlider(display, ref value1, ref value2, 0.0f, 1.0f);
+            
             if (EditorGUI.EndChangeCheck())
             {
                 SetValue(param1, swizzle1, value1);
                 SetValue(param2, swizzle2, value2);
             }
+        }
+
+        public override bool SupportsInlineDrawing => true;
+
+        public override void OnInlineDrawerGUI(Rect rect, MaterialEditor materialEditor, MaterialProperty[] properties, DrawerParameters parameters)
+        {
+            isInline = true;
+            inlineRect = rect;
+            OnDrawerGUI(materialEditor, properties, parameters);
+            isInline = false;
         }
 
         public override IEnumerable<MaterialProperty> GetReferencedProperties(MaterialEditor materialEditor, MaterialProperty[] properties, DrawerParameters parameters)

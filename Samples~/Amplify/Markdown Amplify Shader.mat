@@ -44,6 +44,6 @@ Material:
     - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
     - _MyColor: {r: 0, g: 0, b: 0, a: 0}
     - _MyVectorMetallicSmoothness: {r: 0, g: 0, b: 0, a: 0}
-    - _Vector0: {r: 0.13432837, g: 0.6517414, b: 0, a: 0}
-    - _Vector1: {r: 0, g: 0, b: 0, a: 0}
+    - _Vector0: {r: 0.17848092, g: 0.5065001, b: 0, a: 0}
+    - _Vector1: {r: 0.38322812, g: 0.7502816, b: 0, a: 1}
   m_BuildTextureStacks: []
