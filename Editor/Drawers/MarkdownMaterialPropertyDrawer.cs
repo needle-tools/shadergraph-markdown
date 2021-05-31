@@ -17,7 +17,9 @@ namespace Needle.ShaderGraphMarkdown
 
             private readonly string[] parts;
 
-            public DrawerParameters(string[] parts) {
+            // TODO needs handling of conditions
+            public DrawerParameters(string[] parts)
+            {
                 this.parts = parts;
             }
 

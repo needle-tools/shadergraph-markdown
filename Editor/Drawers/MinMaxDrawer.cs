@@ -84,6 +84,8 @@ namespace Needle.ShaderGraphMarkdown
             // check if these are vectors, and get the "base property"
             var parameterName1 = parameters.Get(0, (string) null);
             var parameterName2 = parameters.Get(1, (string) null);
+            if (parameterName2 != null && parameterName2.StartsWith("[", StringComparison.Ordinal))
+                parameterName2 = null;
 
             if (parameterName2 == null)
             {
@@ -143,7 +145,9 @@ namespace Needle.ShaderGraphMarkdown
         {
             var parameterName1 = parameters.Get(0, (string) null);
             var parameterName2 = parameters.Get(1, (string) null);
-
+            if (parameterName2 != null && parameterName2.StartsWith("[", StringComparison.Ordinal))
+                parameterName2 = null;
+            
             if (parameterName1 != null && parameterName2 == null)
             {
                 var vectorProp = properties.FirstOrDefault(x => x.name.Equals(parameterName1, StringComparison.Ordinal));
