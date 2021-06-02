@@ -1,7 +1,7 @@
 {
   "name": "com.needle.shadergraph-markdown",
   "displayName": "Shader Graph Markdown",
-  "version": "1.0.3",
+  "version": "1.1.0-pre",
   "author": {
     "name": "Needle",
     "email": "hi@needle.tools",

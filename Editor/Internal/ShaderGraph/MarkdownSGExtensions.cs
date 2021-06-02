@@ -1,5 +1,7 @@
 ﻿#if !NO_INTERNALS_ACCESS && UNITY_2019_4_OR_NEWER
-
+#if UNITY_2021_2_OR_NEWER && false
+#define SRP12_SG_REFACTORED
+#endif
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,10 +14,12 @@ using UnityEditor.ShaderGraph.Internal;
 using UnityEngine;
 using UnityEngine.UIElements;
 #if UNITY_2020_2_OR_NEWER
-#if UNITY_2021_2_OR_NEWER
+#if SRP12_SG_REFACTORED
 using UnityEditor.Rendering.BuiltIn.ShaderGraph;
 #else
+#if !UNITY_2021_2_OR_NEWER
 using UnityEditor.ShaderGraph.Drawing.Views.Blackboard;
+#endif
 #endif
 using UnityEditor.ShaderGraph.Serialization;
 #else
@@ -25,7 +29,7 @@ namespace UnityEditor.ShaderGraph
 {
     public static partial class MarkdownSGExtensions
     {
-#if UNITY_2021_2_OR_NEWER
+#if SRP12_SG_REFACTORED
         [InitializeOnLoadMethod]
         static void RegisterMarkdownHelpers()
         {
@@ -221,7 +225,7 @@ namespace UnityEditor.ShaderGraph
             var blackboardFieldQuery = blackboard.Query<BlackboardField>().Visible().ToList(); 
             if(blackboardFieldQuery.Count > 0)
                 return blackboardFieldQuery.Cast<VisualElement>().ToList();
-#if UNITY_2021_2_OR_NEWER
+#if SRP12_SG_REFACTORED
             return blackboard.Query<SGBlackboardField>().Visible().ToList().Cast<VisualElement>().ToList();
 #else
             return new List<VisualElement>();
@@ -231,7 +235,7 @@ namespace UnityEditor.ShaderGraph
         public static string GetBlackboardFieldText(VisualElement fieldView)
         {
             if (fieldView is BlackboardField field1) return field1.text;
-#if UNITY_2021_2_OR_NEWER
+#if SRP12_SG_REFACTORED
             if (fieldView is SGBlackboardField field2) return field2.text;
 #endif
             return "unknown";
@@ -240,7 +244,7 @@ namespace UnityEditor.ShaderGraph
         public static void SetBlackboardFieldTypeText(VisualElement fieldView, string toString)
         {
             if (fieldView is BlackboardField field1) field1.typeText = toString;
-#if UNITY_2021_2_OR_NEWER
+#if SRP12_SG_REFACTORED
             if (fieldView is SGBlackboardField field2) field2.typeText = toString;
 #endif
         }
