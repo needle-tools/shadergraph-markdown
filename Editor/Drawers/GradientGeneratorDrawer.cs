@@ -1,16 +1,25 @@
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
 namespace Needle.ShaderGraphMarkdown
 {
     // [CreateAssetMenu(menuName = "ShaderGraph Markdown/Gradient Generator Drawer", fileName = nameof(GradientGeneratorDrawer) + ".asset")]
-    public class GradientGeneratorDrawer : MarkdownMaterialPropertyDrawer
+    public class GradientGeneratorDrawer : MarkdownMaterialPropertyDrawer, ISerializationCallbackReceiver
     {
         private const string DefaultTexturePropertyName = "_RampTexture"; 
         public string texturePropertyName = DefaultTexturePropertyName;
-
+        
+        [System.Serializable]
+        private class Map
+        {
+            public Material material;
+            public string propertyName = "_RampTexture";
+            public Gradient gradient;
+        }
+        [HideInInspector] [SerializeField] private List<Map> mappedGradientStore = new List<Map>();
         private Dictionary<Material, Dictionary<string, Gradient>> mappedGradients;
         
         public override void OnDrawerGUI(MaterialEditor materialEditor, MaterialProperty[] properties, DrawerParameters parameters)
@@ -65,13 +74,19 @@ namespace Needle.ShaderGraphMarkdown
             
             EditorGUILayout.BeginHorizontal();
             var displayName = targetProperty != null ? targetProperty.displayName : "Ramp";
+            
             EditorGUI.BeginChangeCheck();
             var existingGradient = gradientWasFound ? mappedGradients[targetMat][targetPropertyName] : new Gradient();
             var newGradient = EditorGUILayout.GradientField(displayName, existingGradient);
             if (EditorGUI.EndChangeCheck())
             {
+                Debug.Log("Changed Gradient");
+                Undo.RecordObject(this, "Changed Gradient");
                 mappedGradients[targetMat][targetPropertyName] = newGradient;
-                EditorUtility.SetDirty(this);
+                 ApplyRampTexture(targetMat, parameters.Get(0, targetPropertyName));
+                OnBeforeSerialize();
+                Undo.FlushUndoRecordObjects();
+                // EditorUtility.SetDirty(this);
             }
 
             var placeholderContent = new GUIContent(targetProperty?.textureValue ? "ApplyMM" : "CreateMM");
@@ -86,6 +101,7 @@ namespace Needle.ShaderGraphMarkdown
                 var newObj = (Texture2D) EditorGUI.ObjectField(controlRect, targetProperty.textureValue, typeof(Texture2D), true);
                 if(newObj != targetProperty.textureValue)
                 {
+                    Undo.RecordObjects(new Object[] { this, targetMat }, "Applied Gradient");
                     targetProperty.textureValue = newObj;
                     mappedGradients[targetMat].Remove(targetPropertyName);
                     GUIUtility.ExitGUI(); // reset GUI loop so the gradient can be picked up properly
@@ -224,6 +240,46 @@ namespace Needle.ShaderGraphMarkdown
             sourceTexture = (Texture2D) AssetDatabase.LoadAssetAtPath(path, typeof(Texture2D));
 
             return sourceTexture;
+        }
+        
+        public void OnBeforeSerialize()
+        {
+            if (mappedGradients == null || !mappedGradients.Any())
+            {
+                mappedGradientStore = new List<Map>();
+                return;
+            }
+            
+            var store = new List<Map>();
+            foreach (var x in mappedGradients)
+            {
+                foreach (var y in x.Value)
+                {
+                    store.Add(new Map()
+                    {
+                        material = x.Key,
+                        propertyName = y.Key,
+                        gradient = y.Value,
+                    });
+                }
+            }
+
+            mappedGradientStore = store;
+        }
+
+        public void OnAfterDeserialize()
+        {
+            if (mappedGradients == null)
+                mappedGradients = new Dictionary<Material, Dictionary<string, Gradient>>();
+            
+            foreach (var entry in mappedGradientStore)
+            {
+                if (!mappedGradients.ContainsKey(entry.material))
+                    mappedGradients.Add(entry.material, new Dictionary<string, Gradient>());
+                
+                if (!mappedGradients[entry.material].ContainsKey(entry.propertyName))
+                    mappedGradients[entry.material].Add(entry.propertyName, entry.gradient);
+            }
         }
     }
 }
