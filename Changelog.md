@@ -2,6 +2,15 @@
 All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2021-06-05
+- fixed some inline drawing issues
+- fixed GradientGenerator drawer sometimes losing gradient reference
+- added: experimental support for Shader Graph 12.x, needs to be updated once 2021.2 beta comes out.
+- added: complex conditions (e.g. `[_Value > 0]`, `[_OPTION_A || _OPTION_B]`)
+- added: generate gradients from arbitrary textures to GradientGenerator drawer
+- added: quickly switch to other gradients based on generated textures
+- added: conditions can now be used for entire foldout groups as well
+
 ## [1.0.3] - 2021-05-18
 - fixed rare NullReference exception when changing shaders on a closed material that uses MarkdownShaderGUI
 - fixed samples in AssetStore version
