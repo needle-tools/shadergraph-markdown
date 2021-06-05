@@ -96,7 +96,6 @@ namespace Needle.ShaderGraphMarkdown
                 var controlRect = buttonRect;
                 controlRect.height = 16;
                 controlRect.y += 2;
-                controlRect.xMin = controlRect.xMax - 33;
                 var newObj = (Texture2D) EditorGUI.ObjectField(controlRect, targetProperty.textureValue, typeof(Texture2D), true);
                 if(newObj != targetProperty.textureValue)
                 {
