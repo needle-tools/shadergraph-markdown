@@ -1,6 +1,6 @@
 # Shader Graph Markdown
 
-![Unity Version Compatibility](https://img.shields.io/badge/Unity-2019.4%20%E2%80%94%202021.1-brightgreen) 
+![Unity Version Compatibility](https://img.shields.io/badge/Unity-2019.4%20%E2%80%94%202021.2-brightgreen) 
 
 ## License
 
@@ -39,7 +39,7 @@ _Shader Graph 10 / 11_
 _Shader Graph 7 / 8_  
 
 1. Create a new bool property. This is our "dummy" — its only purpose is to specify how the UI is drawn.  
-2. Name it `## Hello Foldout`. You don't need to change the reference name.  
+2. Name it `# Hello Foldout`. You don't need to change the reference name.  
 3. You should see the property display change in the Blackboard, to differentiate it from actual properties in your shader.   
 4. Save your shader, and select a material that uses this shader — done!
 
@@ -85,7 +85,8 @@ You can also use boolean properties and textures as conditionals:
 
 ![Conditional Properties](https://github.com/needle-tools/shadergraph-markdown/wiki/Images/sgmarkdown-property-conditions.png)  
 
-Currently only single conditions are allowed (you can't combine these with `&&` or `||` right now).
+You can construct more complex conditions by using `and`, `&&`, `or`, `||`, `!`, `>`, `<=` ... and other operators - please let us know if something doesn't work as expected!  
+You can also combine boolean keywords, enum keywords, textures, vectors, colors, floats in the same condition. Vectors compare by length, colors compare by max(r,g,b).
 
 ### Debug Section
 
@@ -113,7 +114,7 @@ A context menu entry on every Shader Graph-based material allows to quickly swit
 
 You can totally make your own and go crazy, the system is pretty extendable. The shipped ones (`MinMaxDrawer`, `VectorSlidersDrawer`, `GradientDrawer` etc.) should be a pretty good starting point. 
 When referencing a custom drawer, you can both use `!DRAWER DoSomethingDrawer` and `!DRAWER DoSomething`.  
-Drawers are ScriptableObjects and can thus have persistent settings; an example of that is the `GradientDrawer`.
+Drawers are ScriptableObjects and can thus have persistent settings.
 
 Feel free to jump into our support discord and let us know if you need help or something isn't working as expected!
 
@@ -141,28 +142,26 @@ Feel free to jump into our support discord and let us know if you need help or s
    A web link.  
 10. `!REF KEYWORD_NAME`  
   A reference to a bool/enum keyword to be drawn here - by default they end up at the end of your shader, with this you can control exactly where they go.
-4. Conditional properties: Append `[SOME_KEYWORD]` to your properties to only make them show up when the condition is met. Conditions can be
+4. Conditional properties: Append `[SOME_KEYWORD]` to your foldouts, drawers or properties to only make them show up when the condition is met. Conditions can be
     - boolean keywords (make sure to include the `_ON` part)
     - enum keywords
     - texture properties (when the texture is not null)
     - boolean properties (when the bool is true)
+    - float properties (compare using `<, >, ==` etc.)
+    - color properties (max(r,g,b) is used as comparison value)
+    - vector properties (vector length is used as comparison value)
 7. `!DRAWER MyDrawer`  
   This will draw custom code, similar to a `PropertyDrawer` for the Inspector. Drawers are specified as subclasses of `MarkdownMaterialPropertyDrawer`.
-    Example:
-    - Define `Some Vector (Amplitude, Frequency, Pattern)` with reference name `_SomeVector`.  
-    _Before_ that vector, add a markdown property `!DRAWER VectorSlider _SomeVector`.  
-    This will neatly split up the vector into three sliders!  
+    Examples:
     - Define `!DRAWER Gradient _MyTextureProperty` to render a nice gradient drawer that will generate gradient textures in the background for you.
-    Shader Graph Markdown ships with some drawers already:
-    - 
+    - Define some colors, and _before_ them add `!DRAWER MultiProperty _Col1 _Col2 _Col3`. This will render three colors all in one line.
 
-1. `#`  (hash with nothing else)  
+8. `#`  (hash with nothing else)  
    End the current foldout. This is useful if you want to show properties outside a foldout, in the main area, again.
 
 <sup>[1](footnote-1)</sup>: Will not be shown if the previous property was conditionally excluded.
 
-A lot of the above can be combined - so you can totally do `--!DRAWER MinMax _MinMaxVector.x _MinMaxVector.y [OPTIONAL_KEYWORD]` and that will give you a double-indented minmax slider that only shows up when OPTIONAL_KEYWORD is true.
-
+A lot of the above can be combined - so you can totally do `--!DRAWER MinMax _MinMaxVector.x _MinMaxVector.y [_OPTIONAL_KEYWORD && _Value > 0.5]` and that will give you a double-indented minmax slider that only shows up when _OPTIONAL_KEYWORD is set and `_Value` has a value of greater than 0.5.
 
 ## Notes
 
@@ -196,7 +195,7 @@ With the above in mind, feel free to reach out via Discord and request features 
   This is a Unity bug. [Case 1176077](https://issuetracker.unity3d.com/product/unity/issues/guid/1176077)  
   Workaround: reimport any script (Rightclick > Reimport) to trigger a domain reload.
 - _Vector fields don't show animation state (blue/red overlay)_  
-  This is a Unity bug. Case 1333416
+  This is a Unity bug. [Case 1333416](https://issuetracker.unity3d.com/product/unity/issues/guid/1333416)
 - _Conditionally excluded properties can't be inline properties_
   The condition will be ignored inside an inlined property. Don't inline them if you want them to use the condition.
 
