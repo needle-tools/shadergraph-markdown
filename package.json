@@ -23,6 +23,11 @@
   },
   "samples": [
     {
+      "displayName": "Uber Shader Sample (Unity 2020.2+)",
+      "description": "Shows how to use Shader Graph Markdown complex conditions.",
+      "path": "Samples~/Uber Shader (Unity 2020.2+)"
+    },
+    {
       "displayName": "URP and HDRP 10+ (Unity 2020.2+)",
       "description": "Shows how to use Shader Graph Markdown annotations.",
       "path": "Samples~/URP and HDRP 10+ (Unity 2020.2+)"
