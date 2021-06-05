@@ -6,7 +6,6 @@ using UnityEngine;
 
 namespace Needle.ShaderGraphMarkdown
 {
-    // [CreateAssetMenu(menuName = "ShaderGraph Markdown/Gradient Generator Drawer", fileName = nameof(GradientGeneratorDrawer) + ".asset")]
     public class GradientGeneratorDrawer : MarkdownMaterialPropertyDrawer, ISerializationCallbackReceiver
     {
         private const string DefaultTexturePropertyName = "_RampTexture"; 
