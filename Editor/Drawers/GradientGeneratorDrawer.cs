@@ -82,7 +82,7 @@ namespace Needle.ShaderGraphMarkdown
                 Debug.Log("Changed Gradient");
                 Undo.RecordObject(this, "Changed Gradient");
                 mappedGradients[targetMat][targetPropertyName] = newGradient;
-                 ApplyRampTexture(targetMat, parameters.Get(0, targetPropertyName));
+                // ApplyRampTexture(targetMat, parameters.Get(0, targetPropertyName)); // immediately apply gradient - experimental
                 OnBeforeSerialize();
                 Undo.FlushUndoRecordObjects();
                 // EditorUtility.SetDirty(this);

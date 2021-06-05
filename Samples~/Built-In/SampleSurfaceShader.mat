@@ -40,7 +40,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MyGradientTexture_1:
-        m_Texture: {fileID: 2800000, guid: 465fffbb60e01ba40ae585e6609ee61e, type: 3}
+        m_Texture: {fileID: 2800000, guid: 7843fcfd9ab0dfc49b27379187d2a008, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - _MyGradientTexture_2:
