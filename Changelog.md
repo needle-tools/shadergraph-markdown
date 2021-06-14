@@ -2,6 +2,12 @@
 All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.1.3] - 2021-06-15
+- fixed some issues with conditions parsing and exceptions
+- fixed log message when editing gradients
+- fixed applying gradients didn't work in some cases due to UI overlaps
+- updated samples
+
 ## [1.1.2] - 2021-06-05
 - fixed regression where gradient always saved texture on change (press Apply to see changes)
 - fixed gradient texture picker sometimes showing texture preview instead
