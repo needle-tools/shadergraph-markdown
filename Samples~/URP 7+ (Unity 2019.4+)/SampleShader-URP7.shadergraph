@@ -112,13 +112,19 @@
             "typeInfo": {
                 "fullName": "UnityEditor.ShaderGraph.Internal.Texture2DShaderProperty"
             },
-            "JSONnodeData": "{\n    \"m_Guid\": {\n        \"m_GuidSerialized\": \"a7e7ccfb-c7f2-4756-8dd7-f6128aecf136\"\n    },\n    \"m_Name\": \"Gradient Texture [_SOME_ENUM_KEYWORD_TEXTURE]\",\n    \"m_DefaultReferenceName\": \"Texture2D_E29F2BB5\",\n    \"m_OverrideReferenceName\": \"\",\n    \"m_GeneratePropertyBlock\": true,\n    \"m_Precision\": 0,\n    \"m_GPUInstanced\": false,\n    \"m_Hidden\": false,\n    \"m_Value\": {\n        \"m_SerializedTexture\": \"{\\\"texture\\\":{\\\"instanceID\\\":0}}\",\n        \"m_Guid\": \"\"\n    },\n    \"m_Modifiable\": true,\n    \"m_DefaultType\": 0\n}"
+            "JSONnodeData": "{\n    \"m_Guid\": {\n        \"m_GuidSerialized\": \"4b977aec-c1bd-4d2a-b75a-4378d7fdfe03\"\n    },\n    \"m_Name\": \"Simple Texture [_SOME_ENUM_KEYWORD_TEXTURE]\",\n    \"m_DefaultReferenceName\": \"Texture2D_15E99F4A\",\n    \"m_OverrideReferenceName\": \"\",\n    \"m_GeneratePropertyBlock\": true,\n    \"m_Precision\": 0,\n    \"m_GPUInstanced\": false,\n    \"m_Hidden\": false,\n    \"m_Value\": {\n        \"m_SerializedTexture\": \"{\\\"texture\\\":{\\\"instanceID\\\":0}}\",\n        \"m_Guid\": \"\"\n    },\n    \"m_Modifiable\": true,\n    \"m_DefaultType\": 0\n}"
         },
         {
             "typeInfo": {
                 "fullName": "UnityEditor.ShaderGraph.Internal.BooleanShaderProperty"
             },
-            "JSONnodeData": "{\n    \"m_Guid\": {\n        \"m_GuidSerialized\": \"60a1c1f9-185e-4bbe-a6f2-01f1aa6fbfe9\"\n    },\n    \"m_Name\": \"!DRAWER GradientGenerator [_SOME_ENUM_KEYWORD_GRADIENT]\",\n    \"m_DefaultReferenceName\": \"Boolean_E7CFC5A4\",\n    \"m_OverrideReferenceName\": \"\",\n    \"m_GeneratePropertyBlock\": true,\n    \"m_Precision\": 0,\n    \"m_GPUInstanced\": false,\n    \"m_Hidden\": false,\n    \"m_Value\": false\n}"
+            "JSONnodeData": "{\n    \"m_Guid\": {\n        \"m_GuidSerialized\": \"60a1c1f9-185e-4bbe-a6f2-01f1aa6fbfe9\"\n    },\n    \"m_Name\": \"!DRAWER GradientGenerator _RampTexture [_SOME_ENUM_KEYWORD_GRADIENT]\",\n    \"m_DefaultReferenceName\": \"Boolean_E7CFC5A4\",\n    \"m_OverrideReferenceName\": \"\",\n    \"m_GeneratePropertyBlock\": true,\n    \"m_Precision\": 0,\n    \"m_GPUInstanced\": false,\n    \"m_Hidden\": false,\n    \"m_Value\": false\n}"
+        },
+        {
+            "typeInfo": {
+                "fullName": "UnityEditor.ShaderGraph.Internal.Texture2DShaderProperty"
+            },
+            "JSONnodeData": "{\n    \"m_Guid\": {\n        \"m_GuidSerialized\": \"a7e7ccfb-c7f2-4756-8dd7-f6128aecf136\"\n    },\n    \"m_Name\": \"Gradient Texture\",\n    \"m_DefaultReferenceName\": \"Texture2D_E29F2BB5\",\n    \"m_OverrideReferenceName\": \"_RampTexture\",\n    \"m_GeneratePropertyBlock\": true,\n    \"m_Precision\": 0,\n    \"m_GPUInstanced\": false,\n    \"m_Hidden\": false,\n    \"m_Value\": {\n        \"m_SerializedTexture\": \"{\\\"texture\\\":{\\\"instanceID\\\":0}}\",\n        \"m_Guid\": \"\"\n    },\n    \"m_Modifiable\": true,\n    \"m_DefaultType\": 0\n}"
         },
         {
             "typeInfo": {

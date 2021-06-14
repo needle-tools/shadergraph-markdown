@@ -10,7 +10,7 @@ Material:
   m_Name: Shader Graphs_SampleShader-URP7
   m_Shader: {fileID: -6465566751694194690, guid: 1a9806c3200f553499593f7047e8f772,
     type: 3}
-  m_ShaderKeywords: _DISABLE_DECALS _DISABLE_SSR_TRANSPARENT _SIMPLE_OPTION_ON _SOME_ENUM_KEYWORD_COLORS
+  m_ShaderKeywords: _DISABLE_DECALS _DISABLE_SSR_TRANSPARENT _SIMPLE_OPTION_ON _SOME_ENUM_KEYWORD_GRADIENT
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
@@ -26,12 +26,20 @@ Material:
   m_SavedProperties:
     serializedVersion: 3
     m_TexEnvs:
+    - Texture2D_15E99F4A:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - Texture2D_55007525:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - Texture2D_E29F2BB5:
         m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _RampTexture:
+        m_Texture: {fileID: 2800000, guid: ec5df446fab4e674d84319bcb7cb6796, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     - unity_Lightmaps:
@@ -62,8 +70,8 @@ Material:
     - Boolean_E7CFC5A4: 0
     - Boolean_E84C3DC4: 0
     - Boolean_F8AC5285: 0
-    - Vector1_12F5CA7E: 0
-    - Vector1_EC1386CF: 0
+    - Vector1_12F5CA7E: 96
+    - Vector1_EC1386CF: 1
     - _AddPrecomputedVelocity: 0
     - _AlphaCutoffEnable: 0
     - _AlphaDstBlend: 0
@@ -87,7 +95,7 @@ Material:
     - _RenderQueueType: 1
     - _RequireSplitLighting: 0
     - _SIMPLE_OPTION: 1
-    - _SOME_ENUM_KEYWORD: 0
+    - _SOME_ENUM_KEYWORD: 2
     - _SrcBlend: 1
     - _StencilRef: 0
     - _StencilRefDepth: 8
@@ -114,14 +122,14 @@ Material:
     - _ZTestTransparent: 4
     - _ZWrite: 1
     m_Colors:
-    - Color_32BC4294: {r: 0, g: 0, b: 0, a: 0}
-    - Color_39A5200C: {r: 0, g: 0, b: 0, a: 0}
-    - Color_5962B269: {r: 0, g: 0, b: 0, a: 0}
-    - Color_63909785: {r: 0, g: 0, b: 0, a: 0}
-    - Color_640AF357: {r: 0, g: 0, b: 0, a: 0}
-    - Color_87A92276: {r: 0, g: 0, b: 0, a: 0}
-    - Color_B1A19E31: {r: 0, g: 0, b: 0, a: 0}
-    - Vector4_A24E3AB: {r: 0, g: 0, b: 0, a: 0}
+    - Color_32BC4294: {r: 0.3244037, g: 0.7790229, b: 0.8490566, a: 0}
+    - Color_39A5200C: {r: 0.59780395, g: 0.21568626, b: 0.8666667, a: 0}
+    - Color_5962B269: {r: 0.31372553, g: 0.37292492, b: 0.78431374, a: 0}
+    - Color_63909785: {r: 0.7921569, g: 0.34901962, b: 0.56752604, a: 0}
+    - Color_640AF357: {r: 0.3025988, g: 0.754717, b: 0.6464512, a: 0}
+    - Color_87A92276: {r: 0.7921569, g: 0.40785488, b: 0.20392156, a: 0}
+    - Color_B1A19E31: {r: 0.9529412, g: 0.3137984, b: 0.1568627, a: 0}
+    - Vector4_A24E3AB: {r: 1, g: 2, b: 3, a: 0}
     - _DoubleSidedConstants: {r: 1, g: 1, b: -1, a: 0}
     - _EmissionColor: {r: 1, g: 1, b: 1, a: 1}
 --- !u!114 &722601099533637829
