@@ -288,34 +288,55 @@ namespace Needle
                         
                         // need to process REF/DRAWER properties early so we can hide them properly if needed
                         display = display.TrimStart('-');
+                        var searchForReferencedProperties = false;
                         
-                        if (display.StartsWith(refFormat))
+                        // don't collect properties for drawers/references that are conditionally excluded
+                        var markdownType = GetMarkdownType(display);
+                        switch (markdownType)
                         {
-                            var split = display.Split(' ');
-                            if(split.Length > 1) {
-                                var keywordRef = split[1];
-                                var keywordProp = FindProperty(keywordRef, properties);
-                                if(keywordProp != null)
-                                    referencedProperties.Add(keywordProp);
-                            }
+                            case MarkdownProperty.Foldout:
+                            case MarkdownProperty.Header:
+                            case MarkdownProperty.Link:
+                            case MarkdownProperty.Note:
+                            case MarkdownProperty.None:
+                                break;
+                            case MarkdownProperty.Reference:
+                            case MarkdownProperty.Drawer:
+                                searchForReferencedProperties = true;
+                                break;
                         }
-
-                        if (display.StartsWith(drawerFormat))
+                        
+                        if(searchForReferencedProperties)
                         {
+                            // TODO unsure about this: there are cases where both excluding and including such properties seems desired.
+                            // var condition = GetBetween(display, '[', ']', true);
+                            // if (!string.IsNullOrEmpty(condition) && !ConditionIsFulfilled(targetMat, condition))
+                            //     continue;
+
                             var split = display.Split(new[] {' '}, StringSplitOptions.RemoveEmptyEntries);
-                            if (split.Length > 1)
+                            if (split.Length < 2)
+                                continue;
+                            
+                            switch (markdownType)
                             {
-                                var objectName = split[1];
-                                var drawer = GetCachedDrawer(objectName);
-                                if (drawer != null)
-                                {
-                                    var referencedProps = drawer.GetReferencedProperties(materialEditor, properties, new MarkdownMaterialPropertyDrawer.DrawerParameters(split));
-                                    if(referencedProps != null)
-                                        referencedProperties.AddRange(referencedProps);
-                                }
+                                case MarkdownProperty.Reference:
+                                    var keywordRef = split[1];
+                                    var keywordProp = FindProperty(keywordRef, properties);
+                                    if(keywordProp != null)
+                                        referencedProperties.Add(keywordProp);
+                                    break;
+                                case MarkdownProperty.Drawer:
+                                    var objectName = split[1];
+                                    var drawer = GetCachedDrawer(objectName);
+                                    if (drawer != null)
+                                    {
+                                        var referencedProps = drawer.GetReferencedProperties(materialEditor, properties, new MarkdownMaterialPropertyDrawer.DrawerParameters(split));
+                                        if(referencedProps != null)
+                                            referencedProperties.AddRange(referencedProps);
+                                    }
+                                    break;
                             }
                         }
-
                         last.properties.Add(prop);
                     }
                 }
@@ -827,23 +848,32 @@ namespace Needle
             ConditionCheckMarker.Begin();
             
             // TODO Cache properly
-            // if(parser == null)
-            parser = new Parser(new ParsingContext(false), new ExpressionContext(false));
-            var expression = parser.Parse(conditionExpression);
-
-            bool allConditionsResolved = true;
-            foreach (var v in expression.Context.Variables)
+            var result = false;
+            try
             {
-                allConditionsResolved &= SetValueForCondition(v.Value, v.Key);
+                parser = new Parser(new ParsingContext(false), new ExpressionContext(false));
+                var expression = parser.Parse(conditionExpression);
+
+                bool allConditionsResolved = true;
+                foreach (var v in expression.Context.Variables)
+                {
+                    allConditionsResolved &= SetValueForCondition(v.Value, v.Key);
+                }
+
+                if (!allConditionsResolved)
+                {
+                    // TODO show warning
+                    // TODO how to see which expressions are actually needed?
+                }
+
+                result = expression.GetResult();
+            }
+            catch (ParseException)
+            {
+                Debug.LogWarning("Expression parse error for Shader condition: " + conditionExpression + " on " + targetMaterial, targetMaterial);
+                result = false;
             }
 
-            if (!allConditionsResolved)
-            {
-                // TODO show warning
-                // TODO how to see which expressions are actually needed?
-            }
-
-            var result = expression.GetResult();
             ConditionCheckMarker.End();
             return result;
         }

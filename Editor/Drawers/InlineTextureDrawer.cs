@@ -16,8 +16,12 @@ namespace Needle.ShaderGraphMarkdown
                 throw new ArgumentNullException("No property named " + parameters.Get(0, ""));
             
             var extraProperty = parameters.Get(1, properties);
-            
-            OnDrawerGUI(materialEditor, properties, textureProperty, textureProperty.displayName, extraProperty);
+            var displayName = textureProperty.displayName;
+            // strip condition
+            var lastIndex = displayName.LastIndexOf('[');
+            if (lastIndex > 0)
+                displayName = displayName.Substring(0, lastIndex);
+            OnDrawerGUI(materialEditor, properties, textureProperty, displayName, extraProperty);
         }
 
         private static Rect lastInlineTextureRect; 

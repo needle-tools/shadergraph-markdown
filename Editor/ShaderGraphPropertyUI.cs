@@ -163,7 +163,7 @@ namespace Needle.ShaderGraphMarkdown
 
                     var indentLevel = MarkdownShaderGUI.GetIndentLevel(displayName);
                     if (nextFieldShouldBeIndented) {
-                        indentLevel++;
+                        indentLevel += 2;
                         nextFieldShouldBeIndented = false;
                     }
                     displayName = displayName.TrimStart('-');

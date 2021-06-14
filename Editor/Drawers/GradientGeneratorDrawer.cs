@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Needle.ShaderGraphMarkdown
 {
-    public class GradientGeneratorDrawer : MarkdownMaterialPropertyDrawer, ISerializationCallbackReceiver
+    public class GradientGeneratorDrawer : MarkdownMaterialPropertyDrawer //, ISerializationCallbackReceiver
     {
         private const string DefaultTexturePropertyName = "_RampTexture"; 
         public string texturePropertyName = DefaultTexturePropertyName;
@@ -73,25 +73,32 @@ namespace Needle.ShaderGraphMarkdown
             
             EditorGUILayout.BeginHorizontal();
             var displayName = targetProperty != null ? targetProperty.displayName : "Ramp";
+            // strip condition
+            var lastIndex = displayName.LastIndexOf('[');
+            if (lastIndex > 0)
+                displayName = displayName.Substring(0, lastIndex);
             
             EditorGUI.BeginChangeCheck();
             var existingGradient = gradientWasFound ? mappedGradients[targetMat][targetPropertyName] : new Gradient();
             var newGradient = EditorGUILayout.GradientField(displayName, existingGradient);
             if (EditorGUI.EndChangeCheck())
             {
-                Debug.Log("Changed Gradient");
-                Undo.RecordObject(this, "Changed Gradient");
-                mappedGradients[targetMat][targetPropertyName] = newGradient;
+                // Debug.Log("Changed Gradient");
+                // Undo.RecordObject(this, "Changed Gradient");
+                AddToCache(newGradient);
+                // mappedGradients[targetMat][targetPropertyName] = newGradient;
                 // ApplyRampTexture(targetMat, parameters.Get(0, targetPropertyName)); // immediately apply gradient - experimental
-                OnBeforeSerialize();
-                Undo.FlushUndoRecordObjects();
+                // OnBeforeSerialize();
+                // Undo.FlushUndoRecordObjects();
                 // EditorUtility.SetDirty(this);
             }
 
             var placeholderContent = new GUIContent(targetProperty?.textureValue ? "ApplyMM" : "CreateMM");
             var buttonRect = GUILayoutUtility.GetRect(placeholderContent, GUI.skin.button);
             // draw texture picker next to button
-            if(targetProperty != null && buttonRect.width > 46 + 18)
+            // TODO renders incorrectly on 2019.4 and prevents clicking the actual button.
+            var haveFixedOverlayBug = false;
+            if(haveFixedOverlayBug && targetProperty != null && buttonRect.width > 46 + 18)
             {
                 var controlRect = buttonRect;
                 controlRect.height = 16;
@@ -240,44 +247,44 @@ namespace Needle.ShaderGraphMarkdown
             return sourceTexture;
         }
         
-        public void OnBeforeSerialize()
-        {
-            if (mappedGradients == null || !mappedGradients.Any())
-            {
-                mappedGradientStore = new List<Map>();
-                return;
-            }
-            
-            var store = new List<Map>();
-            foreach (var x in mappedGradients)
-            {
-                foreach (var y in x.Value)
-                {
-                    store.Add(new Map()
-                    {
-                        material = x.Key,
-                        propertyName = y.Key,
-                        gradient = y.Value,
-                    });
-                }
-            }
-
-            mappedGradientStore = store;
-        }
-
-        public void OnAfterDeserialize()
-        {
-            if (mappedGradients == null)
-                mappedGradients = new Dictionary<Material, Dictionary<string, Gradient>>();
-            
-            foreach (var entry in mappedGradientStore)
-            {
-                if (!mappedGradients.ContainsKey(entry.material))
-                    mappedGradients.Add(entry.material, new Dictionary<string, Gradient>());
-                
-                if (!mappedGradients[entry.material].ContainsKey(entry.propertyName))
-                    mappedGradients[entry.material].Add(entry.propertyName, entry.gradient);
-            }
-        }
+        // public void OnBeforeSerialize()
+        // {
+        //     if (mappedGradients == null || !mappedGradients.Any())
+        //     {
+        //         mappedGradientStore = new List<Map>();
+        //         return;
+        //     }
+        //     
+        //     var store = new List<Map>();
+        //     foreach (var x in mappedGradients)
+        //     {
+        //         foreach (var y in x.Value)
+        //         {
+        //             store.Add(new Map()
+        //             {
+        //                 material = x.Key,
+        //                 propertyName = y.Key,
+        //                 gradient = y.Value,
+        //             });
+        //         }
+        //     }
+        //
+        //     mappedGradientStore = store;
+        // }
+        //
+        // public void OnAfterDeserialize()
+        // {
+        //     if (mappedGradients == null)
+        //         mappedGradients = new Dictionary<Material, Dictionary<string, Gradient>>();
+        //     
+        //     foreach (var entry in mappedGradientStore)
+        //     {
+        //         if (!mappedGradients.ContainsKey(entry.material))
+        //             mappedGradients.Add(entry.material, new Dictionary<string, Gradient>());
+        //         
+        //         if (!mappedGradients[entry.material].ContainsKey(entry.propertyName))
+        //             mappedGradients[entry.material].Add(entry.propertyName, entry.gradient);
+        //     }
+        // }
     }
 }
