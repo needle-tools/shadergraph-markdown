@@ -21,6 +21,11 @@ namespace Needle.ShaderGraphMarkdown
             var lastIndex = displayName.LastIndexOf('[');
             if (lastIndex > 0)
                 displayName = displayName.Substring(0, lastIndex);
+            // strip inlining
+            var inliningIndex = displayName.IndexOf("&&", StringComparison.Ordinal);
+            if (inliningIndex > 0)
+                displayName = displayName.Substring(0, inliningIndex);
+            
             OnDrawerGUI(materialEditor, properties, textureProperty, displayName, extraProperty);
         }
 

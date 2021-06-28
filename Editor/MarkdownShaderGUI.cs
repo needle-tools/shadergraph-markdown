@@ -657,47 +657,78 @@ namespace Needle
                             if(prop.flags.HasFlag(MaterialProperty.PropFlags.PerRendererData))
                                 break;
                             
+                            // check if drawer shorthand + parameters
+                            var indexOfShorthand = display.IndexOf("&&", StringComparison.Ordinal);
+                            var isShorthandWithParameters = indexOfShorthand > 0 && indexOfShorthand < display.Length - 2;
+                            
                             // drawer shorthands
-                            if (display.EndsWith("&", StringComparison.Ordinal) ||
+                            if (isShorthandWithParameters || display.EndsWith("&", StringComparison.Ordinal) ||
                                 (prop.type == MaterialProperty.PropType.Texture && prop.flags.HasFlag(MaterialProperty.PropFlags.NonModifiableTextureData))) // display non-modifiable textures inlined by default
                             {
                                 bool shouldDrawMultiplePropertiesInline = display.EndsWith("&&", StringComparison.Ordinal);
+                                var parameters = default(MarkdownMaterialPropertyDrawer.DrawerParameters);
+                                if (isShorthandWithParameters)
+                                {
+                                    // extract parameters
+                                    var parameterRemainder = display.Substring(indexOfShorthand + 2).Trim();
+                                    parameters = new MarkdownMaterialPropertyDrawer.DrawerParameters(("!DRAWER Dummy " + prop.name + " " + parameterRemainder)
+                                        .Split(new [] {' '}, StringSplitOptions.RemoveEmptyEntries));
+                                    display = display.Substring(0, indexOfShorthand);
+                                }
+                                
                                 var trimmedDisplay = display.Trim(' ', '&');
                                 if(prop.type == MaterialProperty.PropType.Texture)
                                 {
                                     var drawer = (InlineTextureDrawer) GetCachedDrawer(nameof(InlineTextureDrawer));
                                     if (drawer)
                                     {
-                                        MaterialProperty extraProperty = null;
-                                        if(shouldDrawMultiplePropertiesInline)
+                                        if (isShorthandWithParameters)
                                         {
-                                            extraProperty = (i + 1 < group.properties.Count) ? group.properties[i + 1] : null;
-                                            if(extraProperty != null)
+                                            drawer.OnDrawerGUI(materialEditor, properties, parameters);
+                                            
+                                            // exclude parameter properties from further regular rendering
+                                            for (int k = 1; k < parameters.Count; k++)
                                             {
-                                                if (extraProperty.flags.HasFlag(MaterialProperty.PropFlags.HideInInspector))
-                                                {
-                                                    extraProperty = null;
-                                                }
-                                                else if (GetMarkdownType(extraProperty.displayName) == MarkdownProperty.Drawer)
-                                                {
-                                                    extraProperty = null;
-                                                    nextPropertyDrawerShouldBeInline = true;
-                                                }
-                                                // check if this is a special property, not supported right now
-                                                // also we don't want to draw if hidden (e.g. unity_Lightmaps)
-                                                else if (GetMarkdownType(extraProperty.displayName) != MarkdownProperty.None)
-                                                {
-                                                    extraProperty = null;
-                                                }
-                                                
-                                                // add this to the referenced list so we don't draw it twice
-                                                if (extraProperty != null && !referencedProperties.Contains(extraProperty))
-                                                {
-                                                    referencedProperties.Add(extraProperty);
-                                                }
+                                                var referencedProperty = properties.FirstOrDefault(x => x.name == parameters.Get(k, ""));
+                                                if (referencedProperty != null && !referencedProperties.Contains(referencedProperty))
+                                                    referencedProperties.Add(referencedProperty);
                                             }
                                         }
-                                        drawer.OnDrawerGUI(materialEditor, properties, prop, trimmedDisplay, extraProperty);
+                                        else
+                                        {
+                                            MaterialProperty extraProperty = null;
+                                            if (shouldDrawMultiplePropertiesInline)
+                                            {
+                                                extraProperty = (i + 1 < group.properties.Count) ? group.properties[i + 1] : null;
+
+                                                if (extraProperty != null)
+                                                {
+                                                    if (extraProperty.flags.HasFlag(MaterialProperty.PropFlags.HideInInspector))
+                                                    {
+                                                        extraProperty = null;
+                                                    }
+                                                    else if (GetMarkdownType(extraProperty.displayName) == MarkdownProperty.Drawer)
+                                                    {
+                                                        extraProperty = null;
+                                                        nextPropertyDrawerShouldBeInline = true;
+                                                    }
+                                                    // check if this is a special property, not supported right now
+                                                    // also we don't want to draw if hidden (e.g. unity_Lightmaps)
+                                                    else if (GetMarkdownType(extraProperty.displayName) != MarkdownProperty.None)
+                                                    {
+                                                        extraProperty = null;
+                                                    }
+
+                                                    // add this to the referenced list so we don't draw it twice
+                                                    if (extraProperty != null && !referencedProperties.Contains(extraProperty))
+                                                    {
+                                                        referencedProperties.Add(extraProperty);
+                                                    }
+                                                }
+                                            }
+
+                                            drawer.OnDrawerGUI(materialEditor, properties, prop, trimmedDisplay, extraProperty);
+                                        }
                                     }
                                 }
                                 else if (prop.type == MaterialProperty.PropType.Vector)
