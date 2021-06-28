@@ -948,9 +948,7 @@ namespace Needle
             MaterialChangedMarker.End();
         }
 
-#if HDRP_7_OR_NEWER
         private ShaderGUI baseShaderGui = null;
-#endif
         private bool haveSearchedForCustomGUI = false;
         
         // ReSharper disable InconsistentNaming

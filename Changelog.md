@@ -2,6 +2,13 @@
 All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.1.4] - 2021-06-28
+- added explicitly specified inlined properties (`Base Map && _BaseColor`) to allow e.g. virtual texture slots to use inlined properties
+- added callback `MarkdownSGExtensions.RegisterCustomBaseShaderGUI` to specify a base shader GUI
+   - for HDRP ShaderGraph shaders the base shader GUI was already automatically added
+   - for Amplify, you can now use the above callback to register one per shader (e.g. `UnityEditor.Rendering.HighDefinition.LitShaderGraphGUI`)
+   - the base shader GUI is called with all properties that haven't been processed by `MarkdownShaderGUI`
+
 ## [1.1.3] - 2021-06-15
 - fixed some issues with conditions parsing and exceptions
 - fixed log message when editing gradients
