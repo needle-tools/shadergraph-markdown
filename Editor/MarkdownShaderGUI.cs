@@ -492,13 +492,22 @@ namespace Needle
                 CoreEditorUtils.DrawSplitter();
         
 #if HDRP_7_OR_NEWER
-                if(baseShaderGui != null)
+                try
                 {
-                    // only pass in the properties that are hidden - this allows us to render all custom HDRP ShaderGraph UIs.
-                    baseShaderGui?.OnGUI(materialEditor, showOriginalPropertyList ? properties : properties
-                        .Where(x => x.flags.HasFlag(MaterialProperty.PropFlags.HideInInspector))
-                        .ToArray());
-                    CoreEditorUtils.DrawSplitter();
+                    if (baseShaderGui != null)
+                    {
+                        // only pass in the properties that are hidden - this allows us to render all custom HDRP ShaderGraph UIs.
+                        baseShaderGui?.OnGUI(materialEditor, showOriginalPropertyList 
+                            ? properties
+                            : properties
+                                .Where(x => x.flags.HasFlag(MaterialProperty.PropFlags.HideInInspector))
+                                .ToArray());
+                        CoreEditorUtils.DrawSplitter();
+                    }
+                }
+                catch (Exception e)
+                {
+                    EditorGUILayout.HelpBox("Exception when drawing base shader GUI of type " + baseShaderGui.GetType() + ":\n" + e, MessageType.Error);
                 }
 #endif        
                 DrawCustomGUIMarker.End();
@@ -742,7 +751,7 @@ namespace Needle
                             }
                             else
                             {
-                                materialEditor.ShaderProperty(prop, display);
+                                materialEditor.ShaderProperty(prop, new GUIContent(display));
                             }
                             previousPropertyWasDrawn = true;
                             break;
@@ -994,19 +1003,14 @@ namespace Needle
             // UnityEditor.Rendering.HighDefinition.HDUnlitGUI
             // UnityEditor.Rendering.HighDefinition.DecalGUI
              
-            #if HDRP_7_OR_NEWER
             var defaultCustomInspector = MarkdownSGExtensions.GetDefaultCustomInspectorFromShader(targetMat.shader);
             if(!string.IsNullOrEmpty(defaultCustomInspector))
             {
-                if (!defaultCustomInspector.StartsWith("UnityEditor."))
-                    defaultCustomInspector = "UnityEditor." + defaultCustomInspector;
-                var litGui = typeof(HDShaderUtils).Assembly.GetType(defaultCustomInspector);
-                baseShaderGui = (ShaderGUI) Activator.CreateInstance(litGui);
+                baseShaderGui = MarkdownSGExtensions.CreateShaderGUI(defaultCustomInspector);
             }
             // remove the "ShaderGraphUIBlock" uiBlock ("Exposed Properties") as we're rendering that ourselves
             // if(!showOriginalPropertyList)
             //     MarkdownHDExtensions.RemoveShaderGraphUIBlock(baseShaderGui);
-            #endif
             
             haveSearchedForCustomGUI = true;
         }

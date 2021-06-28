@@ -103,12 +103,25 @@ namespace UnityEditor.ShaderGraph
         public static string GetDefaultCustomInspectorFromShader(Shader shader)
         {
             var graphData = GetGraphData(shader);
-            if (graphData == null) return null;
             string customInspector = null;
-
-            foreach (var getter in CustomInspectorGetters)
+            
+            if (graphData != null)
             {
-                var inspector = getter(graphData);
+                foreach (var getter in CustomInspectorGetters)
+                {
+                    var inspector = getter(graphData);
+                    if (!string.IsNullOrEmpty(inspector))
+                    {
+                        customInspector = inspector;
+                        break;
+                    }
+                }
+            }
+
+            foreach (var customGetter in CustomBaseShaderGUIGetters)
+            {
+                if(customGetter == null) continue;
+                var inspector = customGetter(shader);
                 if (!string.IsNullOrEmpty(inspector))
                 {
                     customInspector = inspector;
@@ -176,17 +189,22 @@ namespace UnityEditor.ShaderGraph
             }
         }
 
-        private static readonly List<Func<GraphData, string>> CustomInspectorGetters =
-            new List<Func<GraphData, string>>();
+        private static readonly List<Func<GraphData, string>> CustomInspectorGetters = new List<Func<GraphData, string>>();
 
         internal static void RegisterCustomInspectorGetter(Func<GraphData, string> func)
         {
             CustomInspectorGetters.Add(func);
         }
 
+        private static readonly List<Func<Shader, string>> CustomBaseShaderGUIGetters = new List<Func<Shader, string>>();
+
+        public static void RegisterCustomBaseShaderGUI(Func<Shader, string> func)
+        {
+            CustomBaseShaderGUIGetters.Add(func);
+        }
+        
 #if UNITY_2020_2_OR_NEWER
-        private static readonly List<Func<Target, string, bool>> CustomInspectorSetters =
-            new List<Func<Target, string, bool>>();
+        private static readonly List<Func<Target, string, bool>> CustomInspectorSetters = new List<Func<Target, string, bool>>();
 
         internal static void RegisterCustomInspectorSetter(Func<Target, string, bool> func)
         {
@@ -259,6 +277,15 @@ namespace UnityEditor.ShaderGraph
         }
         
 #endregion
+
+        public static ShaderGUI CreateShaderGUI(string defaultCustomInspector)
+        {
+            var type = typeof(EditorWindow).Assembly.GetType("UnityEditor.ShaderGUIUtility");
+            var method = type?.GetMethod("CreateShaderGUI", (BindingFlags)(-1));
+            if (method != null)
+                return (ShaderGUI) method.Invoke(null, new object[]{defaultCustomInspector});
+            return null;
+        }
     }
 }
 
