@@ -378,7 +378,14 @@ namespace Needle
                         targetMat.DisableKeyword(kw);
                     
 #if HDRP_7_OR_NEWER
-                    HDShaderUtils.ResetMaterialKeywords(targetMat);
+                    try
+                    {
+                        HDShaderUtils.ResetMaterialKeywords(targetMat);
+                    }
+                    catch (ArgumentException _)
+                    {
+                        // ignore, not a HDRP shader probably
+                    }
 #endif
                 }
 
