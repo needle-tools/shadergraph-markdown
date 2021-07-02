@@ -1,3 +1,6 @@
+#if UNITY_2021_2_OR_NEWER
+#define SRP12_SG_REFACTORED
+#endif
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -212,6 +215,10 @@ namespace Needle
         
         private int lastHash;
         private List<HeaderGroup> headerGroups = null;
+#if SRP12_SG_REFACTORED
+        private Dictionary<string, string> propertyToCategory = null;
+        private Dictionary<string, HeaderGroup> categoryToHeaderGroup = null;
+#endif
         
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
@@ -262,6 +269,29 @@ namespace Needle
                 GenerateHeaderGroupsMarker.Begin();
                 headerGroups.Add(new HeaderGroup("Default"));
                 
+#if SRP12_SG_REFACTORED
+                // on 2021.2+, we need to also collect Blackboard Categories, which are stored in a sub asset
+                var blackboardCategories = MarkdownSGExtensions.CollectCategories(targetMat.shader).ToList();
+                propertyToCategory = new Dictionary<string, string>();
+                categoryToHeaderGroup = new Dictionary<string, HeaderGroup>();
+                foreach (var cat in blackboardCategories)
+                {
+                    var firstPropertyInCategory = cat.properties.FirstOrDefault();
+                    if(firstPropertyInCategory != null)
+                        propertyToCategory.Add(firstPropertyInCategory, cat.categoryName);
+                }
+                
+                foreach (var cat in blackboardCategories)
+                {
+                    var display = cat.categoryName;
+                    var condition = GetBetween(display, '[', ']', true);
+                    if (!string.IsNullOrWhiteSpace(condition))
+                        display = display.Substring(0, display.LastIndexOf('[')).TrimEnd();
+                    var group = new HeaderGroup(display, condition);
+                    categoryToHeaderGroup.Add(cat.categoryName, group);
+                }
+#endif
+                
                 foreach (var prop in properties)
                 {
                     var display = prop.displayName;
@@ -282,9 +312,17 @@ namespace Needle
                     }
                     else
                     {
-                        var last = headerGroups.Last();
-                        if (last.properties == null) 
-                            last.properties = new List<MaterialProperty>();
+#if SRP12_SG_REFACTORED
+                        if (propertyToCategory.ContainsKey(prop.name))
+                        {
+                            var categoryHeaderGroup = categoryToHeaderGroup[propertyToCategory[prop.name]];
+                            headerGroups.Add(categoryHeaderGroup);
+                        }
+#endif
+                        var headerGroup = headerGroups.Last();
+                        
+                        if (headerGroup.properties == null) 
+                            headerGroup.properties = new List<MaterialProperty>();
                         
                         // need to process REF/DRAWER properties early so we can hide them properly if needed
                         display = display.TrimStart('-');
@@ -337,7 +375,7 @@ namespace Needle
                                     break;
                             }
                         }
-                        last.properties.Add(prop);
+                        headerGroup.properties.Add(prop);
                     }
                 }
                 headerGroups.Add(new HeaderGroup(null) { properties = null, customDrawer = DrawCustomGUI });

@@ -1,5 +1,5 @@
 ﻿#if !NO_INTERNALS_ACCESS && UNITY_2019_4_OR_NEWER
-#if UNITY_2021_2_OR_NEWER && false
+#if UNITY_2021_2_OR_NEWER
 #define SRP12_SG_REFACTORED
 #endif
 using System;
@@ -286,6 +286,26 @@ namespace UnityEditor.ShaderGraph
                 return (ShaderGUI) method.Invoke(null, new object[]{defaultCustomInspector});
             return null;
         }
+
+#if SRP12_SG_REFACTORED
+        public static IEnumerable<(string categoryName, IEnumerable<string> properties)> CollectCategories(Shader s)
+        {
+            string path = AssetDatabase.GetAssetPath(s);
+            ShaderGraphMetadata metadata = null;
+            foreach (var obj in AssetDatabase.LoadAllAssetsAtPath(path))
+            {
+                if (obj is ShaderGraphMetadata meta)
+                {
+                    metadata = meta;
+                    var categories = metadata.categoryDatas
+                        .Select(x => (x.categoryName, x.propertyDatas.Select(x => x.referenceName)));
+                    return categories;
+                }
+            }
+
+            return null;
+        }
+#endif
     }
 }
 
