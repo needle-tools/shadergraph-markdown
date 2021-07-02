@@ -12,18 +12,20 @@ namespace Needle.ShaderGraphMarkdown
     internal class ShaderGraphMarkdownSettingsProvider : SettingsProvider
     {
         private SerializedObject m_SerializedObject;
-        private SerializedProperty showDefaultReferenceNameWarning, showNamingRecommendationHint;
+        private SerializedProperty showDefaultReferenceNameWarning, showNamingRecommendationHint, showMarkdownInBlackboard;
         
         public override void OnGUI(string searchContext)
         {
             if (m_SerializedObject == null) {
                 ShaderGraphMarkdownSettings.instance.hideFlags = HideFlags.DontSave;
                 m_SerializedObject = new SerializedObject(ShaderGraphMarkdownSettings.instance);
-                showDefaultReferenceNameWarning = m_SerializedObject.FindProperty("showDefaultReferenceNameWarning");
-                showNamingRecommendationHint = m_SerializedObject.FindProperty("showNamingRecommendationHint");
+                showMarkdownInBlackboard = m_SerializedObject.FindProperty(nameof(ShaderGraphMarkdownSettings.instance.showMarkdownInBlackboard));
+                showDefaultReferenceNameWarning = m_SerializedObject.FindProperty(nameof(ShaderGraphMarkdownSettings.instance.showDefaultReferenceNameWarning));
+                showNamingRecommendationHint = m_SerializedObject.FindProperty(nameof(ShaderGraphMarkdownSettings.instance.showNamingRecommendationHint));
             }
             
-            EditorGUILayout.LabelField("Blackboard: Reference Name Hints", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("Blackboard Hints", EditorStyles.boldLabel);
+            EditorGUILayout.PropertyField(showMarkdownInBlackboard, new GUIContent("Show Markdown in Blackboard"));
             EditorGUILayout.PropertyField(showDefaultReferenceNameWarning, new GUIContent("Default Name Warning"));
             EditorGUILayout.PropertyField(showNamingRecommendationHint, new GUIContent("Recommendations Hint"));
             
@@ -49,6 +51,7 @@ namespace Needle.ShaderGraphMarkdown
     [FilePath("ProjectSettings/ShaderGraphMarkdownSettings.asset", FilePathAttribute.Location.ProjectFolder)]
     internal class ShaderGraphMarkdownSettings : ScriptableSingleton<ShaderGraphMarkdownSettings>
     {
+        public bool showMarkdownInBlackboard = true;
         [Tooltip("Shows a red bar next to properties that still have the default reference name. This is not recommended, as it will be hard to change to another shader in the future. Try to align your property names to Unity conventions (e.g. \"_BaseColor\")")]
         public bool showDefaultReferenceNameWarning = true;
         [Tooltip("Shows a yellow bar next to properties that don't follow recommended reference naming. Reference names should start with \"_\" and be in CamelCase.")]

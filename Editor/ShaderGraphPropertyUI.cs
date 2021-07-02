@@ -27,6 +27,7 @@ namespace Needle.ShaderGraphMarkdown
 
         private static void EditorUpdate()
         {
+            if(!ShaderGraphMarkdownSettings.instance.showMarkdownInBlackboard) return;
             i = (i + 1) % 100; // only run every 100 frames for now
             if (i != 0) return;
 
