@@ -420,7 +420,7 @@ namespace Needle
                     {
                         HDShaderUtils.ResetMaterialKeywords(targetMat);
                     }
-                    catch (ArgumentException _)
+                    catch (ArgumentException)
                     {
                         // ignore, not a HDRP shader probably
                     }
@@ -552,7 +552,7 @@ namespace Needle
                 }
                 catch (Exception e)
                 {
-                    EditorGUILayout.HelpBox("Exception when drawing base shader GUI of type " + baseShaderGui.GetType() + ":\n" + e, MessageType.Error);
+                    EditorGUILayout.HelpBox("Exception when drawing base shader GUI of type " + baseShaderGui?.GetType() + ":\n" + e, MessageType.Error);
                 }
 #endif        
                 DrawCustomGUIMarker.End();
@@ -743,7 +743,8 @@ namespace Needle
                                             // exclude parameter properties from further regular rendering
                                             for (int k = 1; k < parameters.Count; k++)
                                             {
-                                                var referencedProperty = properties.FirstOrDefault(x => x.name == parameters.Get(k, ""));
+                                                var j = k;
+                                                var referencedProperty = properties.FirstOrDefault(x => x.name == parameters.Get(j, ""));
                                                 if (referencedProperty != null && !referencedProperties.Contains(referencedProperty))
                                                     referencedProperties.Add(referencedProperty);
                                             }
@@ -933,7 +934,7 @@ namespace Needle
             ConditionCheckMarker.Begin();
             
             // TODO Cache properly
-            var result = false;
+            bool result;
             try
             {
                 parser = new Parser(new ParsingContext(false), new ExpressionContext(false));
