@@ -14,13 +14,33 @@ namespace UnityEditor.Rendering.Universal
         [InitializeOnLoadMethod]
         static void RegisterMarkdownHelpers()
         {
-            // MarkdownSGExtensions.RegisterTypeMap(TypeToHDPropertyTypeMap);
-            // MarkdownSGExtensions.RegisterCustomInspectorGetter(GetDefaultCustomInspectorFromGraphData);
+            MarkdownSGExtensions.RegisterCustomInspectorGetter(GetDefaultCustomInspectorFromGraphData);
             #if UNITY_2020_2_OR_NEWER
             MarkdownSGExtensions.RegisterCustomInspectorSetter(SetDefaultCustomInspector);
             #endif
         }
-        
+
+        private static string GetDefaultCustomInspectorFromGraphData(GraphData arg)
+        {
+#if UNITY_2021_2_OR_NEWER
+            foreach (var target in arg.activeTargets)
+            {
+                if (target is UniversalTarget universalTarget)
+                {
+                    switch (universalTarget.activeSubTarget)
+                    {
+                        case UniversalLitSubTarget litSubTarget:
+                            return typeof(ShaderGraphLitGUI).FullName;
+                        case UniversalUnlitSubTarget unlitSubTarget:
+                            return typeof(ShaderGraphUnlitGUI).FullName;
+                    }
+                }
+            }
+#endif
+
+            return null;
+        }
+
 #if UNITY_2020_2_OR_NEWER
         static bool SetDefaultCustomInspector(Target target, string customInspector)
         {
