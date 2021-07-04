@@ -51,7 +51,7 @@ namespace UnityEditor.ShaderGraph
         }
 #endif
         
-        internal static GraphData GetGraphData(AssetImporter importer)
+        internal static GraphData GetGraphData(AssetImporter importer, bool initializeGraph = false)
         {
             try
             {
@@ -68,8 +68,11 @@ namespace UnityEditor.ShaderGraph
                 var graph = JsonUtility.FromJson<GraphData>(textGraph);
 #endif
 
-                graph.OnEnable();
-                graph.ValidateGraph();
+                if(initializeGraph)
+                {
+                    graph.OnEnable();
+                    graph.ValidateGraph();
+                }
                 return graph;
             }
             catch (ArgumentException e)
@@ -79,13 +82,13 @@ namespace UnityEditor.ShaderGraph
             }
         }
 
-        internal static GraphData GetGraphData(Shader shader)
+        internal static GraphData GetGraphData(Shader shader, bool initializeGraph = false)
         {
             if (!AssetDatabase.Contains(shader)) return null;
             var assetPath = AssetDatabase.GetAssetPath(shader);
             var assetImporter = AssetImporter.GetAtPath(assetPath);
             if (assetImporter is ShaderGraphImporter shaderGraphImporter)
-                return GetGraphData(shaderGraphImporter);
+                return GetGraphData(shaderGraphImporter, initializeGraph);
 
             return null;
         }
