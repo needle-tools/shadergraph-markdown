@@ -524,17 +524,21 @@ namespace Needle
                 if (!haveSearchedForCustomGUI)
                     InitializeCustomGUI(targetMat);
             
-                EditorGUILayout.Space();
-                EditorGUILayout.LabelField(AdditionalOptions, EditorStyles.boldLabel);
-                EditorGUILayout.Space();
-                
-                // from MaterialEditor.PropertiesDefaultGUI(properties);
-                if (SupportedRenderingFeatures.active.editableMaterialRenderQueue)
-                    materialEditor.RenderQueueField();
-                materialEditor.EnableInstancingField();
-                materialEditor.DoubleSidedGIField();
-                EditorGUILayout.Space();
-                CoreEditorUtils.DrawSplitter();
+                // This assumes that all base shader GUIs draw the advanced options themselves (e.g. instancing, queue, ...)
+                if(baseShaderGui == null)
+                {
+                    EditorGUILayout.Space();
+                    EditorGUILayout.LabelField(AdditionalOptions, EditorStyles.boldLabel);
+                    EditorGUILayout.Space();
+                    
+                    // from MaterialEditor.PropertiesDefaultGUI(properties);
+                    if (SupportedRenderingFeatures.active.editableMaterialRenderQueue)
+                        materialEditor.RenderQueueField();
+                    materialEditor.EnableInstancingField();
+                    materialEditor.DoubleSidedGIField();
+                    EditorGUILayout.Space();
+                    CoreEditorUtils.DrawSplitter();
+                }
         
 #if HDRP_7_OR_NEWER
                 try
