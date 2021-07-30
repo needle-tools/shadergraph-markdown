@@ -158,7 +158,7 @@ namespace Needle
         }
         // ReSharper restore InconsistentNaming
              
-        private new static MaterialProperty FindKeywordProperty(string keywordRef, MaterialProperty[] properties)
+        private static MaterialProperty FindKeywordProperty(string keywordRef, MaterialProperty[] properties)
         {
             var keywordProp = ShaderGUI.FindProperty(keywordRef, properties, false);
             
@@ -686,15 +686,25 @@ namespace Needle
                             if(split.Length > 1) {
                                 var keywordRef = split[1];
                                 var keywordProp = FindKeywordProperty(keywordRef, properties);
-                                // special case: the keyword might be defined in a subgraph or not at all
-                                // if (keywordProp == null)
-                                // {
-                                //     MarkdownSGExtensions.FindKeywordData(targetMat.shader, keywordRef);
-                                // }
-                                if(keywordProp == null)
-                                    EditorGUILayout.HelpBox("Could not find MaterialProperty: '" + keywordRef, MessageType.Error);
-                                else
-                                    materialEditor.ShaderProperty(keywordProp, keywordProp.displayName);
+                                var foundKeywordToDraw = false;
+                                
+                                // special case: the keyword might be defined in a subgraph
+                                if (keywordProp == null)
+                                {
+                                    var keyword = MarkdownSGExtensions.FindKeywordData(targetMat.shader, keywordRef);
+                                    if (keyword != null)
+                                    {
+                                        MarkdownSGExtensions.DrawShaderKeywordProperty(materialEditor, keyword);
+                                        foundKeywordToDraw = true;
+                                    }
+                                }
+                                if(!foundKeywordToDraw)
+                                {
+                                    if(keywordProp == null)
+                                        EditorGUILayout.HelpBox("Could not find MaterialProperty: '" + keywordRef, MessageType.Error);
+                                    else
+                                        materialEditor.ShaderProperty(keywordProp, keywordProp.displayName);
+                                }
                             }
                             previousPropertyWasDrawn = true;
                             break;

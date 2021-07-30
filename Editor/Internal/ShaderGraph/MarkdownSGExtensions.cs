@@ -309,24 +309,72 @@ namespace UnityEditor.ShaderGraph
             return null;
         }
 #endif
-        // public static void FindKeywordData(Shader shader, string keywordRef)
-        // {
-        //     // traverse graph
-        //     var graphData = GetGraphData(shader);
-        //     var nodes = graphData.GetNodes<SubGraphNode>();
-        //     var shaderKeywords = new KeywordCollector();
-        //     foreach (var node in nodes)
-        //     { 
-        //         // node.asset
-        //         node.CollectShaderKeywords(shaderKeywords, GenerationMode.ForReals);
-        //         if (node.owner.isSubGraph)
-        //         {
-        //             Debug.Log("Is Subgraph: " + node);
-        //         }
-        //     }
-        //     graphData.CollectShaderKeywords(shaderKeywords, GenerationMode.ForReals);
-        //     Debug.Log(string.Join("\n", shaderKeywords.keywords.Select(x => x.keywordType + " - " + string.Join(",", x.entries.Select(x => x.referenceName)))));
-        // }
+
+        public class WrappedShaderKeyword
+        {
+            internal ShaderKeyword keyword;
+        }
+        
+        public static WrappedShaderKeyword FindKeywordData(Shader shader, string keywordRef)
+        {
+            // collect keywords from graph and first level of child sub graphs
+            // (shader graph only generates shader_feature / multi_compile for that first level it seems)
+            var graphData = GetGraphData(shader);
+            if (graphData == null) return null;
+            
+            var shaderKeywords = new KeywordCollector();
+            foreach (var node in graphData.GetNodes<SubGraphNode>())
+                node.CollectShaderKeywords(shaderKeywords, GenerationMode.ForReals);
+            graphData.CollectShaderKeywords(shaderKeywords, GenerationMode.ForReals);
+
+            var keyword = shaderKeywords.keywords.FirstOrDefault(x => x.referenceName == keywordRef);
+            if (keyword == null) return null;
+            return new WrappedShaderKeyword() { keyword = keyword };
+        }
+
+        public static void DrawShaderKeywordProperty(MaterialEditor editor, WrappedShaderKeyword keyword)
+        {
+            var mat = (Material) editor.target;
+            switch (keyword.keyword.keywordType)
+            {
+                case KeywordType.Boolean:
+                    var isSet = mat.IsKeywordEnabled(keyword.keyword.referenceName);
+                    var newValue = EditorGUILayout.Toggle(keyword.keyword.displayName, isSet);
+                    if (isSet != newValue)
+                    {
+                        Undo.RegisterCompleteObjectUndo(mat, "Set " + keyword.keyword.displayName + " to " + newValue);
+                        if (newValue) mat.EnableKeyword(keyword.keyword.referenceName);
+                        else mat.DisableKeyword(keyword.keyword.referenceName);
+                    }
+                    break;
+                case KeywordType.Enum:
+                    var keywordEntries = keyword.keyword.entries;
+                    var keywordReferenceName = keyword.keyword.referenceName + "_";
+            
+                    // get selected index based on set keywords
+                    var currentIndex = 0;
+                    
+                    for (int i = 0; i < keywordEntries.Count; i++)
+                    {
+                        if (mat.IsKeywordEnabled(keywordReferenceName + keywordEntries[i].referenceName))
+                        {
+                            currentIndex = i;
+                            break;
+                        }
+                    }
+                    var newIndex = EditorGUILayout.Popup(keyword.keyword.displayName, currentIndex, keywordEntries.Select(x => x.displayName).ToArray());
+                    if (newIndex != currentIndex)
+                    {
+                        Undo.RegisterCompleteObjectUndo(mat, "Set " + keyword.keyword.displayName + " to " + keywordReferenceName + keywordEntries[newIndex].referenceName);
+                        for (int i = 0; i < keywordEntries.Count; i++)
+                        {
+                            if (i == newIndex) mat.EnableKeyword(keywordReferenceName + keywordEntries[i].referenceName);
+                            else mat.DisableKeyword(keywordReferenceName + keywordEntries[i].referenceName);
+                        }
+                    }
+                    break;
+            }
+        }
     }
 }
 
