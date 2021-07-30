@@ -309,6 +309,24 @@ namespace UnityEditor.ShaderGraph
             return null;
         }
 #endif
+        // public static void FindKeywordData(Shader shader, string keywordRef)
+        // {
+        //     // traverse graph
+        //     var graphData = GetGraphData(shader);
+        //     var nodes = graphData.GetNodes<SubGraphNode>();
+        //     var shaderKeywords = new KeywordCollector();
+        //     foreach (var node in nodes)
+        //     { 
+        //         // node.asset
+        //         node.CollectShaderKeywords(shaderKeywords, GenerationMode.ForReals);
+        //         if (node.owner.isSubGraph)
+        //         {
+        //             Debug.Log("Is Subgraph: " + node);
+        //         }
+        //     }
+        //     graphData.CollectShaderKeywords(shaderKeywords, GenerationMode.ForReals);
+        //     Debug.Log(string.Join("\n", shaderKeywords.keywords.Select(x => x.keywordType + " - " + string.Join(",", x.entries.Select(x => x.referenceName)))));
+        // }
     }
 }
 

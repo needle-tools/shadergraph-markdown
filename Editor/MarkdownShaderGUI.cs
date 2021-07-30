@@ -158,7 +158,7 @@ namespace Needle
         }
         // ReSharper restore InconsistentNaming
              
-        private new static MaterialProperty FindProperty(string keywordRef, MaterialProperty[] properties)
+        private new static MaterialProperty FindKeywordProperty(string keywordRef, MaterialProperty[] properties)
         {
             var keywordProp = ShaderGUI.FindProperty(keywordRef, properties, false);
             
@@ -359,7 +359,7 @@ namespace Needle
                             {
                                 case MarkdownProperty.Reference:
                                     var keywordRef = split[1];
-                                    var keywordProp = FindProperty(keywordRef, properties);
+                                    var keywordProp = FindKeywordProperty(keywordRef, properties);
                                     if(keywordProp != null)
                                         referencedProperties.Add(keywordProp);
                                     break;
@@ -685,9 +685,12 @@ namespace Needle
                             var split = display.Split(' ');
                             if(split.Length > 1) {
                                 var keywordRef = split[1];
-                                var keywordProp = FindProperty(keywordRef, properties);
-                                // special case: this is a texture prop. 2nd argument could be a color or float, and we want to draw it inline
-                                // if it's a texture prop without 2nd arg, we still draw the "small texture" version
+                                var keywordProp = FindKeywordProperty(keywordRef, properties);
+                                // special case: the keyword might be defined in a subgraph or not at all
+                                // if (keywordProp == null)
+                                // {
+                                //     MarkdownSGExtensions.FindKeywordData(targetMat.shader, keywordRef);
+                                // }
                                 if(keywordProp == null)
                                     EditorGUILayout.HelpBox("Could not find MaterialProperty: '" + keywordRef, MessageType.Error);
                                 else
