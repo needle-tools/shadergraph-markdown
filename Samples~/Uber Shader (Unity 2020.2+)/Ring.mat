@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  version: 4
+  version: 5
 --- !u!21 &2100000
 Material:
   serializedVersion: 6
@@ -27,8 +27,9 @@ Material:
   m_LightmapFlags: 4
   m_EnableInstancingVariants: 0
   m_DoubleSidedGI: 0
-  m_CustomRenderQueue: -1
-  stringTagMap: {}
+  m_CustomRenderQueue: 2000
+  stringTagMap:
+    RenderType: Opaque
   disabledShaderPasses: []
   m_SavedProperties:
     serializedVersion: 3
@@ -93,8 +94,17 @@ Material:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    m_Ints: []
     m_Floats:
+    - Vector1_0573254758a34f629b1179ee0bf94a0a: 0
+    - Vector1_1: 0
+    - Vector1_5f91e55a5dae45e9a7993918d04c6a49: 0
+    - Vector1_641183c62f6c41a887728e5758578b35: 0
     - Vector1_97a112971990450abde609c55564e15f: 0
+    - Vector1_9df452649baa472fb14ec50ea9f4ca6e: 0
+    - Vector1_a9f5816027b74cb99fafaf868df91b09: 0
+    - Vector1_a9f5816027b74cb99fafaf868df91b09_1: 0
+    - Vector1_a9f5816027b74cb99fafaf868df91b09_2: 0
     - Vector1_af56d892959f4c4087895c792f247300: 0
     - _AFFECT_SMOOTHNESS: 0
     - _AlphaClip: 0
@@ -104,6 +114,7 @@ Material:
     - _COLORMOD: 0
     - _COLORMODE: 0
     - _COLORSOURCE: 0
+    - _CastShadows: 1
     - _ClearCoatMask: 0
     - _ClearCoatSmoothness: 0
     - _Cull: 2
@@ -120,6 +131,7 @@ Material:
     - _OcclusionStrength: 1
     - _PATTERN: 4
     - _Parallax: 0.005
+    - _QueueControl: 0
     - _QueueOffset: 0
     - _RainbowHueShift: 0
     - _RainbowSaturation: 1
@@ -132,7 +144,9 @@ Material:
     - _SrcBlend: 1
     - _Surface: 0
     - _WorkflowMode: 1
+    - _ZTest: 4
     - _ZWrite: 1
+    - _ZWriteControl: 0
     m_Colors:
     - _BaseColor: {r: 1, g: 0.40481353, b: 0, a: 1}
     - _Color: {r: 1, g: 1, b: 1, a: 1}
