@@ -291,7 +291,7 @@ namespace UnityEditor.ShaderGraph
         }
 
 #if SRP12_SG_REFACTORED
-        public static IEnumerable<(string categoryName, IEnumerable<string> properties)> CollectCategories(Shader s)
+        public static IEnumerable<(string categoryName, int categoryHash, IEnumerable<string> properties)> CollectCategories(Shader s)
         {
             string path = AssetDatabase.GetAssetPath(s);
             ShaderGraphMetadata metadata = null;
@@ -301,7 +301,7 @@ namespace UnityEditor.ShaderGraph
                 {
                     metadata = meta;
                     var categories = metadata.categoryDatas
-                        .Select(x => (x.categoryName, x.propertyDatas.Select(x => x.referenceName)));
+                        .Select(x => (x.categoryName, x.GetHashCode(), x.propertyDatas.Select(x => x.referenceName)));
                     return categories;
                 }
             }

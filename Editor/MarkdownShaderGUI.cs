@@ -216,8 +216,8 @@ namespace Needle
         private int lastHash;
         private List<HeaderGroup> headerGroups = null;
 #if SRP12_SG_REFACTORED
-        private Dictionary<string, string> propertyToCategory = null;
-        private Dictionary<string, HeaderGroup> categoryToHeaderGroup = null;
+        private Dictionary<string, int> propertyToCategory = null;
+        private Dictionary<int, HeaderGroup> categoryToHeaderGroup = null;
 #endif
         
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
@@ -272,13 +272,13 @@ namespace Needle
 #if SRP12_SG_REFACTORED
                 // on 2021.2+, we need to also collect Blackboard Categories, which are stored in a sub asset
                 var blackboardCategories = MarkdownSGExtensions.CollectCategories(targetMat.shader).ToList();
-                propertyToCategory = new Dictionary<string, string>();
-                categoryToHeaderGroup = new Dictionary<string, HeaderGroup>();
+                propertyToCategory = new Dictionary<string, int>();
+                categoryToHeaderGroup = new Dictionary<int, HeaderGroup>();
                 foreach (var cat in blackboardCategories)
                 {
                     var firstPropertyInCategory = cat.properties.FirstOrDefault();
                     if(firstPropertyInCategory != null)
-                        propertyToCategory.Add(firstPropertyInCategory, cat.categoryName);
+                        propertyToCategory.Add(firstPropertyInCategory, cat.categoryHash);
                 }
                 
                 foreach (var cat in blackboardCategories)
@@ -288,7 +288,7 @@ namespace Needle
                     if (!string.IsNullOrWhiteSpace(condition))
                         display = display.Substring(0, display.LastIndexOf('[')).TrimEnd();
                     var group = new HeaderGroup(display, condition);
-                    categoryToHeaderGroup.Add(cat.categoryName, group);
+                    categoryToHeaderGroup.Add(cat.categoryHash, group);
                 }
 #endif
                 
