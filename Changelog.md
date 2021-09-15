@@ -2,6 +2,14 @@
 All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.2.0-pre] - 2021-09-15
+- added support for blackboard categories in 2021.2+
+- added support for keywords in subgraphs (first-level only, same as ShaderGraph itself supports)
+- added settings option to show/hide Markdown in the blackboard
+- improved performance for parsing some ShaderGraph data blocks
+- fixed potential errors with HDRP being in the project but not used for shaders
+- fixed a number of warnings
+
 ## [1.1.4] - 2021-06-28
 - added explicitly specified inlined properties (`Base Map && _BaseColor`) to allow e.g. virtual texture slots to use inlined properties
 - added callback `MarkdownSGExtensions.RegisterCustomBaseShaderGUI` to specify a base shader GUI
