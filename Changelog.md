@@ -2,6 +2,10 @@
 All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.2.0-pre.2] - 2021-09-15
+- fixed usage with Amplify on Built-In only (no SRPs in project)
+- changed Amplify sample shader to use Built-In, not URP
+
 ## [1.2.0-pre] - 2021-09-15
 - added support for blackboard categories in 2021.2+
 - added support for keywords in subgraphs (first-level only, same as ShaderGraph itself supports)
@@ -9,6 +13,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) a
 - improved performance for parsing some ShaderGraph data blocks
 - fixed potential errors with HDRP being in the project but not used for shaders
 - fixed a number of warnings
+- fixed various SRP compatibility and versioning issues
 
 ## [1.1.4] - 2021-06-28
 - added explicitly specified inlined properties (`Base Map && _BaseColor`) to allow e.g. virtual texture slots to use inlined properties
