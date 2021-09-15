@@ -688,6 +688,7 @@ namespace Needle
                                 var keywordProp = FindKeywordProperty(keywordRef, properties);
                                 var foundKeywordToDraw = false;
                                 
+#if SHADERGRAPH_7_OR_NEWER
                                 // special case: the keyword might be defined in a subgraph
                                 if (keywordProp == null)
                                 {
@@ -698,6 +699,7 @@ namespace Needle
                                         foundKeywordToDraw = true;
                                     }
                                 }
+#endif
                                 if(!foundKeywordToDraw)
                                 {
                                     if(keywordProp == null)
@@ -1063,7 +1065,7 @@ namespace Needle
             // UnityEditor.Rendering.HighDefinition.HDLitGUI
             // UnityEditor.Rendering.HighDefinition.HDUnlitGUI
             // UnityEditor.Rendering.HighDefinition.DecalGUI
-             
+#if SHADERGRAPH_7_OR_NEWER
             var defaultCustomInspector = MarkdownSGExtensions.GetDefaultCustomInspectorFromShader(targetMat.shader);
             if(!string.IsNullOrEmpty(defaultCustomInspector))
             {
@@ -1072,6 +1074,7 @@ namespace Needle
             // remove the "ShaderGraphUIBlock" uiBlock ("Exposed Properties") as we're rendering that ourselves
             // if(!showOriginalPropertyList)
             //     MarkdownHDExtensions.RemoveShaderGraphUIBlock(baseShaderGui);
+#endif
             
             haveSearchedForCustomGUI = true;
         }
