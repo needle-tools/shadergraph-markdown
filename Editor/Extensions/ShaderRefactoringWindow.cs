@@ -61,21 +61,64 @@ namespace Needle.ShaderGraphMarkdown
                 .Select(x => (T) x)
                 .ToList();
         }
+
+
+        void UpdatePopupField()
+        {
+            var existingPopup = popupFieldContainer.Q<PopupField<(string, string)>>();
+            var defaultProp = ("", "Select Property");
+            var existingTuple = existingPopup != null ? existingPopup.value : defaultProp;
+            popupFieldContainer.Clear();
+            
+            var properties = new List<(string referenceName, string displayName)>();
+            properties.Add(defaultProp);
+            if(data.shader)
+            {
+                var propertyCount = data.shader.GetPropertyCount();
+                for (int i = 0; i < propertyCount; i++)
+                {
+                    if(ShaderUtil.IsShaderPropertyHidden(data.shader, i)) continue;
+                    properties.Add((data.shader.GetPropertyName(i), data.shader.GetPropertyDescription(i)));
+                }
+            }
+
+            if (!properties.Contains(existingTuple))
+                existingTuple = defaultProp;
+            
+            var popupField = new PopupField<(string referenceName, string displayName)>("Properties", properties, existingTuple, tuple => tuple.referenceName + " (" + tuple.displayName + ")", tuple => tuple.referenceName + " (" + tuple.displayName + ")");
+            popupField.SetEnabled(data.shader && properties.Count > 1);
+            popupField.RegisterValueChangedCallback(evt =>
+            {
+                data.sourceReferenceName = evt.newValue.referenceName;
+            });
+            popupFieldContainer.Add(popupField);
+        }
         
+        private VisualElement popupFieldContainer;
+        private SerializedObject so;
         private void CreateGUI()
         {
-            titleContent = new GUIContent("Shader Refactor");
+            titleContent = new GUIContent("Refactor Shader Properties");
             
-            var so = new SerializedObject(this);
+            if(so == null || so.targetObject != this) so = new SerializedObject(this);
             so.Update();
             var prop = so.FindProperty(nameof(data));
 
-            var propField = new PropertyField(prop.FindPropertyRelative(nameof(ShaderRefactoringData.shader))); propField.Bind(so);
+            var propField = new PropertyField(prop.FindPropertyRelative(nameof(ShaderRefactoringData.shader)));
+            propField.RegisterValueChangeCallback(evt =>
+            {
+                UpdatePopupField();
+            });
+            propField.Bind(so);
             rootVisualElement.Add(propField);
-            // TODO this could also be a dropdown with all properties that this shader actually has
-            var refactorFrom = new PropertyField(prop.FindPropertyRelative(nameof(ShaderRefactoringData.sourceReferenceName))); refactorFrom.Bind(so);
+            
+            var refactorFrom = new PropertyField(prop.FindPropertyRelative(nameof(ShaderRefactoringData.sourceReferenceName)), "Source Property"); refactorFrom.Bind(so);
             rootVisualElement.Add(refactorFrom);
-            var refactorTo = new PropertyField(prop.FindPropertyRelative(nameof(ShaderRefactoringData.targetReferenceName))); refactorTo.Bind(so);
+
+            popupFieldContainer = new VisualElement();
+            rootVisualElement.Add(popupFieldContainer);
+            
+            var refactorTo = new PropertyField(prop.FindPropertyRelative(nameof(ShaderRefactoringData.targetReferenceName)), "New Property"); refactorTo.Bind(so);
             rootVisualElement.Add(refactorTo);
 
             so.ApplyModifiedProperties();
@@ -84,13 +127,13 @@ namespace Needle.ShaderGraphMarkdown
             {
                 if (string.IsNullOrWhiteSpace(data.sourceReferenceName))
                 {
-                    Debug.LogError("Can't refactor: source reference name is empty.");
+                    Debug.LogError("Can't refactor: source reference name is empty. Please select a source property.");
                     return;
                 }
                 
                 if (string.IsNullOrWhiteSpace(data.targetReferenceName))
                 {
-                    Debug.LogError("Can't refactor: target reference name is empty.");
+                    Debug.LogError("Can't refactor: target reference name is empty. Please set a new reference name for " + data.sourceReferenceName);
                     return;
                 }
                 
