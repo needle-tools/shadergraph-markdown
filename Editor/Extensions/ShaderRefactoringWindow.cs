@@ -2,10 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
+using System.Text;
 using UnityEditor;
 using UnityEditor.UIElements;
-using UnityEditor.VersionControl;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -14,6 +13,12 @@ namespace Needle.ShaderGraphMarkdown
     public class ShaderRefactoringWindow : EditorWindow
     {
         public ShaderRefactoringData data;
+
+        [MenuItem("Window/Needle/Shader Refactor")]
+        private static void ShowWindow()
+        {
+            Show("", "");
+        }
         
         public static void Show(string shaderAssetPath, string inputReferenceName)
         {
@@ -120,9 +125,19 @@ namespace Needle.ShaderGraphMarkdown
                 }
 
                 // find all materials that are using any of these shaders
-                var materialsThatNeedUpdating = GetAllAssets<Material>().Where(x => x.shader && shadersThatNeedUpdating.Contains(x.shader)).ToList();
+                var materialsThatNeedUpdating = GetAllAssets<Material>()
+                    .Where(x => x.shader && shadersThatNeedUpdating.Contains(x.shader))
+                    .ToList();
+
+                var materialsThatCannotBeUpdated = materialsThatNeedUpdating.Where(x => !AssetDatabase.IsMainAsset(x)).ToList();
+                var materialsThatCanBeUpdated = materialsThatNeedUpdating.Except(materialsThatCannotBeUpdated).ToList();
+
+                if (materialsThatCannotBeUpdated.Any())
+                {
+                    Debug.LogWarning($"Some materials couldn't be updated since they are sub assets [{materialsThatCannotBeUpdated.Count}]: {ObjectNames(materialsThatCannotBeUpdated, false, false, true)}");
+                }
                 
-                if(!shadersThatNeedUpdating.Any() && !materialsThatNeedUpdating.Any())
+                if(!shadersThatNeedUpdating.Any() && !materialsThatCanBeUpdated.Any())
                 {
                     Debug.Log("Property hasn't been found in any shaders and materials. No changes necessary.");
                     return;
@@ -131,7 +146,7 @@ namespace Needle.ShaderGraphMarkdown
                 if (!EditorUtility.DisplayDialog(
                     "Refactor shader property " + data.sourceReferenceName + " → " + data.targetReferenceName,
                     "Shaders that will be changed [" + shadersThatNeedUpdating.Count + "]:" + ObjectNames(shadersThatNeedUpdating) + "\n\n" +
-                    "Materials that will be changed [" + materialsThatNeedUpdating.Count + "]:" + ObjectNames(materialsThatNeedUpdating),
+                    "Materials that will be changed [" + materialsThatCanBeUpdated.Count + "]:" + ObjectNames(materialsThatCanBeUpdated),
                     "OK",
                     "Cancel")) return;
                 
@@ -151,7 +166,7 @@ namespace Needle.ShaderGraphMarkdown
                     File.WriteAllText(path, text);
                 }
 
-                foreach (var mat in materialsThatNeedUpdating)
+                foreach (var mat in materialsThatCanBeUpdated)
                 {
                     var path = AssetDatabase.GetAssetPath(mat);
                     var text = File.ReadAllText(path);
@@ -239,13 +254,19 @@ namespace Needle.ShaderGraphMarkdown
                 EditorUtility.ClearProgressBar();
             }) { text = "Find scripts targeting this property" });
         }
-                
-        private static string ObjectNames<T>(IReadOnlyCollection<T> objects, bool singleLine = false) where T:UnityEngine.Object
+
+        private static string ObjectNames<T>(IReadOnlyCollection<T> objects, bool singleLine = false, bool returnShortStringIfTooManyElements = true, bool groupByName = false) where T : UnityEngine.Object
         {
+            var strings = (groupByName ? objects.ToLookup(x => x.name).Select(x => $"{x.Key} [{x.Count()}]") : objects.Select(x => x.name)).OrderBy(x => x).ToList();
+            
+            if (returnShortStringIfTooManyElements && strings.Count > 150)
+                return singleLine ? " " : "\n" + "(too many items to display: " + strings.Count + ")";
+            
             const int MaxPrettyObjectsCount = 40;
-            var firstSeparator = singleLine ? "" : objects.Count > MaxPrettyObjectsCount ? "\n" : "\n  · ";
-            var separator = singleLine || objects.Count > MaxPrettyObjectsCount ? ", " : "\n  · ";
-            return firstSeparator + string.Join(separator, objects.Select(x => x.name));
+            var makeSingleLineBecauseOfTooManyElements = returnShortStringIfTooManyElements && strings.Count > MaxPrettyObjectsCount;
+            var firstSeparator = singleLine ? "" : makeSingleLineBecauseOfTooManyElements ? "\n" : "\n  · ";
+            var separator = singleLine || makeSingleLineBecauseOfTooManyElements ? ", " : "\n  · ";
+            return firstSeparator + string.Join(separator, strings);
         }
     }
 
