@@ -13,6 +13,7 @@ using UnityEditor.ShaderGraph.Drawing;
 using UnityEditor.ShaderGraph.Internal;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Object = UnityEngine.Object;
 #if UNITY_2020_2_OR_NEWER
 #if SRP12_SG_REFACTORED
 using UnityEditor.Rendering.BuiltIn.ShaderGraph;
@@ -374,6 +375,12 @@ namespace UnityEditor.ShaderGraph
                     }
                     break;
             }
+        }
+
+        public static string GetShaderPathForWindow(EditorWindow wnd)
+        {
+            if (!(wnd is MaterialGraphEditWindow editWindow)) return null;
+            return AssetDatabase.GUIDToAssetPath(editWindow.selectedGuid);
         }
     }
 }

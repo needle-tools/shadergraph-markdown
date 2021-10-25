@@ -1,6 +1,7 @@
 #if SHADERGRAPH_7_OR_NEWER
 
 using System;
+using System.Globalization;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -37,8 +38,10 @@ namespace Needle.ShaderGraphMarkdown
             #endif
             var windowType = shaderGraphAssembly.GetType("UnityEditor.ShaderGraph.Drawing.MaterialGraphEditWindow");
             var windows = Resources.FindObjectsOfTypeAll(windowType);
-            foreach (var wnd in windows)
+            foreach (var windowObject in windows)
             {
+                var wnd = (EditorWindow) windowObject;
+                
                 if (_graphEditorView == null) _graphEditorView = windowType.GetProperty("graphEditorView", (BindingFlags) (-1));
                 var graphEditorView = _graphEditorView?.GetValue(wnd);
                 if (graphEditorView == null) continue;
@@ -157,6 +160,17 @@ namespace Needle.ShaderGraphMarkdown
                             
                             if (shaderInput.displayName.EndsWith("&&", StringComparison.Ordinal))
                                 usesInlineTextureDrawerShorthand = true;
+                            
+                            // make sure our context menu handler is registered
+                            element.UnregisterCallback<ContextualMenuPopulateEvent>(MenuPopulateEvent);
+                            element.RegisterCallback<ContextualMenuPopulateEvent>(MenuPopulateEvent);
+                            
+                            // refactoring
+                            if (markedForRefactor != null && markedForRefactor == blackboardRow)
+                            {
+                                markedForRefactor = null;
+                                MarkdownShaderGUI.ShowRefactoringWindow(MarkdownSGExtensions.GetShaderPathForWindow(wnd), shaderInput.referenceName);
+                            }
                         }
                     }
 #endif
@@ -218,6 +232,17 @@ namespace Needle.ShaderGraphMarkdown
                         contentItem.AddToClassList("__markdown_indent_" + indentLevel);
                 }
             }
+        }
+
+        private static VisualElement markedForRefactor;
+        private static void MenuPopulateEvent(ContextualMenuPopulateEvent evt)
+        {
+            var currentTarget = evt.currentTarget;
+            evt.menu.AppendAction("Refactor Property", dropdownAction =>
+            {
+                markedForRefactor = (VisualElement) currentTarget;
+                i = -1; // enforce refresh on next frame
+            });
         }
 
         private static bool ReferenceNameLooksLikeADefaultReference(string referenceName)

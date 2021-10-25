@@ -1078,6 +1078,11 @@ namespace Needle
             
             haveSearchedForCustomGUI = true;
         }
+
+        public static void ShowRefactoringWindow(string shaderAssetPath, string inputReferenceName)
+        {
+            ShaderRefactoringWindow.Show(shaderAssetPath, inputReferenceName);
+        }
     }
     
 #if !SHADERGRAPH_7_OR_NEWER
