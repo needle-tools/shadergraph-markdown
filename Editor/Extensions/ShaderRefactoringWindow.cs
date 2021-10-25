@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -14,10 +13,28 @@ namespace Needle.ShaderGraphMarkdown
     {
         public ShaderRefactoringData data;
 
-        [MenuItem("Window/Needle/Shader Refactor")]
+        [MenuItem("Window/Needle/Refactor Shader Properties")]
         private static void ShowWindow()
         {
             Show("", "");
+        }
+
+        [MenuItem("CONTEXT/Material/Refactor Shader Properties", false, 701)]
+        [MenuItem("CONTEXT/Shader/Refactor Shader Properties", false, 701)]
+        private static void ShowFromContextMenu(MenuCommand command)
+        {
+            // TODO can we figure out which material property is currently selected?
+            // Debug.Log("Keyboard Control: " + GUIUtility.keyboardControl);
+            
+            // TODO can we add a context menu to each property?
+            if(command.context is Material mat0)
+                Show(AssetDatabase.GetAssetPath(mat0.shader), "");
+            if(command.context is Shader shader0)
+                Show(AssetDatabase.GetAssetPath(shader0), "");
+            if (Selection.activeObject is Material material1)
+                Show(AssetDatabase.GetAssetPath(material1.shader), "");
+            if (Selection.activeObject is Shader shader1)
+                Show(AssetDatabase.GetAssetPath(shader1), "");
         }
         
         public static void Show(string shaderAssetPath, string inputReferenceName)
@@ -55,6 +72,7 @@ namespace Needle.ShaderGraphMarkdown
 
             var propField = new PropertyField(prop.FindPropertyRelative(nameof(ShaderRefactoringData.shader))); propField.Bind(so);
             rootVisualElement.Add(propField);
+            // TODO this could also be a dropdown with all properties that this shader actually has
             var refactorFrom = new PropertyField(prop.FindPropertyRelative(nameof(ShaderRefactoringData.sourceReferenceName))); refactorFrom.Bind(so);
             rootVisualElement.Add(refactorFrom);
             var refactorTo = new PropertyField(prop.FindPropertyRelative(nameof(ShaderRefactoringData.targetReferenceName))); refactorTo.Bind(so);
@@ -64,6 +82,18 @@ namespace Needle.ShaderGraphMarkdown
             
             rootVisualElement.Add(new Button(() =>
             {
+                if (string.IsNullOrWhiteSpace(data.sourceReferenceName))
+                {
+                    Debug.LogError("Can't refactor: source reference name is empty.");
+                    return;
+                }
+                
+                if (string.IsNullOrWhiteSpace(data.targetReferenceName))
+                {
+                    Debug.LogError("Can't refactor: target reference name is empty.");
+                    return;
+                }
+                
                 var allShaders = GetAllAssets<Shader>();
                 var shadersThatNeedUpdating = new List<Shader>();
                 var shadersThatWouldNeedUpdatingButAreExcluded = new List<Shader>();

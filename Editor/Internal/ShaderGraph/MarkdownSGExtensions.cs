@@ -157,7 +157,7 @@ namespace UnityEditor.ShaderGraph
             return false;
         }
 
-        [MenuItem("CONTEXT/Material/Toggle ShaderGraph Markdown", false, 1000)]
+        [MenuItem("CONTEXT/Material/Toggle ShaderGraph Markdown", false, 700)]
         static void ToggleShaderGraphMarkdown(MenuCommand command)
         {
             if (command.context is Material mat)
