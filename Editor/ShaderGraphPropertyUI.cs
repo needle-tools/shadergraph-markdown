@@ -138,6 +138,9 @@ namespace Needle.ShaderGraphMarkdown
                             #endif
                                 usesDefaultReferenceName = true;
 
+                            if (!usesDefaultReferenceName && ReferenceNameLooksLikeADefaultReference(shaderInput.referenceName))
+                                usesDefaultReferenceName = true;
+                            
                             // some properties already have "good" default reference names, we shouldn't warn in that case.
                             if (usesDefaultReferenceName && shaderInput.referenceName.StartsWith("_", StringComparison.Ordinal))
                                 usesDefaultReferenceName = false;
@@ -169,7 +172,7 @@ namespace Needle.ShaderGraphMarkdown
                     displayName = displayName.TrimStart('-');
                     var markdownType = MarkdownShaderGUI.GetMarkdownType(displayName);
                     contentItem.ClearClassList();
-                    if (!fieldView.styleSheets.Contains(styleSheet))
+                    if (!fieldView.styleSheets.Contains(styleSheet) && styleSheet)
                     {
                         fieldView.styleSheets.Add(styleSheet);
                         
@@ -215,6 +218,26 @@ namespace Needle.ShaderGraphMarkdown
                         contentItem.AddToClassList("__markdown_indent_" + indentLevel);
                 }
             }
+        }
+
+        private static bool ReferenceNameLooksLikeADefaultReference(string referenceName)
+        {
+            // alternative would be a RegEx check
+            // ^.+?_(?<maybe_guid>\w{7,8}|\w{32})(_\w+?)?$
+            // https://regex101.com/r/fT2iWo/1
+            var parts = referenceName.Split('_');
+            var l = parts.Length;
+            if (parts.Length < 2)
+                return false;
+            var first = parts[l - 1];
+            if ((first.Length >= 6 && first.Length <= 8 && int.TryParse(first, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out _)) || Guid.TryParse(first, out _))
+                return true;
+            if (parts.Length < 3)
+                return false;
+            var second = parts[l - 2];
+            if ((second.Length >= 6 && second.Length <= 8 && int.TryParse(second, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out _)) || Guid.TryParse(second, out _))
+                return true;
+            return false;
         }
         
 #if !UNITY_2020_2_OR_NEWER
