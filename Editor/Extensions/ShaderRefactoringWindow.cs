@@ -112,11 +112,11 @@ namespace Needle.ShaderGraphMarkdown
             propField.Bind(so);
             rootVisualElement.Add(propField);
             
-            var refactorFrom = new PropertyField(prop.FindPropertyRelative(nameof(ShaderRefactoringData.sourceReferenceName)), "Source Property"); refactorFrom.Bind(so);
-            rootVisualElement.Add(refactorFrom);
-
             popupFieldContainer = new VisualElement();
             rootVisualElement.Add(popupFieldContainer);
+            
+            var refactorFrom = new PropertyField(prop.FindPropertyRelative(nameof(ShaderRefactoringData.sourceReferenceName)), "Source Property"); refactorFrom.Bind(so);
+            rootVisualElement.Add(refactorFrom);
             
             var refactorTo = new PropertyField(prop.FindPropertyRelative(nameof(ShaderRefactoringData.targetReferenceName)), "New Property"); refactorTo.Bind(so);
             rootVisualElement.Add(refactorTo);
@@ -178,7 +178,7 @@ namespace Needle.ShaderGraphMarkdown
                     var selectedShadersNeedUpdating = shadersThatNeedUpdating.Any();
                     switch (EditorUtility.DisplayDialogComplex(
                         "Property " + data.sourceReferenceName + " also exists in other shaders!",
-                        selectedShadersNeedUpdating ? "This property exists in this shader that is selected for updating:" + ObjectNames(shadersThatNeedUpdating) : "This property doesn't exist in the selected shader(s)." +
+                        (selectedShadersNeedUpdating ? "This property exists in this shader that is selected for updating:" + ObjectNames(shadersThatNeedUpdating) : "This property doesn't exist in the selected shader(s).") +
                         "\n\n" +
                         "but also exists in these shaders that won't be updated because they're not selected:" + ObjectNames(shadersThatWouldNeedUpdatingButAreExcluded) +
                         ".\n\n" +
@@ -249,6 +249,7 @@ namespace Needle.ShaderGraphMarkdown
                 }
                 
                 AssetDatabase.Refresh();
+                UpdatePopupField();
             }) { text = "Find and update materials and shaders using this property" });
 
             rootVisualElement.Add(new Label("Helpers") { style = { marginTop = 10, unityFontStyleAndWeight = FontStyle.Bold }});
