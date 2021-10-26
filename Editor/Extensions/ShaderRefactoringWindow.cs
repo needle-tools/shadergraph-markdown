@@ -105,10 +105,11 @@ namespace Needle.ShaderGraphMarkdown
             var prop = so.FindProperty(nameof(data));
 
             var propField = new PropertyField(prop.FindPropertyRelative(nameof(ShaderRefactoringData.shader)));
-            propField.RegisterValueChangeCallback(evt =>
-            {
-                UpdatePopupField();
-            });
+#if UNITY_2020_1_OR_NEWER
+            propField.RegisterValueChangeCallback(evt => UpdatePopupField());
+#else
+            propField.RegisterCallback<ChangeEvent<UnityEngine.Object>>(evt => UpdatePopupField());
+#endif
             propField.Bind(so);
             rootVisualElement.Add(propField);
             
