@@ -132,7 +132,9 @@ namespace Needle
             debugConditionalProperties = false,
             debugReferencedProperties = false;
         
-        private bool debugPropertyDrawers = false;
+        private bool
+            debugPropertyDrawers = false,
+            showBaseShaderGuiOptions = true;
         
         // Reflection Access
         // ReSharper disable InconsistentNaming
@@ -379,7 +381,7 @@ namespace Needle
                     }
                 }
                 headerGroups.Add(new HeaderGroup(null) { properties = null, customDrawer = DrawCustomGUI });
-                headerGroups.Add(new HeaderGroup("Debug") { properties = null, customDrawer = DrawDebugGroupContent, expandedByDefault = false});
+                headerGroups.Add(new HeaderGroup(MarkdownToolsLabel) { properties = null, customDrawer = DrawDebugGroupContent, expandedByDefault = false});
                 
                 GenerateHeaderGroupsMarker.End();
             }
@@ -387,7 +389,14 @@ namespace Needle
             void DrawDebugGroupContent()
             {
                 DrawDebugGroupContentMarker.Begin();
+
+                EditorGUILayout.LabelField("Utilities", EditorStyles.boldLabel);
+                if (GUILayout.Button("Refactor Shader Properties", EditorStyles.miniButton))
+                {
+                    ShowRefactoringWindow(AssetDatabase.GetAssetPath(targetMat.shader), "");
+                }
                 
+                EditorGUILayout.LabelField("Markdown Debugging", EditorStyles.boldLabel);
                 EditorGUI.BeginChangeCheck();
                 showOriginalPropertyList = EditorGUILayout.Toggle(ShowOriginalProperties, showOriginalPropertyList);
                 if (EditorGUI.EndChangeCheck())
@@ -407,7 +416,7 @@ namespace Needle
                 EditorGUILayout.LabelField(ShaderKeywords, EditorStyles.boldLabel);
                 foreach (var kw in targetMat.shaderKeywords)
                 {
-                    EditorGUILayout.LabelField(kw, EditorStyles.miniLabel);
+                    EditorGUILayout.TextField(kw, EditorStyles.miniLabel);
                 }
 
                 if (GUILayout.Button(ClearKeywords))
@@ -425,6 +434,7 @@ namespace Needle
                         // ignore, not a HDRP shader probably
                     }
 #endif
+                    ValidateMaterial(targetMat);
                 }
 
                 EditorGUILayout.Space();
@@ -437,7 +447,7 @@ namespace Needle
                     var localKeywords = (string[]) GetShaderLocalKeywords.Invoke(null, new object[] { targetMat.shader });
                     foreach (var kw in localKeywords)
                     {
-                        EditorGUILayout.LabelField(kw, EditorStyles.miniLabel);
+                        EditorGUILayout.TextField(kw, EditorStyles.miniLabel);
                     }
                     EditorGUI.indentLevel--;
                     EditorGUILayout.LabelField(GlobalKeywords, EditorStyles.boldLabel);
@@ -445,15 +455,28 @@ namespace Needle
                     var globalKeywords = (string[]) GetShaderGlobalKeywords.Invoke(null, new object[] { targetMat.shader });
                     foreach (var kw in globalKeywords)
                     {
-                        EditorGUILayout.LabelField(kw, EditorStyles.miniLabel);
+                        EditorGUILayout.TextField(kw, EditorStyles.miniLabel);
                     }
                     EditorGUI.indentLevel--;
                 }
                 
-                EditorGUILayout.Space();
-                
-                if(Unsupported.IsDeveloperMode())
+                if(IsDeveloperMode())
                 {
+                    EditorGUILayout.Space();
+                    EditorGUILayout.LabelField(DevelopmentOptionsLabel, EditorStyles.boldLabel);
+                    showBaseShaderGuiOptions = EditorGUILayout.Foldout(showBaseShaderGuiOptions, BaseShaderGUIOptions);
+                    if (showBaseShaderGuiOptions)
+                    {
+                        EditorGUI.indentLevel++;
+                        EditorGUILayout.TextField("Type", baseShaderGui != null ? baseShaderGui.GetType().ToString() : "none", EditorStyles.miniLabel);
+                        if(baseShaderGui != null)
+                        {
+                            if (GUILayout.Button("Validate Material")) baseShaderGui.ValidateMaterial(targetMat);
+                            if(GUILayout.Button("Re-Assign Shader")) baseShaderGui.AssignNewShaderToMaterial(targetMat, targetMat.shader, targetMat.shader);
+                        }
+                        EditorGUI.indentLevel--;
+                    }
+                    
                     debugPropertyDrawers = EditorGUILayout.Foldout(debugPropertyDrawers, PropertyDrawersAndDecorators);
                     if(debugPropertyDrawers)
                     {
@@ -505,6 +528,7 @@ namespace Needle
                         }
                     }
                 }
+                EditorGUILayout.Space();
                 
                 // #if HDRP_7_OR_NEWER
                 // EditorGUILayout.LabelField("ShaderGraph Info", EditorStyles.boldLabel);
@@ -863,7 +887,19 @@ namespace Needle
                 {
                     var keyName = group.FoldoutStateKeyName;
                     var state = SessionState.GetBool(keyName, group.expandedByDefault);
-                    var newState = CoreEditorUtils.DrawHeaderFoldout(group.name, state);
+                    bool newState;
+                    if (group.customDrawer == DrawDebugGroupContent || group.name == MarkdownToolsLabel) {
+                        newState = CoreEditorUtils.DrawHeaderFoldout(new GUIContent(group.name), state, false, () => true, null, AttributeDocumentationUrl, pos =>
+                        {
+                            var menu = new GenericMenu();
+                            menu.AddItem(new GUIContent("Show Development Options"), ShowDevelopmentOptions, () => { ShowDevelopmentOptions = !ShowDevelopmentOptions; });
+                            menu.DropDown(new Rect(pos, Vector2.zero));
+                        });
+                    }
+                    else {
+                        newState = CoreEditorUtils.DrawHeaderFoldout(group.name, state);
+                    }
+                    
                     if(newState != state) SessionState.SetBool(keyName, newState);
                     state = newState;
                     if (state)
@@ -872,13 +908,16 @@ namespace Needle
                         EditorGUILayout.Space();
                         if (group.customDrawer != null) {
                             group.customDrawer.Invoke();
-                            CoreEditorUtils.DrawSplitter();
+                            if(group != headerGroups.Last())
+                                CoreEditorUtils.DrawSplitter();
                         }
                         else
                             DrawGroup(group);
                         EditorGUI.indentLevel--;
                     }
-                    CoreEditorUtils.DrawSplitter();
+                    
+                    if(group != headerGroups.Last())
+                        CoreEditorUtils.DrawSplitter();
                 }
 
                 if (EditorGUI.EndChangeCheck())
@@ -892,7 +931,12 @@ namespace Needle
             
             OnGUIMarker.End();
         }
-        
+
+        private bool IsDeveloperMode()
+        {
+            return Unsupported.IsDeveloperMode() || ShowDevelopmentOptions;
+        }
+
         private static string GetBetween(string str, char start, char end, bool last = false)
         {
             var i0 = last ? str.LastIndexOf(start) : str.IndexOf(start);
@@ -1015,21 +1059,25 @@ namespace Needle
 
         private ShaderGUI baseShaderGui = null;
         private bool haveSearchedForCustomGUI = false;
-        
+
         // ReSharper disable InconsistentNaming
         private static readonly GUIContent AdditionalOptions = new GUIContent("Additional Options", "Options from the shader that are not part of the usual shader properties, e.g. instancing.");
         private static readonly GUIContent ShowOriginalProperties = new GUIContent("Show Original Properties", "Enable this option to show all properties, even those marked with [HideInInspector].");
         private static readonly GUIContent DebugConditionalProperties = new GUIContent("Debug Conditional Properties", "Enable this option to show properties that are conditionally filtered out with [SOME_CONDITION].");
         private static readonly GUIContent DebugReferencedProperties = new GUIContent("Debug Referenced Properties", "Enable this option to show properties that are filtered out because they are referenced by drawers (!DRAWER) or inline properties (&&).");
-        private static readonly GUIContent RedrawInspector = new GUIContent("Redraw Shader Inspector", "After updating some properties and drawers, Unity caches some editor/inspector details. Clicking this button forces a regeneration of the Shader Inspector in such cases.");
-        private static readonly GUIContent ShaderKeywords = new GUIContent("Shader Keywords");
-        private static readonly GUIContent ClearKeywords = new GUIContent("Clear Keywords", "Reset keywords currently set on this shader.");
+        private static readonly GUIContent RedrawInspector = new GUIContent("Repaint Inspector", "After updating some properties and drawers, Unity caches some editor/inspector details. Clicking this button forces a regeneration of the Shader Inspector in such cases.");
+        private static readonly GUIContent ShaderKeywords = new GUIContent("Enabled Keywords");
+        private static readonly GUIContent ClearKeywords = new GUIContent("Reset Keywords", "Reset keywords currently set on this shader.");
         private static readonly GUIContent LocalKeywords = new GUIContent("Local Keywords");
         private static readonly GUIContent GlobalKeywords = new GUIContent("Global Keywords");
+        private static readonly GUIContent DevelopmentOptionsLabel = new GUIContent("Development Options");
+        private static readonly GUIContent BaseShaderGUIOptions = new GUIContent("Base Shader GUI");
         private static readonly GUIContent PropertyDrawersAndDecorators = new GUIContent("Property Drawers and Decorators");
         private static readonly GUIContent ResetFoldoutSessionState = new GUIContent("Reset Foldout SessionState");
         private static readonly GUIContent LocalAndGlobalKeywords = new GUIContent("Local and Global Keywords", "All keywords that are defined/used by this shader.");
-
+        private static readonly string MarkdownToolsLabel = "Markdown Tools";
+        private static readonly string AttributeDocumentationUrl = "https://github.com/needle-tools/shadergraph-markdown#attribute-reference";
+        
         private static ProfilerMarker OnGUIMarker = new ProfilerMarker("OnGUI");
         private static ProfilerMarker GetHashCodeMarker = new ProfilerMarker("Get Hash Code");
         private static ProfilerMarker GenerateHeaderGroupsMarker = new ProfilerMarker("Generate Header Groups");
@@ -1039,6 +1087,14 @@ namespace Needle
         private static ProfilerMarker DrawHeaderGroupMarker = new ProfilerMarker("Draw Header Groups");
         private static ProfilerMarker MaterialChangedMarker = new ProfilerMarker("Material Changed");
         private static ProfilerMarker ConditionCheckMarker = new ProfilerMarker("Condition Check");
+        
+        private const string ShowDevelopmentOptionsKey = nameof(MarkdownShaderGUI) + "." + nameof(ShowDevelopmentOptions);
+
+        private bool ShowDevelopmentOptions
+        {
+            get => SessionState.GetBool(ShowDevelopmentOptionsKey, false);
+            set => SessionState.SetBool(ShowDevelopmentOptionsKey, value);
+        }
         // ReSharper restore InconsistentNaming
         
         private void InitializeCustomGUI(Material targetMat)
@@ -1077,6 +1133,12 @@ namespace Needle
 #endif
             
             haveSearchedForCustomGUI = true;
+        }
+
+        public override void ValidateMaterial(Material material)
+        {
+            base.ValidateMaterial(material);
+            if(baseShaderGui != null) baseShaderGui.ValidateMaterial(material);
         }
 
         public static void ShowRefactoringWindow(string shaderAssetPath, string inputReferenceName)
