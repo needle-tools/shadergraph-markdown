@@ -1,5 +1,11 @@
 #if UNITY_2021_2_OR_NEWER
+#define HAVE_VALIDATE_MATERIAL
+#if RP_CORE_7_OR_NEWER
+#define HAVE_HEADER_FOLDOUT_WITH_DOCS
+#endif
+#if SHADERGRAPH_7_OR_NEWER
 #define SRP12_SG_REFACTORED
+#endif
 #endif
 using System;
 using System.Linq;
@@ -471,8 +477,8 @@ namespace Needle
                         EditorGUILayout.TextField("Type", baseShaderGui != null ? baseShaderGui.GetType().ToString() : "none", EditorStyles.miniLabel);
                         if(baseShaderGui != null)
                         {
-                            if (GUILayout.Button("Validate Material")) baseShaderGui.ValidateMaterial(targetMat);
-                            if(GUILayout.Button("Re-Assign Shader")) baseShaderGui.AssignNewShaderToMaterial(targetMat, targetMat.shader, targetMat.shader);
+                            if (GUILayout.Button("Validate Material")) ValidateMaterial(targetMat);
+                            if (GUILayout.Button("Re-Assign Shader")) baseShaderGui.AssignNewShaderToMaterial(targetMat, targetMat.shader, targetMat.shader);
                         }
                         EditorGUI.indentLevel--;
                     }
@@ -888,13 +894,14 @@ namespace Needle
                     var keyName = group.FoldoutStateKeyName;
                     var state = SessionState.GetBool(keyName, group.expandedByDefault);
                     bool newState;
-                    if (group.customDrawer == DrawDebugGroupContent || group.name == MarkdownToolsLabel) {
-                        newState = CoreEditorUtils.DrawHeaderFoldout(new GUIContent(group.name), state, false, () => true, null, AttributeDocumentationUrl, pos =>
-                        {
-                            var menu = new GenericMenu();
-                            menu.AddItem(new GUIContent("Show Development Options"), ShowDevelopmentOptions, () => { ShowDevelopmentOptions = !ShowDevelopmentOptions; });
-                            menu.DropDown(new Rect(pos, Vector2.zero));
-                        });
+                    if (group.customDrawer == DrawDebugGroupContent || group.name == MarkdownToolsLabel)
+                    {
+                        newState = DrawHeaderFoldout(new GUIContent(group.name), state, false, () => true, null, AttributeDocumentationUrl, pos =>
+                            {
+                                var menu = new GenericMenu();
+                                menu.AddItem(new GUIContent("Show Development Options"), ShowDevelopmentOptions, () => { ShowDevelopmentOptions = !ShowDevelopmentOptions; });
+                                menu.DropDown(new Rect(pos, Vector2.zero));
+                            });
                     }
                     else {
                         newState = CoreEditorUtils.DrawHeaderFoldout(group.name, state);
@@ -1135,83 +1142,32 @@ namespace Needle
             haveSearchedForCustomGUI = true;
         }
 
+#if HAVE_VALIDATE_MATERIAL
         public override void ValidateMaterial(Material material)
         {
             base.ValidateMaterial(material);
             if(baseShaderGui != null) baseShaderGui.ValidateMaterial(material);
         }
+#else
+        public void ValidateMaterial(Material material)
+        {
+            // if(baseShaderGui != null) baseShaderGui.ValidateMaterial(material);
+            // check if baseShaderGui has public override void MaterialChanged(Material material) and invoke that
+        }
+#endif
 
         public static void ShowRefactoringWindow(string shaderAssetPath, string inputReferenceName)
         {
             ShaderRefactoringWindow.Show(shaderAssetPath, inputReferenceName);
         }
-    }
-    
-#if !SHADERGRAPH_7_OR_NEWER
-    // From CoreEditorTools, shimmed here for Built-In support
-    internal static class CoreEditorUtils
-    {
-        public static void DrawSplitter(bool isBoxed = false)
+
+        internal static bool DrawHeaderFoldout(GUIContent title, bool state, bool isBoxed = false, Func<bool> hasMoreOptions = null, Action toggleMoreOptions = null, string documentationURL = "", Action<Vector2> contextAction = null)
         {
-            var rect = GUILayoutUtility.GetRect(1f, 1f);
-            float xMin = rect.xMin;
-
-            // Splitter rect should be full-width
-            rect.xMin = 0f;
-            rect.width += 4f;
-
-            if (isBoxed)
-            {
-                rect.xMin = xMin == 7.0 ? 4.0f : EditorGUIUtility.singleLineHeight;
-                rect.width -= 1;
-            }
-
-            if (Event.current.type != EventType.Repaint)
-                return;
-
-            EditorGUI.DrawRect(rect, !EditorGUIUtility.isProSkin
-                ? new Color(0.6f, 0.6f, 0.6f, 1.333f)
-                : new Color(0.12f, 0.12f, 0.12f, 1.333f));
-        }
-        
-        public static bool DrawHeaderFoldout(string title, bool state)
-        {
-            const float height = 17f;
-            var backgroundRect = GUILayoutUtility.GetRect(1f, height);
-
-            var labelRect = backgroundRect;
-            labelRect.xMin += 16f;
-            labelRect.xMax -= 20f;
-
-            var foldoutRect = backgroundRect;
-            foldoutRect.y += 1f;
-            foldoutRect.width = 13f;
-            foldoutRect.height = 13f;
-            foldoutRect.x = labelRect.xMin + 15 * (EditorGUI.indentLevel - 1); //fix for presset
-
-            // Background rect should be full-width
-            backgroundRect.xMin = 0f;
-            backgroundRect.width += 4f;
-
-            // Background
-            float backgroundTint = EditorGUIUtility.isProSkin ? 0.1f : 1f;
-            EditorGUI.DrawRect(backgroundRect, new Color(backgroundTint, backgroundTint, backgroundTint, 0.2f));
-
-            // Title
-            EditorGUI.LabelField(labelRect, title, EditorStyles.boldLabel);
-
-            // Active checkbox
-            state = GUI.Toggle(foldoutRect, state, GUIContent.none, EditorStyles.foldout);
-
-            var e = Event.current;
-            if (e.type == EventType.MouseDown && backgroundRect.Contains(e.mousePosition) && e.button == 0)
-            {
-                state = !state;
-                e.Use();
-            }
-
-            return state;
-        }
-    }
+#if HAVE_HEADER_FOLDOUT_WITH_DOCS
+            return CoreEditorUtils.DrawHeaderFoldout(title, state, isBoxed, hasMoreOptions, toggleMoreOptions, documentationURL);
+#else
+            return CoreEditorUtilsShim.DrawHeaderFoldout(title, state, isBoxed, hasMoreOptions, toggleMoreOptions, documentationURL, contextAction);
 #endif
+        }
+    }
 }
