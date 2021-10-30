@@ -47,7 +47,7 @@ namespace Needle.ShaderGraphMarkdown
                 sourceReferenceName = inputReferenceName,
                 targetReferenceName = inputReferenceName,
             };
-            
+            wnd.minSize = new Vector2(600, 400);
             wnd.Show();
         }
 
@@ -99,8 +99,15 @@ namespace Needle.ShaderGraphMarkdown
         private void CreateGUI()
         {
             titleContent = new GUIContent("Refactor Shader Properties");
+            var splitter = new TwoPaneSplitView(0, 450, TwoPaneSplitViewOrientation.Horizontal);
+            var left = new VisualElement();
+            var right = new VisualElement();
+            rootVisualElement.Add(splitter);
+            splitter.Add(left);
+            splitter.Add(right);
             
-            if(so == null || so.targetObject != this) so = new SerializedObject(this);
+            if(so == null || so.targetObject != this)
+                so = new SerializedObject(this);
             so.Update();
             var prop = so.FindProperty(nameof(data));
 
@@ -111,20 +118,21 @@ namespace Needle.ShaderGraphMarkdown
             propField.RegisterCallback<ChangeEvent<UnityEngine.Object>>(evt => UpdatePopupField());
 #endif
             propField.Bind(so);
-            rootVisualElement.Add(propField);
             
             popupFieldContainer = new VisualElement();
-            rootVisualElement.Add(popupFieldContainer);
             
             var refactorFrom = new PropertyField(prop.FindPropertyRelative(nameof(ShaderRefactoringData.sourceReferenceName)), "Source Property"); refactorFrom.Bind(so);
-            rootVisualElement.Add(refactorFrom);
+            left.Add(propField);
+            left.Add(popupFieldContainer);
+            left.Add(refactorFrom);
             
             var refactorTo = new PropertyField(prop.FindPropertyRelative(nameof(ShaderRefactoringData.targetReferenceName)), "New Property"); refactorTo.Bind(so);
-            rootVisualElement.Add(refactorTo);
+            right.Add(new VisualElement { style = { height = EditorGUIUtility.singleLineHeight * 2 } });
+            right.Add(refactorTo);
 
             so.ApplyModifiedProperties();
             
-            rootVisualElement.Add(new Button(() =>
+            right.Add(new Button(() =>
             {
                 if (string.IsNullOrWhiteSpace(data.sourceReferenceName))
                 {
@@ -235,7 +243,7 @@ namespace Needle.ShaderGraphMarkdown
                     }
                     var text = File.ReadAllText(path);
                     // TODO this will only properly work for ShaderGraph files right now, as these have "" around properties.
-                    // The general case is more complex! We'd have to parse the file properly and check if something is "_Dissolve=" or "_Dissolve2" (the former would be replaced, the latter is a separate field)
+                    // The general case is more complex! We'd have to parse the file properly and check if something is "_VarName=" or "_VarName2" (the former would be replaced, the latter is a separate field)
                     text = text.Replace($"\"{data.sourceReferenceName}\"", $"\"{data.targetReferenceName}\"");
                     File.WriteAllText(path, text);
                 }
@@ -251,10 +259,10 @@ namespace Needle.ShaderGraphMarkdown
                 
                 AssetDatabase.Refresh();
                 UpdatePopupField();
-            }) { text = "Find and update materials and shaders using this property" });
+            }) { text = "Update materials and shaders\nusing this property" });
 
-            rootVisualElement.Add(new Label("Helpers") { style = { marginTop = 10, unityFontStyleAndWeight = FontStyle.Bold }});
-            rootVisualElement.Add(new Button(() =>
+            left.Add(new Label("Helpers") { style = { marginTop = 10, unityFontStyleAndWeight = FontStyle.Bold }});
+            left.Add(new Button(() =>
             {
                 var allMaterials = GetAllAssets<Material>();
                 var i = 0;
@@ -275,7 +283,7 @@ namespace Needle.ShaderGraphMarkdown
                 EditorUtility.ClearProgressBar();
             }) { text = "Find materials using this property" });
             
-            rootVisualElement.Add(new Button(() =>
+            left.Add(new Button(() =>
             {
                 var clipsThatNeedUpdating = new List<AnimationClip>();
                 var allClips = GetAllAssets<AnimationClip>();
@@ -300,7 +308,7 @@ namespace Needle.ShaderGraphMarkdown
                 EditorUtility.ClearProgressBar();
             }) { text = "Find animations targeting this property" });
             
-            rootVisualElement.Add(new Button(() =>
+            left.Add(new Button(() =>
             {
                 // find all scripts
                 var scripts = GetAllAssets<MonoScript>();

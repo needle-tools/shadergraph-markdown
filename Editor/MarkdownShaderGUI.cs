@@ -142,6 +142,7 @@ namespace Needle
         
         private bool
             debugPropertyDrawers = false,
+            debugMarkdownGroups = false,
             showBaseShaderGuiOptions = true;
         
         // Reflection Access
@@ -544,6 +545,21 @@ namespace Needle
                     }
                 }
                 
+                debugMarkdownGroups = EditorGUILayout.Foldout(debugMarkdownGroups, GroupsAndCategories);
+                if (debugMarkdownGroups)
+                {
+                    EditorGUI.BeginDisabledGroup(true);
+                    foreach (var group in headerGroups)
+                    {
+                        EditorGUILayout.LabelField(group.name == null ? "<null>" : string.IsNullOrWhiteSpace(group.name) ? "<whitespace>" : group.name, EditorStyles.boldLabel);
+                        EditorGUILayout.LabelField("Condition", group.condition == null ? "<null>" : group.condition);
+                        EditorGUILayout.LabelField("Custom Drawer", group.customDrawer?.Method?.Name ?? "<null>");
+                        EditorGUILayout.LabelField("Property Count", "" + (group.properties?.Count ?? 0));
+                        EditorGUILayout.Space();
+                    }
+                    EditorGUI.EndDisabledGroup();
+                }
+                
                 EditorGUILayout.Space();
                 if (GUILayout.Button(ResetFoldoutSessionState))
                 {
@@ -551,17 +567,6 @@ namespace Needle
                     {
                         SessionState.EraseBool(group.FoldoutStateKeyName);
                     }
-                }
-                
-                EditorGUILayout.Space();
-                EditorGUILayout.LabelField("Markdown Groups", EditorStyles.boldLabel);
-                foreach (var group in headerGroups)
-                {
-                    EditorGUILayout.LabelField(group.name == null ? "<null>" : string.IsNullOrWhiteSpace(group.name) ? "<whitespace>" : group.name, EditorStyles.boldLabel);
-                    EditorGUILayout.LabelField("Condition", group.condition == null ? "<null>" : group.condition);
-                    EditorGUILayout.LabelField("Custom Drawer", group.customDrawer?.Method?.Name ?? "<null>");
-                    EditorGUILayout.LabelField("Property Count", "" + (group.properties?.Count ?? 0));
-                    EditorGUILayout.Space();
                 }
             }
             
@@ -1098,6 +1103,7 @@ namespace Needle
         private static readonly GUIContent DevelopmentOptionsLabel = new GUIContent("Development Options");
         private static readonly GUIContent BaseShaderGUIOptions = new GUIContent("Base Shader GUI");
         private static readonly GUIContent PropertyDrawersAndDecorators = new GUIContent("Property Drawers and Decorators");
+        private static readonly GUIContent GroupsAndCategories = new GUIContent("Groups and Categories");
         private static readonly GUIContent ResetFoldoutSessionState = new GUIContent("Reset Foldout SessionState");
         private static readonly GUIContent LocalAndGlobalKeywords = new GUIContent("Local and Global Keywords", "All keywords that are defined/used by this shader.");
         private static readonly string MarkdownToolsLabel = "Markdown Tools";
