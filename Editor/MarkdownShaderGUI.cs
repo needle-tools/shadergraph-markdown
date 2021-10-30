@@ -470,71 +470,7 @@ namespace Needle
                 
                 if(IsDeveloperMode())
                 {
-                    EditorGUILayout.Space();
-                    EditorGUILayout.LabelField(DevelopmentOptionsLabel, EditorStyles.boldLabel);
-                    showBaseShaderGuiOptions = EditorGUILayout.Foldout(showBaseShaderGuiOptions, BaseShaderGUIOptions);
-                    if (showBaseShaderGuiOptions)
-                    {
-                        EditorGUI.indentLevel++;
-                        EditorGUILayout.TextField("Type", baseShaderGui != null ? baseShaderGui.GetType().ToString() : "none", EditorStyles.miniLabel);
-                        if(baseShaderGui != null)
-                        {
-                            if (GUILayout.Button("Validate Material")) ValidateMaterial(targetMat);
-                            if (GUILayout.Button("Re-Assign Shader")) baseShaderGui.AssignNewShaderToMaterial(targetMat, targetMat.shader, targetMat.shader);
-                        }
-                        EditorGUI.indentLevel--;
-                    }
-                    
-                    debugPropertyDrawers = EditorGUILayout.Foldout(debugPropertyDrawers, PropertyDrawersAndDecorators);
-                    if(debugPropertyDrawers)
-                    {
-                        foreach (var prop in properties)
-                        {
-                            if (MaterialPropertyHandler == null) MaterialPropertyHandler = typeof(MaterialProperty).Assembly.GetType("UnityEditor.MaterialPropertyHandler");
-                            if (MaterialPropertyHandler != null)
-                            {
-                                if(GetHandler         == null) GetHandler         = MaterialPropertyHandler.GetMethod("GetHandler", (BindingFlags) (-1));
-                                var handler = GetHandler.Invoke(null, new object[] {((Material) materialEditor.target).shader, prop.name});
-                                if(m_PropertyDrawer   == null) m_PropertyDrawer   = MaterialPropertyHandler.GetField("m_PropertyDrawer", (BindingFlags) (-1));
-                                if(m_DecoratorDrawers == null) m_DecoratorDrawers = MaterialPropertyHandler.GetField("m_DecoratorDrawers", (BindingFlags) (-1));
-
-                                if(handler != null)
-                                {
-                                    MaterialPropertyDrawer propertyDrawer = (MaterialPropertyDrawer) m_PropertyDrawer.GetValue(handler);
-                                    List<MaterialPropertyDrawer> decoratorDrawers = (List<MaterialPropertyDrawer>) m_DecoratorDrawers.GetValue(handler);
-                                    if (propertyDrawer != null || decoratorDrawers != null)
-                                    {
-                                        EditorGUILayout.LabelField($@"{prop.name}(""{prop.displayName}"", {prop.type})");
-                                    }
-                                    EditorGUI.indentLevel++;
-                                    if(propertyDrawer != null)
-                                    {
-                                        EditorGUILayout.LabelField("Property Drawer", EditorStyles.miniLabel);
-                                        EditorGUILayout.LabelField(propertyDrawer.GetType() + " (height: " + propertyDrawer.GetPropertyHeight(prop, prop.displayName, materialEditor) + "px)");
-                                    }
-                                    if(decoratorDrawers != null)
-                                    {
-                                        EditorGUILayout.LabelField("Decorator Drawers", EditorStyles.miniLabel);
-                                        foreach (var d in decoratorDrawers)
-                                        {
-                                            EditorGUILayout.LabelField(d.GetType() + " (height: " + d.GetPropertyHeight(prop, prop.displayName, materialEditor) + "px)");
-                                        }
-                                    }
-                                    EditorGUI.indentLevel--;
-                                }
-                            }
-                            // MaterialPropertyHandler handler = MaterialPropertyHandler.GetHandler(((Material) materialEditor.target).shader, prop.name);
-                        }
-                    }
-                    
-                    EditorGUILayout.Space();
-                    if (GUILayout.Button(ResetFoldoutSessionState))
-                    {
-                        foreach(var group in headerGroups)
-                        {
-                            SessionState.EraseBool(group.FoldoutStateKeyName);
-                        }
-                    }
+                    DrawDeveloperModeContent();
                 }
                 EditorGUILayout.Space();
                 
@@ -547,6 +483,86 @@ namespace Needle
                 // #endif
                 
                 DrawDebugGroupContentMarker.End();
+            }
+
+            void DrawDeveloperModeContent()
+            {
+                EditorGUILayout.Space();
+                EditorGUILayout.LabelField(DevelopmentOptionsLabel, EditorStyles.boldLabel);
+                showBaseShaderGuiOptions = EditorGUILayout.Foldout(showBaseShaderGuiOptions, BaseShaderGUIOptions);
+                if (showBaseShaderGuiOptions)
+                {
+                    EditorGUI.indentLevel++;
+                    EditorGUILayout.TextField("Type", baseShaderGui != null ? baseShaderGui.GetType().ToString() : "none", EditorStyles.miniLabel);
+                    if(baseShaderGui != null)
+                    {
+                        if (GUILayout.Button("Validate Material")) ValidateMaterial(targetMat);
+                        if (GUILayout.Button("Re-Assign Shader")) baseShaderGui.AssignNewShaderToMaterial(targetMat, targetMat.shader, targetMat.shader);
+                    }
+                    EditorGUI.indentLevel--;
+                }
+                
+                debugPropertyDrawers = EditorGUILayout.Foldout(debugPropertyDrawers, PropertyDrawersAndDecorators);
+                if(debugPropertyDrawers)
+                {
+                    foreach (var prop in properties)
+                    {
+                        if (MaterialPropertyHandler == null) MaterialPropertyHandler = typeof(MaterialProperty).Assembly.GetType("UnityEditor.MaterialPropertyHandler");
+                        if (MaterialPropertyHandler != null)
+                        {
+                            if(GetHandler         == null) GetHandler         = MaterialPropertyHandler.GetMethod("GetHandler", (BindingFlags) (-1));
+                            var handler = GetHandler.Invoke(null, new object[] {((Material) materialEditor.target).shader, prop.name});
+                            if(m_PropertyDrawer   == null) m_PropertyDrawer   = MaterialPropertyHandler.GetField("m_PropertyDrawer", (BindingFlags) (-1));
+                            if(m_DecoratorDrawers == null) m_DecoratorDrawers = MaterialPropertyHandler.GetField("m_DecoratorDrawers", (BindingFlags) (-1));
+
+                            if(handler != null)
+                            {
+                                MaterialPropertyDrawer propertyDrawer = (MaterialPropertyDrawer) m_PropertyDrawer.GetValue(handler);
+                                List<MaterialPropertyDrawer> decoratorDrawers = (List<MaterialPropertyDrawer>) m_DecoratorDrawers.GetValue(handler);
+                                if (propertyDrawer != null || decoratorDrawers != null)
+                                {
+                                    EditorGUILayout.LabelField($@"{prop.name}(""{prop.displayName}"", {prop.type})");
+                                }
+                                EditorGUI.indentLevel++;
+                                if(propertyDrawer != null)
+                                {
+                                    EditorGUILayout.LabelField("Property Drawer", EditorStyles.miniLabel);
+                                    EditorGUILayout.LabelField(propertyDrawer.GetType() + " (height: " + propertyDrawer.GetPropertyHeight(prop, prop.displayName, materialEditor) + "px)");
+                                }
+                                if(decoratorDrawers != null)
+                                {
+                                    EditorGUILayout.LabelField("Decorator Drawers", EditorStyles.miniLabel);
+                                    foreach (var d in decoratorDrawers)
+                                    {
+                                        EditorGUILayout.LabelField(d.GetType() + " (height: " + d.GetPropertyHeight(prop, prop.displayName, materialEditor) + "px)");
+                                    }
+                                }
+                                EditorGUI.indentLevel--;
+                            }
+                        }
+                        // MaterialPropertyHandler handler = MaterialPropertyHandler.GetHandler(((Material) materialEditor.target).shader, prop.name);
+                    }
+                }
+                
+                EditorGUILayout.Space();
+                if (GUILayout.Button(ResetFoldoutSessionState))
+                {
+                    foreach(var group in headerGroups)
+                    {
+                        SessionState.EraseBool(group.FoldoutStateKeyName);
+                    }
+                }
+                
+                EditorGUILayout.Space();
+                EditorGUILayout.LabelField("Markdown Groups", EditorStyles.boldLabel);
+                foreach (var group in headerGroups)
+                {
+                    EditorGUILayout.LabelField(group.name == null ? "<null>" : string.IsNullOrWhiteSpace(group.name) ? "<whitespace>" : group.name, EditorStyles.boldLabel);
+                    EditorGUILayout.LabelField("Condition", group.condition == null ? "<null>" : group.condition);
+                    EditorGUILayout.LabelField("Custom Drawer", group.customDrawer?.Method?.Name ?? "<null>");
+                    EditorGUILayout.LabelField("Property Count", "" + (group.properties?.Count ?? 0));
+                    EditorGUILayout.Space();
+                }
             }
             
             void DrawCustomGUI()
