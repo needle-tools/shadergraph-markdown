@@ -40,9 +40,10 @@ namespace Needle
             public List<MaterialProperty> properties;
             public Action customDrawer = null;
             public bool expandedByDefault = true;
-            public string FoldoutStateKeyName => $"{nameof(MarkdownShaderGUI)}.{name}";
+            private int hash = 0;
+            public string FoldoutStateKeyName => $"{nameof(MarkdownShaderGUI)}.{name}.{hash}";
             
-            public HeaderGroup(string displayName, string condition = null)
+            public HeaderGroup(string displayName, string condition = null, int hash = 0)
             {
                 if (!string.IsNullOrEmpty(displayName) && displayName.EndsWith("-", StringComparison.Ordinal))
                 {
@@ -55,6 +56,7 @@ namespace Needle
                 }
 
                 this.condition = condition;
+                this.hash = hash;
             }
         }
 
@@ -295,7 +297,7 @@ namespace Needle
                     var condition = GetBetween(display, '[', ']', true);
                     if (!string.IsNullOrWhiteSpace(condition))
                         display = display.Substring(0, display.LastIndexOf('[')).TrimEnd();
-                    var group = new HeaderGroup(display, condition);
+                    var group = new HeaderGroup(display, condition, cat.categoryHash);
                     categoryToHeaderGroup.Add(cat.categoryHash, group);
                 }
 #endif
@@ -880,7 +882,7 @@ namespace Needle
                 if (isDisabled)
                     EditorGUI.BeginDisabledGroup(true);
                 EditorGUI.BeginChangeCheck();
-                if (group.name == null || group.name.Equals("Default", StringComparison.OrdinalIgnoreCase)) {
+                if (string.IsNullOrEmpty(group.name) || group.name.Equals("Default", StringComparison.OrdinalIgnoreCase)) {
                     if(group.customDrawer != null) {
                         group.customDrawer.Invoke();
                     }
@@ -1164,7 +1166,7 @@ namespace Needle
         internal static bool DrawHeaderFoldout(GUIContent title, bool state, bool isBoxed = false, Func<bool> hasMoreOptions = null, Action toggleMoreOptions = null, string documentationURL = "", Action<Vector2> contextAction = null)
         {
 #if HAVE_HEADER_FOLDOUT_WITH_DOCS
-            return CoreEditorUtils.DrawHeaderFoldout(title, state, isBoxed, hasMoreOptions, toggleMoreOptions, documentationURL);
+            return CoreEditorUtils.DrawHeaderFoldout(title, state, isBoxed, hasMoreOptions, toggleMoreOptions, documentationURL, contextAction);
 #else
             return CoreEditorUtilsShim.DrawHeaderFoldout(title, state, isBoxed, hasMoreOptions, toggleMoreOptions, documentationURL, contextAction);
 #endif

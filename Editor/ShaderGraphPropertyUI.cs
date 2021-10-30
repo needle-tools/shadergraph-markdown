@@ -70,7 +70,9 @@ namespace Needle.ShaderGraphMarkdown
                 if(inputRows == null)
                     continue;
                 
-                var shaderInputs = inputRows.ToDictionary(x => x.Value, x => x.Key);
+                var shaderInputs = inputRows
+                    .Where(x => x.Value != null)
+                    .ToDictionary(x => x.Value, x => x.Key);
 #endif
                 if (!styleSheet)
                     styleSheet = Resources.Load<StyleSheet>("Styles/ShaderGraphMarkdown");
