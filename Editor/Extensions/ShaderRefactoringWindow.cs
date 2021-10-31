@@ -85,7 +85,7 @@ namespace Needle.ShaderGraphMarkdown
             if (!properties.Contains(existingTuple))
                 existingTuple = defaultProp;
             
-            var popupField = new PopupField<(string referenceName, string displayName)>("Properties", properties, existingTuple, tuple => tuple.referenceName + " (" + tuple.displayName + ")", tuple => tuple.referenceName + " (" + tuple.displayName + ")");
+            var popupField = new PopupField<(string referenceName, string displayName)>(properties, existingTuple, tuple => tuple.referenceName + " (" + tuple.displayName + ")", tuple => tuple.referenceName + " (" + tuple.displayName + ")");
             popupField.SetEnabled(data.shader && properties.Count > 1);
             popupField.RegisterValueChangedCallback(evt =>
             {
@@ -93,16 +93,24 @@ namespace Needle.ShaderGraphMarkdown
             });
             popupFieldContainer.Add(popupField);
         }
+
+        class StringPropertyFieldWithDropdown : VisualElement
+        {
+            
+        }        
         
         private VisualElement popupFieldContainer;
         private SerializedObject so;
         private void CreateGUI()
         {
             titleContent = new GUIContent("Refactor Shader Properties");
-            var splitter = new TwoPaneSplitView(0, 450, TwoPaneSplitViewOrientation.Horizontal);
-            var left = new VisualElement();
-            var right = new VisualElement();
+            var splitter = new VisualElement() { style = { flexDirection = FlexDirection.Row } };
+            var left = new VisualElement() { style = { width = Length.Percent(50), marginRight = 20 } };
+            var right = new VisualElement() { style = { width = Length.Percent(50), marginLeft = 20  } };
+            var center = new VisualElement() { style = { position = Position.Absolute, left = Length.Percent(50), top = 20 } };
+            center.Add(new Label("→"));
             rootVisualElement.Add(splitter);
+            rootVisualElement.Add(center);
             splitter.Add(left);
             splitter.Add(right);
             
@@ -112,7 +120,7 @@ namespace Needle.ShaderGraphMarkdown
             var prop = so.FindProperty(nameof(data));
 
             var propField = new PropertyField(prop.FindPropertyRelative(nameof(ShaderRefactoringData.shader)));
-#if UNITY_2020_1_OR_NEWER
+#if UNITY_2020_2_OR_NEWER
             propField.RegisterValueChangeCallback(evt => UpdatePopupField());
 #else
             propField.RegisterCallback<ChangeEvent<UnityEngine.Object>>(evt => UpdatePopupField());
@@ -120,11 +128,39 @@ namespace Needle.ShaderGraphMarkdown
             propField.Bind(so);
             
             popupFieldContainer = new VisualElement();
-            
-            var refactorFrom = new PropertyField(prop.FindPropertyRelative(nameof(ShaderRefactoringData.sourceReferenceName)), "Source Property"); refactorFrom.Bind(so);
+
+            var refactorArea = new VisualElement() { style = { flexDirection = FlexDirection.Row } };
+            var refactorFrom = new PropertyField(prop.FindPropertyRelative(nameof(ShaderRefactoringData.sourceReferenceName)), "Source Property") { style = { flexGrow = 1 } }; 
+            refactorFrom.Bind(so);
             left.Add(propField);
-            left.Add(popupFieldContainer);
-            left.Add(refactorFrom);
+            refactorArea.Add(refactorFrom);
+            var btn = new Button(() =>
+            {
+                var properties = new List<(string referenceName, string displayName)>();
+                // properties.Add(defaultProp);
+                if(data.shader)
+                {
+                    var propertyCount = data.shader.GetPropertyCount();
+                    for (int i = 0; i < propertyCount; i++)
+                    {
+                        if(ShaderUtil.IsShaderPropertyHidden(data.shader, i)) continue;
+                        properties.Add((data.shader.GetPropertyName(i), data.shader.GetPropertyDescription(i)));
+                    }
+                }
+
+                var menu = new GenericMenu();
+                foreach(var tuple in properties)
+                menu.AddItem(new GUIContent(tuple.referenceName + " (" + tuple.displayName + ")"), tuple.referenceName == data.sourceReferenceName, userData =>
+                {
+                    
+                }, tuple);
+            }) { tooltip = "Select Property from Source Shader", style = { paddingLeft = 1, paddingRight = 1 } };
+            var btnContent = new VisualElement();
+            btnContent.AddToClassList("unity-base-popup-field__arrow");
+            btn.Add(btnContent);
+            refactorArea.Add(btn);
+            // refactorArea.Add(popupFieldContainer);
+            left.Add(refactorArea);
             
             var refactorTo = new PropertyField(prop.FindPropertyRelative(nameof(ShaderRefactoringData.targetReferenceName)), "New Property"); refactorTo.Bind(so);
             right.Add(new VisualElement { style = { height = EditorGUIUtility.singleLineHeight * 2 } });
