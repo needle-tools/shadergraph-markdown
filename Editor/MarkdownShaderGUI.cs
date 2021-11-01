@@ -238,6 +238,8 @@ namespace Needle
 
             OnGUIMarker.Begin();
             
+            // Use default labelWidth
+            EditorGUIUtility.labelWidth = 0f;
             // proper widths for texture and label fields, same as ShaderGUI
             EditorGUIUtility.fieldWidth = 64f;
             

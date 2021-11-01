@@ -154,6 +154,12 @@ namespace Needle.ShaderGraphMarkdown
                 }
 
                 var menu = new GenericMenu();
+
+                if (!data.shader)
+                    menu.AddItem(new GUIContent("Set a Shader to pick properties from"), false, null);
+                else 
+                    menu.AddItem(new GUIContent("Shader Properties"), false, null);
+                
                 foreach(var tuple in properties)
                 {
                     menu.AddItem(new GUIContent(tuple.referenceName + " (" + tuple.displayName + ")"), tuple.referenceName == data.sourceReferenceName, o =>
