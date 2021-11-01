@@ -2,9 +2,17 @@
 All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [1.3.0-exp] - 2021-10-26
+## [1.3.0-exp] 2021-11-01
 - fixed properties in an old default reference format not displayed in red
-- added experimental Shader Refactor window
+- fixed categories not being displayed correctly in some Editor versions
+- fixed foldout header state for categories with duplicate names
+- fixed compilation errors on 2019.4 and 2021.1
+- fixed material validation not always being called in 2021.2+
+- changed "Debug" category to be called "Markdown Tools"
+- added Shader Property Refactor window (experimental)
+- added toggle for development options into the Markdown Tools category
+- added help link for Markdown Tools in foldout header
+- added context menu for shader property refactoring
 
 ## [1.2.0] - 2021-10-02
 - bumped version to stable for AssetStore release after testing in production

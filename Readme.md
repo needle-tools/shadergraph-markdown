@@ -1,6 +1,6 @@
 # Shader Graph Markdown
 
-![Unity Version Compatibility](https://img.shields.io/badge/Unity-2019.4%20%E2%80%94%202021.2-brightgreen) 
+![Unity Version Compatibility](https://img.shields.io/badge/Unity-2019.4%20%E2%80%94%202022.1-brightgreen) 
 
 ## License
 
@@ -32,9 +32,11 @@ The Shader Graph UI and blackboard are modified to render all "markdown dummy pr
 ## Quick Start
 Install via OpenUPM: https://openupm.com/packages/com.needle.shadergraph-markdown/
 
-1. In Shader Graph, tell your shader to use the custom ShaderGUI `Needle.MarkdownShaderGUI`.
+1. In Shader Graph, tell your shader to use the custom ShaderGUI `Needle.MarkdownShaderGUI`.  
+
 ![ShaderGUI 10.x](https://github.com/needle-tools/shadergraph-markdown/wiki/Images/06_ShaderGUI_URP10.png)  
-_Shader Graph 10 / 11_  
+_Shader Graph 10+_  
+
 ![ShaderGUI 7.x](https://github.com/needle-tools/shadergraph-markdown/wiki/Images/07_ShaderGUI_URP7.png)  
 _Shader Graph 7 / 8_  
 
@@ -65,7 +67,7 @@ Set ShaderGraph Markdown as Custom Shader GUI to get nice, customizable editors 
 
 ### Inline Properties
 
-Textures can have `&` appended to render them as smaller inline textures. If you use `&&`, the next property will be rendered right next to it, a common pattern throughout URP and HDRP for drawing sliders, colors etc. right next to a texture property. They'll be auto-indented in the Blackboard.
+Textures can have `&` appended to render them as smaller inline textures. If you use `&&`, the next property will be rendered right next to it, a common pattern throughout URP and HDRP for drawing sliders, colors etc. right next to a texture property. They'll be auto-indented in the Blackboard.  
 
 ![Inline Properties](https://github.com/needle-tools/shadergraph-markdown/wiki/Images/sgmarkdown-inline-properties.png)
 
@@ -88,13 +90,26 @@ You can also use boolean properties and textures as conditionals:
 You can construct more complex conditions by using `and`, `&&`, `or`, `||`, `!`, `>`, `<=` ... and other operators - please let us know if something doesn't work as expected!  
 You can also combine boolean keywords, enum keywords, textures, vectors, colors, floats in the same condition. Vectors compare by length, colors compare by max(r,g,b).
 
-### Debug Section
+### Refactoring Shader Properties
 
-At the bottom of your shader, there's a Debug section that contains info and helpers to configure your custom  UI, and to work with keywords in general.
+This window helps you to find and rename wrongly named properties, refactor names across your project, update reference names, ... in shaders, materials, animations and scripts.  
 
-Especially the option to `Debug Conditional Properties` is helpful when you're setting those up, as it will show all properties and allow you to quickly check for wrongly set up conditions.
+![Refactoring Shader Properties](https://github.com/needle-tools/shadergraph-markdown/wiki/Images/10_RefactorProperties.png)   
+
+There's three ways to open the refactoring window:
+- Right-click any material and select `Refactor Shader Properties`
+- or open `Window > Needle > Refactor Shader Properties`
+- or click <kbd>Refactor Shader Properties</kbd> in the `Markdown Tools` section of the material inspector.
+
+### Markdown Tools Section
+
+At the bottom of your shader, there's a `Markdown Tools` section (formerly: Debug) that contains info and helpers to configure your custom  UI, and to work with properties and keywords.  
 
 ![Debug Section](https://github.com/needle-tools/shadergraph-markdown/wiki/Images/09_Debug.png)  
+
+It also contains a button to quickly open the Property Refactoring window.  
+
+Especially the option to `Debug Conditional Properties` is helpful when you're setting those up, as it will show all properties and allow you to quickly check for wrongly set up conditions.
 
 ### Expand/Collapse All Properties for URP/HDRP 7
 In URP and HDRP 7, properties are configured right in the Blackboard, taking up lots of space. They can be expanded/collapsed, but that takes forever... Shader Graph Markdown fixes this by allowing you to Alt + Click on the foldouts to expand/collapse all properties.

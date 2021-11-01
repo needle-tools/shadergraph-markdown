@@ -180,14 +180,31 @@ namespace Needle.ShaderGraphMarkdown
                 var shaderInfo = ShaderUtil.GetAllShaderInfo();
                 List<(string referenceName, string displayName)> properties = shaderInfo.SelectMany(x =>
                 {
+                    // exclude hidden shaders?
+                    if (x.name.StartsWith("Hidden/")) return Enumerable.Empty<(string, string)>();
+                    
                     var shader = Shader.Find(x.name);
                     var propertyCount = ShaderUtil.GetPropertyCount(shader);
                     return Enumerable.Range(0, propertyCount)
                         .Where(idx => !ShaderUtil.IsShaderPropertyHidden(shader, idx))
+                        // .Where(x =>
+                        // {
+                        //     if (ShaderUtil.GetPropertyName(shader, x) == "_A")
+                        //     {
+                        //         Debug.Log("Shader has property " + "_A" + ": " + shader, shader);
+                        //     }
+                        //     return true;
+                        // })
                         .Select(idx => (ShaderUtil.GetPropertyName(shader, idx), ShaderUtil.GetPropertyDescription(shader, idx)));
                 })
                     .ToLookup(x => x.Item1)
                     .OrderByDescending(x => x.Count())
+                    // .Where(x =>
+                    // {
+                    //     if(x.Count() > 10)
+                    //         Debug.Log("Property " + x.Key + " found in " + string.Join("\n", x));
+                    //     return true;
+                    // })
                     .Select(x => (x.Key, x.Count().ToString()))
                     .ToList();
                 
@@ -404,7 +421,7 @@ namespace Needle.ShaderGraphMarkdown
                     "\n\n" +
                     "but also exists in these shaders that won't be updated because they're not selected:" + ObjectNames(shadersThatWouldNeedUpdatingButAreExcluded) +
                     ".\n\n" +
-                    "It also exists in " + shadersThatCannotBeUpdated.Count + " shaders that cannot be updated (read-only or not checked out)." +
+                    "It also exists in " + shadersThatCannotBeUpdated.Count + " shaders that cannot be updated (read-only or not checked out)" +
                     ".\n\n" +
                     "Are you sure you want to update just these shaders? Press \"Update All\", or Cancel and empty the \"Shader\" field to update all shaders.",
                     selectedShadersNeedUpdating ? "Update only " + ObjectNames(shadersThatNeedUpdating, true) : "Do nothing",
