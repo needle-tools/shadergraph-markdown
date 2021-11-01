@@ -1108,6 +1108,7 @@ namespace Needle
         private static readonly GUIContent LocalAndGlobalKeywords = new GUIContent("Local and Global Keywords", "All keywords that are defined/used by this shader.");
         private static readonly string MarkdownToolsLabel = "Markdown Tools";
         private static readonly string AttributeDocumentationUrl = "https://github.com/needle-tools/shadergraph-markdown#attribute-reference";
+        internal static readonly string PropertyRefactorDocumentationUrl = "https://github.com/needle-tools/shadergraph-markdown#refactoring-shader-properties";
         
         private static ProfilerMarker OnGUIMarker = new ProfilerMarker("OnGUI");
         private static ProfilerMarker GetHashCodeMarker = new ProfilerMarker("Get Hash Code");
