@@ -1,3 +1,7 @@
+#if UNITY_2020_3_OR_NEWER
+#define HAVE_UITOOLKIT_HELPBOX
+#endif
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -262,7 +266,9 @@ namespace Needle.ShaderGraphMarkdown
             }) { text = "Replace all Usages", tooltip = "Replace in materials, shaders and animation clips", style = { height = 30 } });
             rightActionsContainer.Add(new Button(FixMaterialsAndShaders) { text = "Replace in materials and shaders" });
             rightActionsContainer.Add(new Button(FixAnimationClips) { text = "Replace in animations" });
+#if HAVE_UITOOLKIT_HELPBOX
             rightActionsContainer.Add(new HelpBox("Please make sure to have a backup before running these operations!", HelpBoxMessageType.Warning));
+#endif
             right.Add(rightActionsContainer);
 
             leftActionsContainer.Add(new Label("Find") { style = { marginTop = 10, marginLeft = 3, unityFontStyleAndWeight = FontStyle.Bold }});
@@ -275,7 +281,9 @@ namespace Needle.ShaderGraphMarkdown
             leftActionsContainer.Add(new Button(FindMaterials) { text = "Find materials and shaders using this property" });
             leftActionsContainer.Add(new Button(FindAnimationClips) { text = "Find animations targeting this property" });
             leftActionsContainer.Add(new Button(FindScripts) { text = "Find scripts targeting this property" });
+#if HAVE_UITOOLKIT_HELPBOX
             leftActionsContainer.Add(new HelpBox("Non-Shadergraph shaders and scripts cannot be updated automatically. Please use the Find buttons and update them manually.", HelpBoxMessageType.None));
+#endif
             left.Add(leftActionsContainer);
         }
 
