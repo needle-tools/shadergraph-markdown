@@ -2,7 +2,10 @@
 All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [1.3.0-exp] 2021-11-01
+## [1.3.0-pre.2] 2021-11-09
+- fixed an issue with shaders on 2021.2+ that don't have blackboard categories (e.g. Amplify shaders used in URP)
+
+## [1.3.0-pre] 2021-11-01
 - fixed properties in an old default reference format not displayed in red
 - fixed categories not being displayed correctly in some Editor versions
 - fixed foldout header state for categories with duplicate names

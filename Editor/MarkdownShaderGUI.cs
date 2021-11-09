@@ -284,24 +284,27 @@ namespace Needle
                 
 #if SRP12_SG_REFACTORED
                 // on 2021.2+, we need to also collect Blackboard Categories, which are stored in a sub asset
-                var blackboardCategories = MarkdownSGExtensions.CollectCategories(targetMat.shader).ToList();
+                var blackboardCategories = MarkdownSGExtensions.CollectCategories(targetMat.shader)?.ToList();
                 propertyToCategory = new Dictionary<string, int>();
                 categoryToHeaderGroup = new Dictionary<int, HeaderGroup>();
-                foreach (var cat in blackboardCategories)
+                if(blackboardCategories != null)
                 {
-                    var firstPropertyInCategory = cat.properties.FirstOrDefault();
-                    if(firstPropertyInCategory != null)
-                        propertyToCategory.Add(firstPropertyInCategory, cat.categoryHash);
-                }
-                
-                foreach (var cat in blackboardCategories)
-                {
-                    var display = cat.categoryName;
-                    var condition = GetBetween(display, '[', ']', true);
-                    if (!string.IsNullOrWhiteSpace(condition))
-                        display = display.Substring(0, display.LastIndexOf('[')).TrimEnd();
-                    var group = new HeaderGroup(display, condition, cat.categoryHash);
-                    categoryToHeaderGroup.Add(cat.categoryHash, group);
+                    foreach (var cat in blackboardCategories)
+                    {
+                        var firstPropertyInCategory = cat.properties.FirstOrDefault();
+                        if(firstPropertyInCategory != null)
+                            propertyToCategory.Add(firstPropertyInCategory, cat.categoryHash);
+                    }
+                    
+                    foreach (var cat in blackboardCategories)
+                    {
+                        var display = cat.categoryName;
+                        var condition = GetBetween(display, '[', ']', true);
+                        if (!string.IsNullOrWhiteSpace(condition))
+                            display = display.Substring(0, display.LastIndexOf('[')).TrimEnd();
+                        var group = new HeaderGroup(display, condition, cat.categoryHash);
+                        categoryToHeaderGroup.Add(cat.categoryHash, group);
+                    }
                 }
 #endif
                 
@@ -1107,7 +1110,7 @@ namespace Needle
         private static readonly GUIContent PropertyDrawersAndDecorators = new GUIContent("Property Drawers and Decorators");
         private static readonly GUIContent GroupsAndCategories = new GUIContent("Groups and Categories");
         private static readonly GUIContent ResetFoldoutSessionState = new GUIContent("Reset Foldout SessionState");
-        private static readonly GUIContent LocalAndGlobalKeywords = new GUIContent("Local and Global Keywords", "All keywords that are defined/used by this shader.");
+        private static readonly GUIContent LocalAndGlobalKeywords = new GUIContent("Local and Global Keywords", "All keywords that are defined/used by this shader.\nIn 2021.2+, local and global keywords listed here might be the same (new keyword system).");
         private static readonly string MarkdownToolsLabel = "Markdown Tools";
         private static readonly string AttributeDocumentationUrl = "https://github.com/needle-tools/shadergraph-markdown#attribute-reference";
         internal static readonly string PropertyRefactorDocumentationUrl = "https://github.com/needle-tools/shadergraph-markdown#refactoring-shader-properties";
