@@ -196,6 +196,17 @@ Amplify works as-is, you can specify `Needle.MarkdownShaderGUI` as custom shader
 ### Built-In and other Shaders
 Nothing about the custom shader inspector in Shader Graph Markdown is actually Shader Graph-specific! You can use the same properties and drawers for all shaders, be it built-in, surface shaders, BetterShaders, other editors... In many cases, you could also use custom attributes, but especially for foldouts and drawers, Shader Graph Markdown gives a lot of flexibility.
 
+### Global Illumination Support
+Unity's GI systems rely on "magic property names" to work. Namely, `_EmissionColor` (Color) and `_EmissionMap` (Texture) have to be present; if either is missing, the resulting emission will be black (no emission). If both are present, SG Markdown will render the lightmap dropdown to choose "Baked", "Realtime" or "None" for Global Illumination.  
+If the `_Emission` (or `_EMISSION`) property toggle is present, you can override this, and e.g. make materials that are emissive (they are bright) but don't contribute to GI.  
+  
+This is a typical setup that will hide the EmissionColor and EmissionMap properties if emission is turned off:   
+```
+[Toggle(_EMISSION)]_Emission("Emission", Int) = 0
+[HDR]_EmissionColor("EmissionColor [_EMISSION]", Color) = (0,0,0,1)
+_EmissionMap("EmissionMap [_EMISSION]", 2D) = "white" {}
+```   
+  
 ### Why isn't there Feature X?
 A design goal of Shader Graph Markdown was to keep simplicity to allow for a fast workflow and nice editors, without writing any code. Custom drawers, on the other hand, give a lot of flexibility. The in-between, where you use some kind of markup to describe very complex behaviour, is explicitly not in scope for Shader Graph Markdown.  
 
@@ -207,12 +218,14 @@ With the above in mind, feel free to reach out via Discord and request features 
 ## Known Issues
 
 - _Changing keyword property entries does not refresh the Enum dropdown in the inspector_  
-  This is a Unity bug. [Case 1176077](https://issuetracker.unity3d.com/product/unity/issues/guid/1176077)  
+  This is a Unity bug fixed in 2020.3.18f1+ and 2021.1.18f1+. [Case 1176077](https://issuetracker.unity3d.com/product/unity/issues/guid/1176077)  
   Workaround: reimport any script (Rightclick > Reimport) to trigger a domain reload.
 - _Vector fields don't show animation state (blue/red overlay)_  
-  This is a Unity bug. [Case 1333416](https://issuetracker.unity3d.com/product/unity/issues/guid/1333416)
+  This is a Unity bug fixed in 2021.2.0b1+. [Case 1333416](https://issuetracker.unity3d.com/product/unity/issues/guid/1333416)
 - _Conditionally excluded properties can't be inline properties_
   The condition will be ignored inside an inlined property. Don't inline them if you want them to use the condition.
+- _Built-In ShaderGraph shaders (2021.2+) don't use custom shader GUIs_
+  This is a Unity bug. [Case not verified yet]()
 
 ## Contact
 <b>[needle — tools for unity](https://needle.tools)</b> • 

@@ -2,6 +2,11 @@
 All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] 2021-11-26
+- added Global Illumination mode dropdown when shader uses `_EmissionColor` and `_EmissionMap` and/or declares the `_EMISSION` keyword
+- add Shader Property Refactoring and Global Illumination to the Readme
+- updated known Unity bugs in the Readme to include version where issues are known to be resolved
+
 ## [1.3.0-pre.2] 2021-11-09
 - fixed an issue with shaders on 2021.2+ that don't have blackboard categories (e.g. Amplify shaders used in URP)
 
