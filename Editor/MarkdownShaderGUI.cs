@@ -594,6 +594,13 @@ namespace Needle
                         materialEditor.RenderQueueField();
                     materialEditor.EnableInstancingField();
                     materialEditor.DoubleSidedGIField();
+                    
+                    // if the material exposes _EMISSION as user-changeable property, we only want to draw the lightmap settings when its on.
+                    // otherwise, we always draw it when the known emission properties exist
+                    if (targetMat.HasProperty(EmissionColorPropertyName) || targetMat.HasProperty(EmissionMapPropertyName))
+                        if (!(targetMat.HasProperty(EmissionKeyword) || targetMat.HasProperty("_Emission")) || targetMat.IsKeywordEnabled(EmissionKeyword))
+                            materialEditor.LightmapEmissionFlagsProperty(0, true, true);
+                    
                     EditorGUILayout.Space();
                     CoreEditorUtils.DrawSplitter();
                 }
@@ -1126,6 +1133,9 @@ namespace Needle
         private static ProfilerMarker ConditionCheckMarker = new ProfilerMarker("Condition Check");
         
         private const string ShowDevelopmentOptionsKey = nameof(MarkdownShaderGUI) + "." + nameof(ShowDevelopmentOptions);
+        private const string EmissionKeyword = "_EMISSION";
+        private const string EmissionColorPropertyName = "_EmissionColor";
+        private const string EmissionMapPropertyName = "_EmissionMap";
 
         private bool ShowDevelopmentOptions
         {
@@ -1177,14 +1187,20 @@ namespace Needle
         {
             base.ValidateMaterial(material);
             if(baseShaderGui != null) baseShaderGui.ValidateMaterial(material);
-        }
 #else
         public void ValidateMaterial(Material material)
         {
-            // if(baseShaderGui != null) baseShaderGui.ValidateMaterial(material);
-            // check if baseShaderGui has public override void MaterialChanged(Material material) and invoke that
-        }
 #endif
+            // if the material has an emission keyword, this is explicitly controlled;
+            // if it doesn't, GI only works when _EmissionColor is present
+            if (!(material.HasProperty(EmissionKeyword) || material.HasProperty("_Emission")) && material.HasProperty(EmissionColorPropertyName))
+            {
+                MaterialEditor.FixupEmissiveFlag(material);
+                bool state = (material.globalIlluminationFlags & MaterialGlobalIlluminationFlags.EmissiveIsBlack) == MaterialGlobalIlluminationFlags.None;
+                if (state) material.EnableKeyword(EmissionKeyword);
+                else material.DisableKeyword(EmissionKeyword);
+            }
+        }
 
         public static void ShowRefactoringWindow(string shaderAssetPath, string inputReferenceName)
         {
