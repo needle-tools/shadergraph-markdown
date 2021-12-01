@@ -449,6 +449,9 @@ namespace Needle
                     }
 #endif
                     ValidateMaterial(targetMat);
+                    
+                    // resetting the shader seems to trigger keyword sanitization for ShaderGraph shaders and some other Unity shaders 
+                    baseShaderGui?.AssignNewShaderToMaterial(targetMat, targetMat.shader, targetMat.shader);
                 }
 
                 EditorGUILayout.Space();
@@ -1117,7 +1120,7 @@ namespace Needle
         private static readonly GUIContent PropertyDrawersAndDecorators = new GUIContent("Property Drawers and Decorators");
         private static readonly GUIContent GroupsAndCategories = new GUIContent("Groups and Categories");
         private static readonly GUIContent ResetFoldoutSessionState = new GUIContent("Reset Foldout SessionState");
-        private static readonly GUIContent LocalAndGlobalKeywords = new GUIContent("Local and Global Keywords", "All keywords that are defined/used by this shader.\nIn 2021.2+, local and global keywords listed here might be the same (new keyword system).");
+        private static readonly GUIContent LocalAndGlobalKeywords = new GUIContent("Keywords", "All keywords that are defined/used by this shader.\nIn 2021.2+, local and global keywords listed here might be the same (new keyword system).");
         private static readonly string MarkdownToolsLabel = "Markdown Tools";
         private static readonly string AttributeDocumentationUrl = "https://github.com/needle-tools/shadergraph-markdown#attribute-reference";
         internal static readonly string PropertyRefactorDocumentationUrl = "https://github.com/needle-tools/shadergraph-markdown#refactoring-shader-properties";

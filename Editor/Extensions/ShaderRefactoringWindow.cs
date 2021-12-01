@@ -493,10 +493,22 @@ namespace Needle.ShaderGraphMarkdown
             foreach (var mat in materialsThatCanBeUpdated)
             {
                 var path = AssetDatabase.GetAssetPath(mat);
-                var text = File.ReadAllText(path);
-                // we're directly operating on the serialized YAML here, what could possibly go wrong
-                text = text.Replace("- " + data.sourceReferenceName + ":", "- " + data.targetReferenceName + ":");
-                File.WriteAllText(path, text);
+                var lines = File.ReadAllLines(path);
+                for(int l = 0; l < lines.Length; l++)
+                {
+                    // migrate shader keywords
+                    if (lines[l].StartsWith("m_ShaderKeywords: ", StringComparison.Ordinal))
+                    {
+                        lines[l] = lines[l].Replace(" " + data.sourceReferenceName + " ", " " + data.targetReferenceName + " ");
+                        lines[l] = lines[l].Replace(" " + data.sourceReferenceName + "\n", " " + data.targetReferenceName + "\n"); // last item
+                    }
+                    else
+                    {
+                        // we're directly operating on the serialized YAML here, what could possibly go wrong
+                        lines[l] = lines[l].Replace("- " + data.sourceReferenceName + ":", "- " + data.targetReferenceName + ":");
+                    }
+                }
+                File.WriteAllLines(path, lines);
             }
             
             AssetDatabase.Refresh();
@@ -551,10 +563,13 @@ namespace Needle.ShaderGraphMarkdown
                 // File.WriteAllText(path, text);
             }
 
-            Debug.Log("Clips that have been updated [" + clipsThatNeedUpdating.Count + "]: " + ObjectNames(clipsThatNeedUpdating));
-            if (clipsThatCannotBeUpdated.Any())
+            if(clipsThatNeedUpdating.Any())
             {
-                Debug.Log("Clips that cannot be updated (read-only) [" + clipsThatCannotBeUpdated.Count + "]: " + ObjectNames(clipsThatCannotBeUpdated));
+                Debug.Log("Clips that have been updated [" + clipsThatNeedUpdating.Count + "]: " + ObjectNames(clipsThatNeedUpdating));
+                if (clipsThatCannotBeUpdated.Any())
+                {
+                    Debug.Log("Clips that cannot be updated (read-only) [" + clipsThatCannotBeUpdated.Count + "]: " + ObjectNames(clipsThatCannotBeUpdated));
+                }
             }
         }
         
