@@ -607,8 +607,7 @@ namespace Needle
                     EditorGUILayout.Space();
                     CoreEditorUtils.DrawSplitter();
                 }
-        
-#if HDRP_7_OR_NEWER
+
                 try
                 {
                     if (baseShaderGui != null)
@@ -626,7 +625,7 @@ namespace Needle
                 {
                     EditorGUILayout.HelpBox("Exception when drawing base shader GUI of type " + baseShaderGui?.GetType() + ":\n" + e, MessageType.Error);
                 }
-#endif        
+                
                 DrawCustomGUIMarker.End();
             }
 
