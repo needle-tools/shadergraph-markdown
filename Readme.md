@@ -225,7 +225,7 @@ With the above in mind, feel free to reach out via Discord and request features 
 - _Conditionally excluded properties can't be inline properties_
   The condition will be ignored inside an inlined property. Don't inline them if you want them to use the condition.
 - _Built-In ShaderGraph shaders (2021.2+) don't use custom shader GUIs_
-  This is a Unity bug. [Case not verified yet]()
+  This is a Unity bug. [Case 1380485](https://issuetracker.unity3d.com/product/unity/issues/guid/1380485)
 
 ## Contact
 <b>[needle — tools for unity](https://needle.tools)</b> • 
