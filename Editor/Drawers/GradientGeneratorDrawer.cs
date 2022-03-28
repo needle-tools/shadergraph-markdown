@@ -1,24 +1,14 @@
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
 namespace Needle.ShaderGraphMarkdown
 {
-    public class GradientGeneratorDrawer : MarkdownMaterialPropertyDrawer //, ISerializationCallbackReceiver
+    public class GradientGeneratorDrawer : MarkdownMaterialPropertyDrawer
     {
         private const string DefaultTexturePropertyName = "_RampTexture"; 
         public string texturePropertyName = DefaultTexturePropertyName;
-        
-        [System.Serializable]
-        private class Map
-        {
-            public Material material;
-            public string propertyName = "_RampTexture";
-            public Gradient gradient;
-        }
-        [HideInInspector] [SerializeField] private List<Map> mappedGradientStore = new List<Map>();
         private Dictionary<Material, Dictionary<string, Gradient>> mappedGradients;
         
         public override void OnDrawerGUI(MaterialEditor materialEditor, MaterialProperty[] properties, DrawerParameters parameters)
@@ -82,37 +72,28 @@ namespace Needle.ShaderGraphMarkdown
             var existingGradient = gradientWasFound ? mappedGradients[targetMat][targetPropertyName] : new Gradient();
             var newGradient = EditorGUILayout.GradientField(displayName, existingGradient);
             if (EditorGUI.EndChangeCheck())
-            {
-                // Debug.Log("Changed Gradient");
-                // Undo.RecordObject(this, "Changed Gradient");
                 AddToCache(newGradient);
-                // mappedGradients[targetMat][targetPropertyName] = newGradient;
-                // ApplyRampTexture(targetMat, parameters.Get(0, targetPropertyName)); // immediately apply gradient - experimental
-                // OnBeforeSerialize();
-                // Undo.FlushUndoRecordObjects();
-                // EditorUtility.SetDirty(this);
-            }
 
             var placeholderContent = new GUIContent(targetProperty?.textureValue ? "ApplyMM" : "CreateMM");
             var buttonRect = GUILayoutUtility.GetRect(placeholderContent, GUI.skin.button);
             // draw texture picker next to button
             // TODO renders incorrectly on 2019.4 and prevents clicking the actual button.
-            var haveFixedOverlayBug = false;
-            if(haveFixedOverlayBug && targetProperty != null && buttonRect.width > 46 + 18)
-            {
-                var controlRect = buttonRect;
-                controlRect.height = 16;
-                controlRect.y += 2;
-                var newObj = (Texture2D) EditorGUI.ObjectField(controlRect, targetProperty.textureValue, typeof(Texture2D), true);
-                if(newObj != targetProperty.textureValue)
-                {
-                    Undo.RecordObjects(new Object[] { this, targetMat }, "Applied Gradient");
-                    targetProperty.textureValue = newObj;
-                    mappedGradients[targetMat].Remove(targetPropertyName);
-                    GUIUtility.ExitGUI(); // reset GUI loop so the gradient can be picked up properly
-                }
-                buttonRect.xMax -= 18;
-            }
+            // var haveFixedOverlayBug = false;
+            // if(haveFixedOverlayBug && targetProperty != null && buttonRect.width > 46 + 18)
+            // {
+            //     var controlRect = buttonRect;
+            //     controlRect.height = 16;
+            //     controlRect.y += 2;
+            //     var newObj = (Texture2D) EditorGUI.ObjectField(controlRect, targetProperty.textureValue, typeof(Texture2D), true);
+            //     if(newObj != targetProperty.textureValue)
+            //     {
+            //         Undo.RecordObjects(new Object[] { this, targetMat }, "Applied Gradient");
+            //         targetProperty.textureValue = newObj;
+            //         mappedGradients[targetMat].Remove(targetPropertyName);
+            //         GUIUtility.ExitGUI(); // reset GUI loop so the gradient can be picked up properly
+            //     }
+            //     buttonRect.xMax -= 18;
+            // }
             if (GUI.Button(buttonRect, targetProperty?.textureValue ? "Apply" : "Create")) 
                 ApplyRampTexture(targetMat, parameters.Get(0, targetPropertyName));
             
@@ -186,8 +167,8 @@ namespace Needle.ShaderGraphMarkdown
             }
         }
 
-        private static int width = 256;
-        private static int height = 4; // needs to be multiple of 4 for DXT1 format compression
+        private const int GradientTexturePixelWidth = 256;
+        private const int GradientTexturePixelHeight = 4; // needs to be multiple of 4 for DXT1 format compression
 
         [System.Serializable]
         private class GradientUserData
@@ -198,7 +179,7 @@ namespace Needle.ShaderGraphMarkdown
         
         private static Texture2D CreateGradientTexture(Material targetMaterial, Gradient gradient, string propertyName)
         {
-            Texture2D gradientTexture = new Texture2D(width, height, TextureFormat.ARGB32, false, false)
+            Texture2D gradientTexture = new Texture2D(GradientTexturePixelWidth, GradientTexturePixelHeight, TextureFormat.ARGB32, false, false)
             {
                 name = propertyName + "_Gradient",
                 filterMode = FilterMode.Bilinear,
@@ -206,10 +187,10 @@ namespace Needle.ShaderGraphMarkdown
                 alphaIsTransparency = true,
             };
 
-            for (int j = 0; j < height; j++)
+            for (int j = 0; j < GradientTexturePixelHeight; j++)
             {
-                for (int i = 0; i < width; i++)
-                    gradientTexture.SetPixel(i, j, gradient.Evaluate((float) i / width));
+                for (int i = 0; i < GradientTexturePixelWidth; i++)
+                    gradientTexture.SetPixel(i, j, gradient.Evaluate((float) i / GradientTexturePixelWidth));
             }
 
             gradientTexture.Apply(false);
@@ -218,6 +199,8 @@ namespace Needle.ShaderGraphMarkdown
             // store gradient meta-info as user data
             var importer = AssetImporter.GetAtPath(AssetDatabase.GetAssetPath(gradientTexture));
             importer.userData = JsonUtility.ToJson(new GradientUserData() { gradient = gradient, isSet = true }, false);
+            if (importer is TextureImporter textureImporter)
+                textureImporter.textureCompression = TextureImporterCompression.Uncompressed;
             EditorUtility.SetDirty(gradientTexture);
             importer.SaveAndReimport();
                 
@@ -246,45 +229,5 @@ namespace Needle.ShaderGraphMarkdown
 
             return sourceTexture;
         }
-        
-        // public void OnBeforeSerialize()
-        // {
-        //     if (mappedGradients == null || !mappedGradients.Any())
-        //     {
-        //         mappedGradientStore = new List<Map>();
-        //         return;
-        //     }
-        //     
-        //     var store = new List<Map>();
-        //     foreach (var x in mappedGradients)
-        //     {
-        //         foreach (var y in x.Value)
-        //         {
-        //             store.Add(new Map()
-        //             {
-        //                 material = x.Key,
-        //                 propertyName = y.Key,
-        //                 gradient = y.Value,
-        //             });
-        //         }
-        //     }
-        //
-        //     mappedGradientStore = store;
-        // }
-        //
-        // public void OnAfterDeserialize()
-        // {
-        //     if (mappedGradients == null)
-        //         mappedGradients = new Dictionary<Material, Dictionary<string, Gradient>>();
-        //     
-        //     foreach (var entry in mappedGradientStore)
-        //     {
-        //         if (!mappedGradients.ContainsKey(entry.material))
-        //             mappedGradients.Add(entry.material, new Dictionary<string, Gradient>());
-        //         
-        //         if (!mappedGradients[entry.material].ContainsKey(entry.propertyName))
-        //             mappedGradients[entry.material].Add(entry.propertyName, entry.gradient);
-        //     }
-        // }
     }
 }
