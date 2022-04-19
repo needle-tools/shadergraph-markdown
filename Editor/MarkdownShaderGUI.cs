@@ -664,6 +664,8 @@ namespace Needle
                         {
                             if (!ConditionIsFulfilled(targetMat, condition))
                             {
+                                // consume tooltip for conditionally excluded properties
+                                UseTooltip();
                                 if(!debugConditionalProperties) {
                                     previousPropertyWasDrawn = false;
                                     continue;
@@ -695,7 +697,6 @@ namespace Needle
                             EditorGUILayout.LabelField(new GUIContent(noteText, UseTooltip()), CenteredGreyMiniLabel);
                             break;
                         case MarkdownProperty.Tooltip:
-                            if (!previousPropertyWasDrawn) continue;
                             nextTooltip = display.Substring(display.IndexOf(' ') + 1);
                             break;
                         case MarkdownProperty.Drawer:

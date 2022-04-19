@@ -155,6 +155,8 @@ Feel free to jump into our support discord and let us know if you need help or s
 9. `!NOTE Any note text`<a href="#footnote-1"><sup>1</sup></a>  
 8. `[Link Text](URL)`<a href="#footnote-1"><sup>1</sup></a>  
    A web link.  
+9. `!TOOLTIP Any text`</a>  
+   Tooltip for the following property.
 10. `!REF KEYWORD_NAME`  
   A reference to a bool/enum keyword to be drawn here - by default they end up at the end of your shader, with this you can control exactly where they go.
 4. Conditional properties: Append `[SOME_KEYWORD]` to your foldouts, drawers or properties to only make them show up when the condition is met. Conditions can be
@@ -219,13 +221,16 @@ With the above in mind, feel free to reach out via Discord and request features 
 
 - _Changing keyword property entries does not refresh the Enum dropdown in the inspector_  
   This is a Unity bug fixed in 2020.3.18f1+ and 2021.1.18f1+. [Case 1176077](https://issuetracker.unity3d.com/product/unity/issues/guid/1176077)  
-  Workaround: reimport any script (Rightclick > Reimport) to trigger a domain reload.
+  Workaround: reimport any script (Rightclick > Reimport) to trigger a domain reload.  
 - _Vector fields don't show animation state (blue/red overlay)_  
   This is a Unity bug fixed in 2021.2.0b1+. [Case 1333416](https://issuetracker.unity3d.com/product/unity/issues/guid/1333416)
 - _Conditionally excluded properties can't be inline properties_
-  The condition will be ignored inside an inlined property. Don't inline them if you want them to use the condition.
+  The condition will be ignored inside an inlined property. Don't inline them if you want them to use the condition.  
 - _Built-In ShaderGraph shaders (2021.2+) don't use custom shader GUIs_
-  This is a Unity bug. [Case 1380485](https://issuetracker.unity3d.com/product/unity/issues/guid/1380485)
+  This is a Unity bug fixed in 2022.2.0a8. [Case 1380485](https://issuetracker.unity3d.com/product/unity/issues/guid/1380485)
+- _Texture and Vector properties don't support tooltips_ [Case 1421274]()
+  This is a Unity bug. A workaround is included to make tooltips work on these property types nonetheless.  
+  
 
 ## Contact
 <b>[needle — tools for unity](https://needle.tools)</b> • 
