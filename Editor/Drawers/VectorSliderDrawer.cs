@@ -22,7 +22,7 @@ namespace Needle.ShaderGraphMarkdown
             switch (vectorProperty.type)
             {
                 case MaterialProperty.PropType.Vector:
-                    OnDrawerGUI(materialEditor, vectorProperty, vectorProperty.displayName);
+                    OnDrawerGUI(materialEditor, vectorProperty, new GUIContent(vectorProperty.displayName, parameters.Tooltip));
                     break;
                 case MaterialProperty.PropType.Float:
                 case MaterialProperty.PropType.Range:
@@ -44,7 +44,7 @@ namespace Needle.ShaderGraphMarkdown
             }
         }
 
-        public void OnDrawerGUI(MaterialEditor materialEditor, MaterialProperty vectorProperty, string display)
+        public void OnDrawerGUI(MaterialEditor materialEditor, MaterialProperty vectorProperty, GUIContent display)
         {
             if (vectorProperty.name.StartsWith("_Tile", System.StringComparison.Ordinal) || vectorProperty.name.StartsWith("_Tiling", System.StringComparison.Ordinal) || vectorProperty.name.EndsWith("_ST", System.StringComparison.Ordinal))
             {
@@ -59,14 +59,14 @@ namespace Needle.ShaderGraphMarkdown
                 return;
             }
             
-            var firstParen = display.IndexOf('(');
+            var firstParen = display.text.IndexOf('(');
             var lastParen = vectorProperty.displayName.LastIndexOf(')');
             string[] parts;
             if (firstParen >= 0 && lastParen >= 0 && lastParen > firstParen)
             {
-                var betweenParens = display.Substring(firstParen + 1, lastParen - firstParen - 1);
+                var betweenParens = display.text.Substring(firstParen + 1, lastParen - firstParen - 1);
                 parts = betweenParens.Split(new []{',', ';'}, System.StringSplitOptions.RemoveEmptyEntries);
-                display = display.Substring(0, firstParen).Trim();
+                display.text = display.text.Substring(0, firstParen).Trim();
             }
             else
             {

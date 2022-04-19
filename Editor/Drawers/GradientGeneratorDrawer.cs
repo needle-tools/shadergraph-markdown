@@ -70,7 +70,7 @@ namespace Needle.ShaderGraphMarkdown
             
             EditorGUI.BeginChangeCheck();
             var existingGradient = gradientWasFound ? mappedGradients[targetMat][targetPropertyName] : new Gradient();
-            var newGradient = EditorGUILayout.GradientField(displayName, existingGradient);
+            var newGradient = EditorGUILayout.GradientField(new GUIContent(displayName, parameters.Tooltip), existingGradient);
             if (EditorGUI.EndChangeCheck())
                 AddToCache(newGradient);
 

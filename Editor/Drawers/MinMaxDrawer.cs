@@ -109,7 +109,7 @@ namespace Needle.ShaderGraphMarkdown
                 if(isInline)
                     EditorGUI.MinMaxSlider(inlineRect, ref vec.x, ref vec.y, vec.z, vec.w);
                 else
-                    EditorGUILayout.MinMaxSlider(vectorProp.displayName, ref vec.x, ref vec.y, vec.z, vec.w);
+                    EditorGUILayout.MinMaxSlider(new GUIContent(vectorProp.displayName, parameters.Tooltip), ref vec.x, ref vec.y, vec.z, vec.w);
                 
                 if (EditorGUI.EndChangeCheck())
                 {
@@ -148,7 +148,7 @@ namespace Needle.ShaderGraphMarkdown
             if(isInline)
                 EditorGUI.MinMaxSlider(inlineRect, ref value1, ref value2, 0.0f, 1.0f);
             else
-                EditorGUILayout.MinMaxSlider(display, ref value1, ref value2, 0.0f, 1.0f);
+                EditorGUILayout.MinMaxSlider(new GUIContent(display, parameters.Tooltip), ref value1, ref value2, 0.0f, 1.0f);
             
             if (EditorGUI.EndChangeCheck())
             {

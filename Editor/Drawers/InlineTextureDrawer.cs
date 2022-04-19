@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 
@@ -26,29 +27,39 @@ namespace Needle.ShaderGraphMarkdown
             if (inliningIndex > 0)
                 displayName = displayName.Substring(0, inliningIndex);
             
-            OnDrawerGUI(materialEditor, properties, textureProperty, displayName, extraProperty);
+            OnDrawerGUI(materialEditor, properties, textureProperty, new GUIContent(displayName, parameters.Tooltip), extraProperty);
         }
 
         private static Rect lastInlineTextureRect; 
         internal static Rect LastInlineTextureRect => lastInlineTextureRect;
+        private static MethodInfo _GetPropertyRect = null;
         
-        internal void OnDrawerGUI(MaterialEditor materialEditor, MaterialProperty[] properties, MaterialProperty textureProperty, string displayName, MaterialProperty extraProperty)
+        internal void OnDrawerGUI(MaterialEditor materialEditor, MaterialProperty[] properties, MaterialProperty textureProperty, GUIContent displayContent, MaterialProperty extraProperty)
         {
             lastInlineTextureRect = Rect.zero;
             if(extraProperty == null)
             {
-                var rect = materialEditor.TexturePropertySingleLine(new GUIContent(displayName), textureProperty);
+                var rect = materialEditor.TexturePropertySingleLine(displayContent, textureProperty);
                 lastInlineTextureRect = rect;
                 lastInlineTextureRect.x += EditorGUIUtility.labelWidth;
                 lastInlineTextureRect.width -= EditorGUIUtility.labelWidth;
             }
             else if(extraProperty.type == MaterialProperty.PropType.Vector && (extraProperty.name.Equals(textureProperty.name + "_ST", StringComparison.Ordinal)))
             {
-                materialEditor.TextureProperty(textureProperty, displayName, true);
+                if (_GetPropertyRect == null) _GetPropertyRect = typeof(MaterialEditor).GetMethod("GetPropertyRect", (BindingFlags)(-1));
+                if (_GetPropertyRect == null)
+                {
+                    materialEditor.TexturePropertyWithTooltip(textureProperty, displayContent, true);
+                }
+                else
+                {
+                    var rect = (Rect) _GetPropertyRect.Invoke(materialEditor, new object[] { textureProperty, displayContent.text, true });
+                    materialEditor.TextureProperty(rect, textureProperty, displayContent.text, displayContent.tooltip, true);
+                }
             }
             else
             {
-                materialEditor.TexturePropertySingleLine(new GUIContent(displayName), textureProperty, extraProperty);
+                materialEditor.TexturePropertySingleLine(displayContent, textureProperty, extraProperty);
             }
             
             // workaround for Unity being weird
