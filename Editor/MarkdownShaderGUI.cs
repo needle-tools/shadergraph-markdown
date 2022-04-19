@@ -85,12 +85,15 @@ namespace Needle
             Note,
             Drawer,
             Header,
-            Foldout
+            Foldout,
+            Tooltip,
         }
 
         private static readonly string refFormat = "!REF";
         private static readonly string noteFormat = "!NOTE";
         private static readonly string alternateNoteFormat = "* ";
+        private static readonly string tooltipFormat = "!TIP";
+        private static readonly string alternateTooltipFormat = "!TOOLTIP";
         private static readonly string drawerFormat = "!DRAWER";
         private static readonly string foldoutHeaderFormat = "#";
         private static readonly string foldoutHeaderFormatStart = foldoutHeaderFormat + " ";
@@ -106,6 +109,8 @@ namespace Needle
                 return MarkdownProperty.Link;
             if (display.StartsWith(noteFormat) || display.StartsWith(alternateNoteFormat))
                 return MarkdownProperty.Note;
+            if (display.StartsWith(tooltipFormat) || display.StartsWith(alternateTooltipFormat))
+                return MarkdownProperty.Tooltip;
             if (display.StartsWith(drawerFormat))
                 return MarkdownProperty.Drawer;
             if (display.StartsWith(foldoutHeaderFormatStart) || display.Equals(foldoutHeaderFormat, StringComparison.Ordinal))
@@ -231,6 +236,15 @@ namespace Needle
         private Dictionary<int, HeaderGroup> categoryToHeaderGroup = null;
 #endif
         
+        private string nextTooltip = null;
+        private string UseTooltip()
+        {
+            if (nextTooltip == null) return null;
+            var val = nextTooltip;
+            nextTooltip = null;
+            return val;
+        }
+        
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
             var targetMat = materialEditor.target as Material;
@@ -352,6 +366,7 @@ namespace Needle
                             case MarkdownProperty.Header:
                             case MarkdownProperty.Link:
                             case MarkdownProperty.Note:
+                            case MarkdownProperty.Tooltip:
                             case MarkdownProperty.None:
                                 break;
                             case MarkdownProperty.Reference:
@@ -628,7 +643,7 @@ namespace Needle
                 
                 DrawCustomGUIMarker.End();
             }
-
+            
             void DrawGroup(HeaderGroup group)
             {
                 DrawGroupMarker.Begin();
@@ -672,13 +687,16 @@ namespace Needle
                             if (!previousPropertyWasDrawn) continue;
                             var linkText = GetBetween(display, '[', ']');
                             var linkHref = GetBetween(display, '(', ')');
-                            if (GUILayout.Button(linkText, CenteredGreyMiniLabel)) Application.OpenURL(linkHref);
+                            if (GUILayout.Button(new GUIContent(linkText, UseTooltip()), CenteredGreyMiniLabel)) Application.OpenURL(linkHref);
                             break;
                         case MarkdownProperty.Note:
                             if (!previousPropertyWasDrawn) continue;
-                            var index = display.IndexOf(' ');
-                            var noteText = display.Substring(index + 1);
-                            EditorGUILayout.LabelField(noteText, CenteredGreyMiniLabel);
+                            var noteText = display.Substring(display.IndexOf(' ') + 1);
+                            EditorGUILayout.LabelField(new GUIContent(noteText, UseTooltip()), CenteredGreyMiniLabel);
+                            break;
+                        case MarkdownProperty.Tooltip:
+                            if (!previousPropertyWasDrawn) continue;
+                            nextTooltip = display.Substring(display.IndexOf(' ') + 1);
                             break;
                         case MarkdownProperty.Drawer:
                             var parts = display.Split(' ');
@@ -696,18 +714,18 @@ namespace Needle
                                                 rect.xMin += EditorGUI.indentLevel * 15f;
                                                 var previousIndent = EditorGUI.indentLevel;
                                                 EditorGUI.indentLevel = 0;
-                                                drawer.OnInlineDrawerGUI(InlineTextureDrawer.LastInlineTextureRect, materialEditor, properties, new MarkdownMaterialPropertyDrawer.DrawerParameters(parts));
+                                                drawer.OnInlineDrawerGUI(InlineTextureDrawer.LastInlineTextureRect, materialEditor, properties, new MarkdownMaterialPropertyDrawer.DrawerParameters(parts, UseTooltip()));
                                                 EditorGUI.indentLevel = previousIndent;
                                             }
                                             else
                                             {
                                                 EditorGUI.LabelField(InlineTextureDrawer.LastInlineTextureRect, drawer + " doesn't support inline drawing", EditorStyles.miniLabel);
-                                                drawer.OnDrawerGUI(materialEditor, properties, new MarkdownMaterialPropertyDrawer.DrawerParameters(parts));
+                                                drawer.OnDrawerGUI(materialEditor, properties, new MarkdownMaterialPropertyDrawer.DrawerParameters(parts, UseTooltip()));
                                             }
                                         }
                                         else
                                         {
-                                            drawer.OnDrawerGUI(materialEditor, properties, new MarkdownMaterialPropertyDrawer.DrawerParameters(parts));
+                                            drawer.OnDrawerGUI(materialEditor, properties, new MarkdownMaterialPropertyDrawer.DrawerParameters(parts, UseTooltip()));
                                         }
                                     }
                                     catch (Exception e)
@@ -734,12 +752,12 @@ namespace Needle
                                 var labelName = display.Substring(stringIndex);
                                 if(display.StartsWith(headerFormatStartLabel))
                                 {
-                                    EditorGUILayout.LabelField(labelName);
+                                    EditorGUILayout.LabelField(new GUIContent(labelName, UseTooltip()));
                                 }
                                 else
                                 {
                                     EditorGUILayout.Space();
-                                    EditorGUILayout.LabelField(labelName, EditorStyles.boldLabel);
+                                    EditorGUILayout.LabelField(new GUIContent(labelName, UseTooltip()), EditorStyles.boldLabel);
                                 }
                             }
                             else
@@ -762,7 +780,7 @@ namespace Needle
                                     var keyword = MarkdownSGExtensions.FindKeywordData(targetMat.shader, keywordRef);
                                     if (keyword != null)
                                     {
-                                        MarkdownSGExtensions.DrawShaderKeywordProperty(materialEditor, keyword);
+                                        MarkdownSGExtensions.DrawShaderKeywordProperty(materialEditor, keyword, UseTooltip());
                                         foundKeywordToDraw = true;
                                     }
                                 }
@@ -772,7 +790,7 @@ namespace Needle
                                     if(keywordProp == null)
                                         EditorGUILayout.HelpBox("Could not find MaterialProperty: '" + keywordRef, MessageType.Error);
                                     else
-                                        materialEditor.ShaderProperty(keywordProp, keywordProp.displayName);
+                                        materialEditor.ShaderProperty(keywordProp, new GUIContent(keywordProp.displayName, UseTooltip()));
                                 }
                             }
                             previousPropertyWasDrawn = true;
@@ -812,7 +830,7 @@ namespace Needle
                                     // extract parameters
                                     var parameterRemainder = display.Substring(indexOfShorthand + 2).Trim();
                                     parameters = new MarkdownMaterialPropertyDrawer.DrawerParameters(("!DRAWER Dummy " + prop.name + " " + parameterRemainder)
-                                        .Split(new [] {' '}, StringSplitOptions.RemoveEmptyEntries));
+                                        .Split(new [] {' '}, StringSplitOptions.RemoveEmptyEntries), UseTooltip());
                                     display = display.Substring(0, indexOfShorthand);
                                 }
                                 
@@ -868,7 +886,7 @@ namespace Needle
                                                 }
                                             }
 
-                                            drawer.OnDrawerGUI(materialEditor, properties, prop, trimmedDisplay, extraProperty);
+                                            drawer.OnDrawerGUI(materialEditor, properties, prop, new GUIContent(trimmedDisplay, UseTooltip()), extraProperty);
                                         }
                                     }
                                 }
@@ -877,13 +895,13 @@ namespace Needle
                                     var drawer = (VectorSliderDrawer) GetCachedDrawer(nameof(VectorSliderDrawer)); 
                                     if (drawer)
                                     {
-                                        drawer.OnDrawerGUI(materialEditor, prop, trimmedDisplay);
+                                        drawer.OnDrawerGUI(materialEditor, prop, new GUIContent(trimmedDisplay, UseTooltip()));
                                     }
                                 }
                             }
                             else
                             {
-                                materialEditor.ShaderProperty(prop, new GUIContent(display));
+                                materialEditor.ShaderPropertyWithTooltip(prop, new GUIContent(display, UseTooltip()));
                             }
                             previousPropertyWasDrawn = true;
                             break;

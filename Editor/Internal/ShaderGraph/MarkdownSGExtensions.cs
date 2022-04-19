@@ -333,14 +333,14 @@ namespace UnityEditor.ShaderGraph
             return new WrappedShaderKeyword() { keyword = keyword };
         }
 
-        public static void DrawShaderKeywordProperty(MaterialEditor editor, WrappedShaderKeyword keyword)
+        public static void DrawShaderKeywordProperty(MaterialEditor editor, WrappedShaderKeyword keyword, string tooltip)
         {
             var mat = (Material) editor.target;
             switch (keyword.keyword.keywordType)
             {
                 case KeywordType.Boolean:
                     var isSet = mat.IsKeywordEnabled(keyword.keyword.referenceName);
-                    var newValue = EditorGUILayout.Toggle(keyword.keyword.displayName, isSet);
+                    var newValue = EditorGUILayout.Toggle(new GUIContent(keyword.keyword.displayName, tooltip), isSet);
                     if (isSet != newValue)
                     {
                         Undo.RegisterCompleteObjectUndo(mat, "Set " + keyword.keyword.displayName + " to " + newValue);
@@ -363,7 +363,7 @@ namespace UnityEditor.ShaderGraph
                             break;
                         }
                     }
-                    var newIndex = EditorGUILayout.Popup(keyword.keyword.displayName, currentIndex, keywordEntries.Select(x => x.displayName).ToArray());
+                    var newIndex = EditorGUILayout.Popup(new GUIContent(keyword.keyword.displayName, tooltip), currentIndex, keywordEntries.Select(x => x.displayName).ToArray());
                     if (newIndex != currentIndex)
                     {
                         Undo.RegisterCompleteObjectUndo(mat, "Set " + keyword.keyword.displayName + " to " + keywordReferenceName + keywordEntries[newIndex].referenceName);
