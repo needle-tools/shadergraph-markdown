@@ -60,7 +60,7 @@ namespace Needle.ShaderGraphMarkdown
             }
             
             var firstParen = display.text.IndexOf('(');
-            var lastParen = vectorProperty.displayName.LastIndexOf(')');
+            var lastParen = display.text.LastIndexOf(')');
             string[] parts;
             if (firstParen >= 0 && lastParen >= 0 && lastParen > firstParen)
             {
