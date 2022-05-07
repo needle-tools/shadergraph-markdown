@@ -136,11 +136,11 @@ namespace Needle.ShaderGraphMarkdown
                         {
                             var shaderInput = shaderInputs[blackboardRow];
                             
-                            #if UNITY_2021_1_OR_NEWER
+#if UNITY_2021_1_OR_NEWER
                             if (shaderInput.IsUsingNewDefaultRefName() || shaderInput.IsUsingOldDefaultRefName())
-                            #else
+#else
                             if (shaderInput.referenceName.Equals(shaderInput.GetDefaultReferenceName(), StringComparison.Ordinal))
-                            #endif
+#endif
                                 usesDefaultReferenceName = true;
 
                             if (!usesDefaultReferenceName && ReferenceNameLooksLikeADefaultReference(shaderInput.referenceName))
@@ -211,10 +211,13 @@ namespace Needle.ShaderGraphMarkdown
                     {
                         case MarkdownShaderGUI.MarkdownProperty.None:
 #if UNITY_2020_2_OR_NEWER
-                            if (usesDefaultReferenceName && ShaderGraphMarkdownSettings.instance.showDefaultReferenceNameWarning)
-                                contentItem.AddToClassList("__markdown_DefaultReferenceWarning");
-                            else if (!usesRecommendedReferenceName && ShaderGraphMarkdownSettings.instance.showNamingRecommendationHint)
-                                contentItem.AddToClassList("__markdown_NonRecommendedReferenceHint");
+                            if (!MarkdownSGExtensions.IsSubGraph(wnd))
+                            {
+                                if (usesDefaultReferenceName && ShaderGraphMarkdownSettings.instance.showDefaultReferenceNameWarning)
+                                    contentItem.AddToClassList("__markdown_DefaultReferenceWarning");
+                                else if (!usesRecommendedReferenceName && ShaderGraphMarkdownSettings.instance.showNamingRecommendationHint)
+                                    contentItem.AddToClassList("__markdown_NonRecommendedReferenceHint");
+                            }
                             
                             if (isTextureProperty && usesInlineTextureDrawerShorthand)
                                 nextFieldShouldBeIndented = true;

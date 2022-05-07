@@ -382,6 +382,16 @@ namespace UnityEditor.ShaderGraph
             if (!(wnd is MaterialGraphEditWindow editWindow)) return null;
             return AssetDatabase.GUIDToAssetPath(editWindow.selectedGuid);
         }
+
+        public static bool IsSubGraph(EditorWindow wnd)
+        {
+            if (!(wnd is MaterialGraphEditWindow editWindow)) return false;
+#if UNITY_2020_3_OR_NEWER
+            return editWindow.graphObject != null && editWindow.graphObject.graph != null && editWindow.graphObject.graph.isSubGraph;
+#else
+            return false; // graphObject not easily accessible (would need reflection)
+#endif
+        }
     }
 }
 
