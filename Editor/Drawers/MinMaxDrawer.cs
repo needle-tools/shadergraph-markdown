@@ -87,9 +87,26 @@ namespace Needle.ShaderGraphMarkdown
             // check if these are vectors, and get the "base property"
             var parameterName1 = parameters.Get(0, (string) null);
             var parameterName2 = parameters.Get(1, (string) null);
+            var displayName = parameters.Get(2, (string) null);
             if (parameterName2 != null && parameterName2.StartsWith("[", StringComparison.Ordinal))
                 parameterName2 = null;
 
+            if (displayName != null && displayName.StartsWith("[", StringComparison.Ordinal))
+                displayName = null;
+
+            // allow third parameter to be used for display name override
+            // use second parameter if it's not referencing a property
+            if (parameterName2 != null && displayName == null)
+            {
+                GetPropertyNameAndSwizzle(parameterName2, out var prop, out var sw);
+                var p2 = properties.FirstOrDefault(x => x.name.Equals(prop, StringComparison.Ordinal));
+                if (p2 == null)
+                {
+                    displayName = parameterName2;
+                    parameterName2 = null;
+                }
+            }
+            
             if (parameterName2 == null)
             {
                 // parameter 1 must be a vector, no swizzles
@@ -105,11 +122,14 @@ namespace Needle.ShaderGraphMarkdown
                 EditorGUI.showMixedValue = vectorProp.hasMixedValue;
                 var vec = vectorProp.vectorValue;
                 EditorGUI.BeginChangeCheck();
+
+                if (displayName == null)
+                    displayName = vectorProp.displayName;
                 
                 if(isInline)
                     EditorGUI.MinMaxSlider(inlineRect, ref vec.x, ref vec.y, vec.z, vec.w);
                 else
-                    EditorGUILayout.MinMaxSlider(new GUIContent(vectorProp.displayName, parameters.Tooltip), ref vec.x, ref vec.y, vec.z, vec.w);
+                    EditorGUILayout.MinMaxSlider(new GUIContent(displayName, parameters.Tooltip), ref vec.x, ref vec.y, vec.z, vec.w);
                 
                 if (EditorGUI.EndChangeCheck())
                 {
@@ -141,14 +161,18 @@ namespace Needle.ShaderGraphMarkdown
             float value1 = GetValue(param1, swizzle1);
             float value2 = GetValue(param2, swizzle2);
 
-            var display = param1 == param2 ? (param1.displayName + " (" + swizzle1 + swizzle2 + ")") : param1.displayName + " - " + param2.displayName;
+            // old behaviour: display swizzles as well.
+            // var display = param1 == param2 ? (param1.displayName + " (" + swizzle1 + swizzle2 + ")") : param1.displayName + " - " + param2.displayName;
+            
+            if (displayName == null)
+                displayName = param1 == param2 ? (param1.displayName) : param1.displayName + " - " + param2.displayName;
             
             EditorGUI.BeginChangeCheck();
             
             if(isInline)
                 EditorGUI.MinMaxSlider(inlineRect, ref value1, ref value2, 0.0f, 1.0f);
             else
-                EditorGUILayout.MinMaxSlider(new GUIContent(display, parameters.Tooltip), ref value1, ref value2, 0.0f, 1.0f);
+                EditorGUILayout.MinMaxSlider(new GUIContent(displayName, parameters.Tooltip), ref value1, ref value2, 0.0f, 1.0f);
             
             if (EditorGUI.EndChangeCheck())
             {
@@ -186,14 +210,19 @@ namespace Needle.ShaderGraphMarkdown
             if (parameterName1 == null)
                 return null;
             
-            GetPropertyNameAndSwizzle(parameterName1, out var propertyName1, out var swizzle1);
-            GetPropertyNameAndSwizzle(parameterName2, out var propertyName2, out var swizzle2);
+            GetPropertyNameAndSwizzle(parameterName1, out var propertyName1, out _);
+            GetPropertyNameAndSwizzle(parameterName2, out var propertyName2, out _);
             
             var param1 = properties.FirstOrDefault(x => x.name.Equals(propertyName1, StringComparison.Ordinal));
             var param2 = properties.FirstOrDefault(x => x.name.Equals(propertyName2, StringComparison.Ordinal));
             
-            if (param1 == null || param2 == null) return null;
-            return new[] { param1, param2 };
+            if (param1 != null && param2 != null)
+                return new[] { param1, param2 };
+            if (param1 != null)
+                return new[] { param1 };
+            if (param2 != null)
+                return new[] { param2 };
+            return null;
         }
     }
 }
