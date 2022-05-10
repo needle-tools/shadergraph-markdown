@@ -146,8 +146,8 @@ namespace Needle
             debugConditionalProperties = false,
             debugReferencedProperties = false;
 
-        private bool temporaryShowPropertyNames = false;
-        private bool showPropertyNames => _showPropertyNames || temporaryShowPropertyNames;
+        private bool shortcutShowPropertyNames = false;
+        private bool showPropertyNames => _showPropertyNames || shortcutShowPropertyNames;
 
         private bool
             debugPropertyDrawers = false,
@@ -261,7 +261,7 @@ namespace Needle
             // proper widths for texture and label fields, same as ShaderGUI
             EditorGUIUtility.fieldWidth = 64f;
             // keyboard shortcut overrides
-            temporaryShowPropertyNames = Event.current.alt;
+            shortcutShowPropertyNames = Event.current.shift;
             
             int GetTargetMaterialHashCode()
             {
@@ -426,11 +426,21 @@ namespace Needle
                 DrawDebugGroupContentMarker.Begin();
 
                 EditorGUILayout.LabelField("Utilities", EditorStyles.boldLabel);
-                _showPropertyNames = EditorGUILayout.Toggle(ShowPropertyNames, _showPropertyNames);
-                if (GUILayout.Button("Refactor Shader Properties", EditorStyles.miniButton))
+                if (shortcutShowPropertyNames)
                 {
-                    ShowRefactoringWindow(AssetDatabase.GetAssetPath(targetMat.shader), "");
+                    EditorGUI.showMixedValue = true;
+                    EditorGUILayout.Toggle(ShowPropertyNames, _showPropertyNames);
+                    EditorGUI.showMixedValue = false;
                 }
+                else
+                {
+                    _showPropertyNames = EditorGUILayout.Toggle(ShowPropertyNames, _showPropertyNames);
+                }
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.PrefixLabel("Refactoring");
+                if (GUILayout.Button(RenameShaderProperties, EditorStyles.miniButton))
+                    ShowRefactoringWindow(AssetDatabase.GetAssetPath(targetMat.shader), "");
+                EditorGUILayout.EndHorizontal();
                 
                 EditorGUILayout.Space();
                 EditorGUILayout.LabelField("Markdown Debugging", EditorStyles.boldLabel);
@@ -442,39 +452,11 @@ namespace Needle
                 debugReferencedProperties = EditorGUILayout.Toggle(DebugReferencedProperties, debugReferencedProperties);
                 
                 EditorGUILayout.Space();
-                if (GUILayout.Button(RedrawInspector))
-                {
-                    drawerCache.Clear();
-                    headerGroups.Clear();
-                    GUIUtility.ExitGUI();
-                }                
-                EditorGUILayout.Space();
 
                 EditorGUILayout.LabelField(ShaderKeywords, EditorStyles.boldLabel);
                 foreach (var kw in targetMat.shaderKeywords)
                 {
                     EditorGUILayout.TextField(kw, EditorStyles.miniLabel);
-                }
-
-                if (GUILayout.Button(ClearKeywords))
-                {
-                    foreach (var kw in targetMat.shaderKeywords)
-                        targetMat.DisableKeyword(kw);
-                    
-#if HDRP_7_OR_NEWER
-                    try
-                    {
-                        HDShaderUtils.ResetMaterialKeywords(targetMat);
-                    }
-                    catch (ArgumentException)
-                    {
-                        // ignore, not a HDRP shader probably
-                    }
-#endif
-                    ValidateMaterial(targetMat);
-                    
-                    // resetting the shader seems to trigger keyword sanitization for ShaderGraph shaders and some other Unity shaders 
-                    baseShaderGui?.AssignNewShaderToMaterial(targetMat, targetMat.shader, targetMat.shader);
                 }
 
                 EditorGUILayout.Space();
@@ -500,7 +482,31 @@ namespace Needle
                     EditorGUI.indentLevel--;
                 }
                 
-                if(IsDeveloperMode())
+                GUILayout.BeginHorizontal();
+                EditorGUILayout.PrefixLabel("Reset");
+                if (GUILayout.Button(ClearKeywords))
+                {
+                    foreach (var kw in targetMat.shaderKeywords)
+                        targetMat.DisableKeyword(kw);
+                    
+#if HDRP_7_OR_NEWER
+                    try
+                    {
+                        HDShaderUtils.ResetMaterialKeywords(targetMat);
+                    }
+                    catch (ArgumentException)
+                    {
+                        // ignore, not a HDRP shader probably
+                    }
+#endif
+                    ValidateMaterial(targetMat);
+                    
+                    // resetting the shader seems to trigger keyword sanitization for ShaderGraph shaders and some other Unity shaders 
+                    baseShaderGui?.AssignNewShaderToMaterial(targetMat, targetMat.shader, targetMat.shader);
+                }
+                GUILayout.EndHorizontal();
+                
+                if (IsDeveloperMode())
                 {
                     DrawDeveloperModeContent();
                 }
@@ -535,7 +541,7 @@ namespace Needle
                 }
                 
                 debugPropertyDrawers = EditorGUILayout.Foldout(debugPropertyDrawers, PropertyDrawersAndDecorators);
-                if(debugPropertyDrawers)
+                if (debugPropertyDrawers)
                 {
                     foreach (var prop in properties)
                     {
@@ -592,6 +598,19 @@ namespace Needle
                 }
                 
                 EditorGUILayout.Space();
+                
+                GUILayout.BeginHorizontal();
+                EditorGUILayout.PrefixLabel("Inspector");
+                if (GUILayout.Button(RedrawInspector))
+                {
+                    drawerCache.Clear();
+                    headerGroups.Clear();
+                    GUIUtility.ExitGUI();
+                }                
+                GUILayout.EndHorizontal();
+                
+                GUILayout.BeginHorizontal();
+                EditorGUILayout.PrefixLabel("Foldouts");
                 if (GUILayout.Button(ResetFoldoutSessionState))
                 {
                     foreach(var group in headerGroups)
@@ -599,6 +618,7 @@ namespace Needle
                         SessionState.EraseBool(group.FoldoutStateKeyName);
                     }
                 }
+                GUILayout.EndHorizontal();
             }
             
             void DrawCustomGUI()
@@ -1134,10 +1154,11 @@ namespace Needle
         // ReSharper disable InconsistentNaming
         private static readonly GUIContent AdditionalOptions = new GUIContent("Additional Options", "Options from the shader that are not part of the usual shader properties, e.g. instancing.");
         private static readonly GUIContent ShowOriginalProperties = new GUIContent("Show Original Properties", "Enable this option to show all properties, even those marked with [HideInInspector].");
-        private static readonly GUIContent ShowPropertyNames = new GUIContent("Show Reference Names", "Enable this option to see the actual reference names of all properties. This helps with access from code or animation.");
+        private static readonly GUIContent ShowPropertyNames = new GUIContent("Show Reference Names", "Shortcut: Hold the <shift> key.\nEnable this option to see the actual reference names of all properties. This helps with access from code or animation.");
+        private static readonly GUIContent RenameShaderProperties = new GUIContent("Rename Shader Properties", "Change shader property names across your project. Finds and renames property names in existing materials, animations, and scripts using that shader.");
         private static readonly GUIContent DebugConditionalProperties = new GUIContent("Debug Conditional Properties", "Enable this option to show properties that are conditionally filtered out with [SOME_CONDITION].");
         private static readonly GUIContent DebugReferencedProperties = new GUIContent("Debug Referenced Properties", "Enable this option to show properties that are filtered out because they are referenced by drawers (!DRAWER) or inline properties (&&).");
-        private static readonly GUIContent RedrawInspector = new GUIContent("Repaint Inspector", "After updating some properties and drawers, Unity caches some editor/inspector details. Clicking this button forces a regeneration of the Shader Inspector in such cases.");
+        private static readonly GUIContent RedrawInspector = new GUIContent("Reset Inspector", "After updating some properties and drawers, Unity caches some editor/inspector details. Clicking this button forces a regeneration of the Shader Inspector in such cases.");
         private static readonly GUIContent ShaderKeywords = new GUIContent("Enabled Keywords");
         private static readonly GUIContent ClearKeywords = new GUIContent("Reset Keywords", "Reset keywords currently set on this shader.");
         private static readonly GUIContent LocalKeywords = new GUIContent("Local Keywords");
@@ -1147,7 +1168,7 @@ namespace Needle
         private static readonly GUIContent PropertyDrawersAndDecorators = new GUIContent("Property Drawers and Decorators");
         private static readonly GUIContent GroupsAndCategories = new GUIContent("Groups and Categories");
         private static readonly GUIContent ResetFoldoutSessionState = new GUIContent("Reset Foldout SessionState");
-        private static readonly GUIContent LocalAndGlobalKeywords = new GUIContent("Keywords", "All keywords that are defined/used by this shader.\nIn 2021.2+, local and global keywords listed here might be the same (new keyword system).");
+        private static readonly GUIContent LocalAndGlobalKeywords = new GUIContent("All Keywords", "All keywords that are defined/used by this shader.\nIn 2021.2+, local and global keywords listed here might be the same (new keyword system).");
         private static readonly string MarkdownToolsLabel = "Markdown Tools";
         private static readonly string AttributeDocumentationUrl = "https://github.com/needle-tools/shadergraph-markdown#attribute-reference";
         internal static readonly string PropertyRefactorDocumentationUrl = "https://github.com/needle-tools/shadergraph-markdown#refactoring-shader-properties";
