@@ -27,7 +27,7 @@ namespace Needle.ShaderGraphMarkdown
             if (inliningIndex > 0)
                 displayName = displayName.Substring(0, inliningIndex);
             
-            OnDrawerGUI(materialEditor, properties, textureProperty, new GUIContent(displayName, parameters.Tooltip), extraProperty);
+            OnDrawerGUI(materialEditor, properties, textureProperty, new GUIContent(parameters.ShowPropertyNames ? textureProperty.name : displayName, parameters.Tooltip), extraProperty);
         }
 
         private static Rect lastInlineTextureRect; 

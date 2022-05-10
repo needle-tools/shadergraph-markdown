@@ -50,12 +50,12 @@ namespace Needle.ShaderGraphMarkdown
                     miniTexRect.width += 100;
                     var prevWidth2 = EditorGUIUtility.labelWidth;
                     EditorGUIUtility.labelWidth = partRect.width;
-                    materialEditor.TexturePropertyMiniThumbnail(miniTexRect, param, param.displayName, null);
+                    materialEditor.TexturePropertyMiniThumbnail(miniTexRect, param, parameters.ShowPropertyNames ? param.name : param.displayName, null);
                     EditorGUIUtility.labelWidth = prevWidth2;
                 }
                 else
                 {
-                    materialEditor.ShaderProperty(partRect, param, param.displayName);
+                    materialEditor.ShaderProperty(partRect, param, parameters.ShowPropertyNames ? param.name : param.displayName);
                 }
                 partRect.x += partRect.width + 5;
             }

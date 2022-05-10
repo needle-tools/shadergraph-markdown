@@ -129,7 +129,7 @@ namespace Needle.ShaderGraphMarkdown
                 if(isInline)
                     EditorGUI.MinMaxSlider(inlineRect, ref vec.x, ref vec.y, vec.z, vec.w);
                 else
-                    EditorGUILayout.MinMaxSlider(new GUIContent(displayName, parameters.Tooltip), ref vec.x, ref vec.y, vec.z, vec.w);
+                    EditorGUILayout.MinMaxSlider(new GUIContent(parameters.ShowPropertyNames ? vectorProp.name + ".xy (z-w)" : displayName, parameters.Tooltip), ref vec.x, ref vec.y, vec.z, vec.w);
                 
                 if (EditorGUI.EndChangeCheck())
                 {
@@ -161,18 +161,19 @@ namespace Needle.ShaderGraphMarkdown
             float value1 = GetValue(param1, swizzle1);
             float value2 = GetValue(param2, swizzle2);
 
-            // old behaviour: display swizzles as well.
-            // var display = param1 == param2 ? (param1.displayName + " (" + swizzle1 + swizzle2 + ")") : param1.displayName + " - " + param2.displayName;
-            
             if (displayName == null)
-                displayName = param1 == param2 ? (param1.displayName) : param1.displayName + " - " + param2.displayName;
+                displayName = param1 == param2 ? param1.displayName : param1.displayName + "-" + param2.displayName;
             
             EditorGUI.BeginChangeCheck();
             
             if(isInline)
                 EditorGUI.MinMaxSlider(inlineRect, ref value1, ref value2, 0.0f, 1.0f);
             else
-                EditorGUILayout.MinMaxSlider(new GUIContent(displayName, parameters.Tooltip), ref value1, ref value2, 0.0f, 1.0f);
+                EditorGUILayout.MinMaxSlider(new GUIContent(parameters.ShowPropertyNames 
+                    ? (param1 == param2 
+                        ? param1.name + "." + swizzle1 + swizzle2 
+                        : param1.name + "." + swizzle1 + "-" + param2.name + "." + swizzle2) 
+                    : displayName, parameters.Tooltip), ref value1, ref value2, 0.0f, 1.0f);
             
             if (EditorGUI.EndChangeCheck())
             {

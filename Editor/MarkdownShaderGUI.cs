@@ -142,9 +142,13 @@ namespace Needle
 
         private bool
             showOriginalPropertyList = false,
+            _showPropertyNames = false,
             debugConditionalProperties = false,
             debugReferencedProperties = false;
-        
+
+        private bool temporaryShowPropertyNames = false;
+        private bool showPropertyNames => _showPropertyNames || temporaryShowPropertyNames;
+
         private bool
             debugPropertyDrawers = false,
             debugMarkdownGroups = false,
@@ -256,6 +260,8 @@ namespace Needle
             EditorGUIUtility.labelWidth = 0f;
             // proper widths for texture and label fields, same as ShaderGUI
             EditorGUIUtility.fieldWidth = 64f;
+            // keyboard shortcut overrides
+            temporaryShowPropertyNames = Event.current.alt;
             
             int GetTargetMaterialHashCode()
             {
@@ -420,16 +426,18 @@ namespace Needle
                 DrawDebugGroupContentMarker.Begin();
 
                 EditorGUILayout.LabelField("Utilities", EditorStyles.boldLabel);
+                _showPropertyNames = EditorGUILayout.Toggle(ShowPropertyNames, _showPropertyNames);
                 if (GUILayout.Button("Refactor Shader Properties", EditorStyles.miniButton))
                 {
                     ShowRefactoringWindow(AssetDatabase.GetAssetPath(targetMat.shader), "");
                 }
                 
+                EditorGUILayout.Space();
                 EditorGUILayout.LabelField("Markdown Debugging", EditorStyles.boldLabel);
                 EditorGUI.BeginChangeCheck();
                 showOriginalPropertyList = EditorGUILayout.Toggle(ShowOriginalProperties, showOriginalPropertyList);
                 if (EditorGUI.EndChangeCheck())
-                    InitializeCustomGUI(targetMat);    
+                    InitializeCustomGUI(targetMat);
                 debugConditionalProperties = EditorGUILayout.Toggle(DebugConditionalProperties, debugConditionalProperties);
                 debugReferencedProperties = EditorGUILayout.Toggle(DebugReferencedProperties, debugReferencedProperties);
                 
@@ -726,7 +734,7 @@ namespace Needle
                                         }
                                         else
                                         {
-                                            drawer.OnDrawerGUI(materialEditor, properties, new MarkdownMaterialPropertyDrawer.DrawerParameters(parts, UseTooltip()));
+                                            drawer.OnDrawerGUI(materialEditor, properties, new MarkdownMaterialPropertyDrawer.DrawerParameters(parts, UseTooltip(), showPropertyNames));
                                         }
                                     }
                                     catch (Exception e)
@@ -781,7 +789,7 @@ namespace Needle
                                     var keyword = MarkdownSGExtensions.FindKeywordData(targetMat.shader, keywordRef);
                                     if (keyword != null)
                                     {
-                                        MarkdownSGExtensions.DrawShaderKeywordProperty(materialEditor, keyword, UseTooltip());
+                                        MarkdownSGExtensions.DrawShaderKeywordProperty(materialEditor, keyword, UseTooltip(), showPropertyNames);
                                         foundKeywordToDraw = true;
                                     }
                                 }
@@ -791,7 +799,7 @@ namespace Needle
                                     if(keywordProp == null)
                                         EditorGUILayout.HelpBox("Could not find MaterialProperty: '" + keywordRef, MessageType.Error);
                                     else
-                                        materialEditor.ShaderProperty(keywordProp, new GUIContent(keywordProp.displayName, UseTooltip()));
+                                        materialEditor.ShaderProperty(keywordProp, new GUIContent(showPropertyNames ? keywordProp.name : keywordProp.displayName, UseTooltip()));
                                 }
                             }
                             previousPropertyWasDrawn = true;
@@ -887,7 +895,7 @@ namespace Needle
                                                 }
                                             }
 
-                                            drawer.OnDrawerGUI(materialEditor, properties, prop, new GUIContent(trimmedDisplay, UseTooltip()), extraProperty);
+                                            drawer.OnDrawerGUI(materialEditor, properties, prop, new GUIContent(showPropertyNames ? prop.name + (extraProperty != null ? " & " + extraProperty.name : "") : trimmedDisplay, UseTooltip()), extraProperty);
                                         }
                                     }
                                 }
@@ -896,13 +904,13 @@ namespace Needle
                                     var drawer = (VectorSliderDrawer) GetCachedDrawer(nameof(VectorSliderDrawer)); 
                                     if (drawer)
                                     {
-                                        drawer.OnDrawerGUI(materialEditor, prop, new GUIContent(trimmedDisplay, UseTooltip()));
+                                        drawer.OnDrawerGUI(materialEditor, prop, new GUIContent(showPropertyNames ? prop.name : trimmedDisplay, UseTooltip()));
                                     }
                                 }
                             }
                             else
                             {
-                                materialEditor.ShaderPropertyWithTooltip(prop, new GUIContent(display, UseTooltip()));
+                                materialEditor.ShaderPropertyWithTooltip(prop, new GUIContent(showPropertyNames ? prop.name : display, UseTooltip()));
                             }
                             previousPropertyWasDrawn = true;
                             break;
@@ -1126,6 +1134,7 @@ namespace Needle
         // ReSharper disable InconsistentNaming
         private static readonly GUIContent AdditionalOptions = new GUIContent("Additional Options", "Options from the shader that are not part of the usual shader properties, e.g. instancing.");
         private static readonly GUIContent ShowOriginalProperties = new GUIContent("Show Original Properties", "Enable this option to show all properties, even those marked with [HideInInspector].");
+        private static readonly GUIContent ShowPropertyNames = new GUIContent("Show Reference Names", "Enable this option to see the actual reference names of all properties. This helps with access from code or animation.");
         private static readonly GUIContent DebugConditionalProperties = new GUIContent("Debug Conditional Properties", "Enable this option to show properties that are conditionally filtered out with [SOME_CONDITION].");
         private static readonly GUIContent DebugReferencedProperties = new GUIContent("Debug Referenced Properties", "Enable this option to show properties that are filtered out because they are referenced by drawers (!DRAWER) or inline properties (&&).");
         private static readonly GUIContent RedrawInspector = new GUIContent("Repaint Inspector", "After updating some properties and drawers, Unity caches some editor/inspector details. Clicking this button forces a regeneration of the Shader Inspector in such cases.");

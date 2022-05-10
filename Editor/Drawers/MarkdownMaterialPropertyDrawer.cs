@@ -17,21 +17,29 @@ namespace Needle.ShaderGraphMarkdown
 
             private readonly string tooltip;
             private readonly string[] parts;
+            private readonly bool showPropertyNames;
 
             // TODO needs handling of conditions
             public DrawerParameters(string[] parts)
             {
                 this.parts = parts;
                 this.tooltip = null;
+                this.showPropertyNames = false;
             }
 
             public DrawerParameters(string[] parts, string tooltip) : this(parts)
             {
                 this.tooltip = tooltip;
             }
+            
+            public DrawerParameters(string[] parts, string tooltip, bool showPropertyNames) : this(parts, tooltip)
+            {
+                this.showPropertyNames = showPropertyNames;
+            }
 
             public int Count => parts.Length - 2;
             public string Tooltip => tooltip;
+            public bool ShowPropertyNames => showPropertyNames;
 
             public string Get(int i, string defaultValue)
             {

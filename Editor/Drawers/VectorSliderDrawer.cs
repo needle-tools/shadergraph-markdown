@@ -22,7 +22,7 @@ namespace Needle.ShaderGraphMarkdown
             switch (vectorProperty.type)
             {
                 case MaterialProperty.PropType.Vector:
-                    OnDrawerGUI(materialEditor, vectorProperty, new GUIContent(vectorProperty.displayName, parameters.Tooltip));
+                    OnDrawerGUI(materialEditor, vectorProperty, new GUIContent(parameters.ShowPropertyNames ? vectorProperty.name : vectorProperty.displayName, parameters.Tooltip));
                     break;
                 case MaterialProperty.PropType.Float:
                 case MaterialProperty.PropType.Range:
@@ -35,7 +35,7 @@ namespace Needle.ShaderGraphMarkdown
                             EditorGUILayout.HelpBox("Parameter " + parameters.Get(i, (string)null) + " does not exist.", MessageType.Error);
                             continue;
                         }
-                        materialEditor.ShaderProperty(param, param.displayName);
+                        materialEditor.ShaderProperty(param, parameters.ShowPropertyNames ? param.name : param.displayName);
                     }
                     EditorGUI.indentLevel--;
                     break;
