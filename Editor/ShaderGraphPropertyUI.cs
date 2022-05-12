@@ -159,9 +159,17 @@ namespace Needle.ShaderGraphMarkdown
                                   abstractShaderProperty.propertyType == PropertyType.Texture2DArray || 
                                   abstractShaderProperty.propertyType == PropertyType.VirtualTexture)))
                                 isTextureProperty = true;
-                            
-                            if (shaderInput.displayName.EndsWith("&&", StringComparison.Ordinal))
+
+                            var display = shaderInput.displayName;
+                            var hasCondition = !display.StartsWith("[", StringComparison.Ordinal) && display.Contains('[') && display.EndsWith("]", StringComparison.Ordinal);
+                            if (hasCondition)
+                            {
+                                display = display.Substring(0, display.IndexOf('[') - 1).TrimEnd();
+                            }
+                            if (display.EndsWith("&&", StringComparison.Ordinal))
+                            {
                                 usesInlineTextureDrawerShorthand = true;
+                            }
                             
                             // make sure our context menu handler is registered
                             element.UnregisterCallback<ContextualMenuPopulateEvent>(MenuPopulateEvent);
