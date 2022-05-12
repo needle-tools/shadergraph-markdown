@@ -46,7 +46,14 @@ namespace Needle.ShaderGraphMarkdown
             }
             else if(extraProperty.type == MaterialProperty.PropType.Vector && (extraProperty.name.Equals(textureProperty.name + "_ST", StringComparison.Ordinal)))
             {
-                if (_GetPropertyRect == null) _GetPropertyRect = typeof(MaterialEditor).GetMethod("GetPropertyRect", (BindingFlags)(-1));
+                if (_GetPropertyRect == null)
+                {
+                    _GetPropertyRect = typeof(MaterialEditor).GetMethod("GetPropertyRect", (BindingFlags)(-1), null, new[] { typeof(MaterialProperty), typeof(string), typeof(bool) }, null);
+                    if (_GetPropertyRect == null)
+                    {
+                        EditorGUILayout.HelpBox("Oh no, looks like an API change for MaterialEditor.GetPropertyRect – please report a bug! Thanks!", MessageType.Error);
+                    }
+                }
                 if (_GetPropertyRect == null)
                 {
                     materialEditor.TexturePropertyWithTooltip(textureProperty, displayContent, true);
