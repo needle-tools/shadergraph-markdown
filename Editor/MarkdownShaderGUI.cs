@@ -161,6 +161,8 @@ namespace Needle
         private static FieldInfo m_PropertyDrawer, m_DecoratorDrawers;
         private bool debugLocalAndGlobalKeywords = false;
 
+        private List<string> localKeywords;
+        private List<string> globalKeywords;
         private static MethodInfo getShaderLocalKeywords;
         private static MethodInfo GetShaderLocalKeywords {
             get {
@@ -461,24 +463,49 @@ namespace Needle
 
                 EditorGUILayout.Space();
 
-                debugLocalAndGlobalKeywords = EditorGUILayout.Foldout(debugLocalAndGlobalKeywords, LocalAndGlobalKeywords);
+                var newVal = EditorGUILayout.Foldout(debugLocalAndGlobalKeywords, LocalAndGlobalKeywords);
+                if (newVal != debugLocalAndGlobalKeywords)
+                {
+                    debugLocalAndGlobalKeywords = newVal;
+                    
+                    // enforce refresh when opening / closing the foldout
+                    if (debugLocalAndGlobalKeywords)
+                    {
+                        localKeywords = ((string[]) GetShaderLocalKeywords.Invoke(null, new object[] { targetMat.shader })).ToList();
+                        globalKeywords = ((string[]) GetShaderGlobalKeywords.Invoke(null, new object[] { targetMat.shader })).ToList();
+                    }
+                }
                 if(debugLocalAndGlobalKeywords)
                 {
                     EditorGUILayout.LabelField(LocalKeywords, EditorStyles.boldLabel);
                     EditorGUI.indentLevel++;
-                    var localKeywords = (string[]) GetShaderLocalKeywords.Invoke(null, new object[] { targetMat.shader });
+                    EditorGUI.indentLevel++;
                     foreach (var kw in localKeywords)
                     {
                         EditorGUILayout.TextField(kw, EditorStyles.miniLabel);
+                        var lastRect = GUILayoutUtility.GetLastRect();
+                        lastRect.xMin -= 32;
+                        lastRect.xMax = lastRect.xMin += 16;
+                        EditorGUI.BeginDisabledGroup(true);
+                        EditorGUI.ToggleLeft(lastRect, GUIContent.none, targetMat.shaderKeywords.Contains(kw));   
+                        EditorGUI.EndDisabledGroup();
                     }
+                    EditorGUI.indentLevel--;
                     EditorGUI.indentLevel--;
                     EditorGUILayout.LabelField(GlobalKeywords, EditorStyles.boldLabel);
                     EditorGUI.indentLevel++;
-                    var globalKeywords = (string[]) GetShaderGlobalKeywords.Invoke(null, new object[] { targetMat.shader });
+                    EditorGUI.indentLevel++;
                     foreach (var kw in globalKeywords)
                     {
                         EditorGUILayout.TextField(kw, EditorStyles.miniLabel);
+                        var lastRect = GUILayoutUtility.GetLastRect();
+                        lastRect.xMin -= 32;
+                        lastRect.xMax = lastRect.xMin += 16;
+                        EditorGUI.BeginDisabledGroup(true);
+                        EditorGUI.ToggleLeft(lastRect, GUIContent.none, Shader.IsKeywordEnabled(kw));  
+                        EditorGUI.EndDisabledGroup();
                     }
+                    EditorGUI.indentLevel--;
                     EditorGUI.indentLevel--;
                 }
                 
@@ -675,7 +702,7 @@ namespace Needle
             void DrawGroup(HeaderGroup group)
             {
                 DrawGroupMarker.Begin();
-                
+
                 bool previousPropertyWasDrawn = true;
                 bool nextPropertyDrawerShouldBeInline = false;
                 
@@ -685,7 +712,7 @@ namespace Needle
                     var display = prop.displayName;
                     var isDisabled = false;
                     var hasCondition = !display.StartsWith("[", StringComparison.Ordinal) && display.Contains('[') && display.EndsWith("]", StringComparison.Ordinal);
-                    if(hasCondition)
+                    if (hasCondition)
                     {
                         var condition = GetBetween(display, '[', ']', true);
                         if (!string.IsNullOrEmpty(condition))
@@ -694,14 +721,14 @@ namespace Needle
                             {
                                 // consume tooltip for conditionally excluded properties
                                 UseTooltip();
-                                if(!debugConditionalProperties) {
+                                if(!debugConditionalProperties)
+                                {
                                     previousPropertyWasDrawn = false;
                                     continue;
                                 }
-                                else {
-                                    isDisabled = true;
-                                    EditorGUI.BeginDisabledGroup(true);
-                                }
+                                
+                                isDisabled = true;
+                                EditorGUI.BeginDisabledGroup(true);
                             }
                             if(!debugConditionalProperties)
                                 display = display.Substring(0, display.IndexOf('[') - 1);
@@ -797,7 +824,8 @@ namespace Needle
                             break;
                         case MarkdownProperty.Reference:
                             var split = display.Split(' ');
-                            if(split.Length > 1) {
+                            if (split.Length > 1)
+                            {
                                 var keywordRef = split[1];
                                 var keywordProp = FindKeywordProperty(keywordRef, properties);
                                 var foundKeywordToDraw = false;
@@ -814,10 +842,25 @@ namespace Needle
                                     }
                                 }
 #endif
-                                if(!foundKeywordToDraw)
+                                if (!foundKeywordToDraw)
                                 {
-                                    if(keywordProp == null)
-                                        EditorGUILayout.HelpBox("Could not find MaterialProperty: '" + keywordRef, MessageType.Error);
+                                    if (keywordProp == null)
+                                    {
+                                        if (globalKeywords.Contains(keywordRef))
+                                        {
+                                            EditorGUI.BeginChangeCheck();
+                                            var newVal = EditorGUILayout.Toggle(keywordRef, Shader.IsKeywordEnabled(keywordRef));
+                                            if (EditorGUI.EndChangeCheck())
+                                            {
+                                                if (newVal) Shader.EnableKeyword(keywordRef);
+                                                else Shader.DisableKeyword(keywordRef);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            EditorGUILayout.HelpBox("Could not find MaterialProperty: '" + keywordRef, MessageType.Error);
+                                        }
+                                    }
                                     else
                                         materialEditor.ShaderProperty(keywordProp, new GUIContent(showPropertyNames ? keywordProp.name : keywordProp.displayName, UseTooltip()));
                                 }
@@ -1028,7 +1071,7 @@ namespace Needle
             return Unsupported.IsDeveloperMode() || ShowDevelopmentOptions;
         }
 
-        private static string GetBetween(string str, char start, char end, bool last = false)
+        public static string GetBetween(string str, char start, char end, bool last = false)
         {
             var i0 = last ? str.LastIndexOf(start) : str.IndexOf(start);
             var i1 = last ? str.LastIndexOf(end)   : str.IndexOf(end);
@@ -1042,13 +1085,21 @@ namespace Needle
         {
             bool SetValueForCondition(ExpressionVariable variable, string condition)
             {
+                // check if keyword is set
                 var keywordIsSet = Array.IndexOf(targetMaterial.shaderKeywords, condition) >= 0;
                 if (keywordIsSet)
                 {
                     variable.Set(true);
                     return true;
                 }
-                
+
+                // also check for global keywords
+                if (Shader.IsKeywordEnabled(condition))
+                {
+                    variable.Set(true);
+                    return true;
+                }
+
                 var propertyIndex = targetMaterial.shader.FindPropertyIndex(condition);
                 if (propertyIndex <= -1)
                 {
@@ -1130,7 +1181,8 @@ namespace Needle
                 if (!material.shader) return;
                 
                 // set keywords based on texture names
-                var localKeywords = ((string[]) GetShaderLocalKeywords.Invoke(null, new object[] { material.shader })).ToList();
+                localKeywords = ((string[]) GetShaderLocalKeywords.Invoke(null, new object[] { material.shader })).ToList();
+                globalKeywords = ((string[]) GetShaderGlobalKeywords.Invoke(null, new object[] { material.shader })).ToList();
                 
                 // loop through texture properties
                 foreach (var materialProperty in properties.Where(x => x.type == MaterialProperty.PropType.Texture))
@@ -1145,6 +1197,7 @@ namespace Needle
                     }
                 }
             }
+            
             MaterialChangedMarker.End();
         }
 
