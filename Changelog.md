@@ -2,6 +2,22 @@
 All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.5.0] 2022-05-12
+- fixed indenting issue with `VectorSlider` drawer
+- fixed property name warnings showing in SubGraphs
+- fixed `MinMax` drawer showing property swizzles by default, can now be turned on for debugging with "Show Reference Names"
+- fixed reflection access error due to internal API change
+- fixed incorrect display properties that are both inlined and conditional in the blackboard
+- added Markdown Tools option to "Show Reference Names" of all properties, useful for scripting and animation
+- added shortcut to quickly show reference names, use <kbd>SHIFT</kbd> while having the material inspector focussed
+- added an optional parameter to specify a display name for MinMax drawers
+- added local and global keyword state toggles to quickly see what's on
+- added support for `LocalKeyword` and `GlobalKeyword` in 2021.2+ to get the new info available there
+- added support for global keywords in conditional properties
+- added support for global keywords in `!REF`
+- added `!DRAWER` documentation to the Readme, added more info to the attribute reference
+- changed Markdown Tools inspector order to better reflect common workflows
+
 ## [1.4.0] 2022-04-19
 - added new markup: `!TOOLTIP` or short `!TIP` will add a tooltip to the next property
 
