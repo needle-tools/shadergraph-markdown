@@ -161,6 +161,10 @@ namespace Needle
         private static FieldInfo m_PropertyDrawer, m_DecoratorDrawers;
         private bool debugLocalAndGlobalKeywords = false;
 
+#if UNITY_2021_2_OR_NEWER
+        private Dictionary<string, LocalKeyword> localKeywords;
+        private Dictionary<string, GlobalKeyword> globalKeywords;
+#else
         private List<string> localKeywords;
         private List<string> globalKeywords;
         private static MethodInfo getShaderLocalKeywords;
@@ -178,6 +182,7 @@ namespace Needle
                 return getShaderGlobalKeywords;
             }
         }
+#endif
         // ReSharper restore InconsistentNaming
              
         private static MaterialProperty FindKeywordProperty(string keywordRef, MaterialProperty[] properties)
@@ -470,10 +475,7 @@ namespace Needle
                     
                     // enforce refresh when opening / closing the foldout
                     if (debugLocalAndGlobalKeywords)
-                    {
-                        localKeywords = ((string[]) GetShaderLocalKeywords.Invoke(null, new object[] { targetMat.shader })).ToList();
-                        globalKeywords = ((string[]) GetShaderGlobalKeywords.Invoke(null, new object[] { targetMat.shader })).ToList();
-                    }
+                        CollectLocalAndGlobalKeywords(targetMat);
                 }
                 if(debugLocalAndGlobalKeywords)
                 {
@@ -482,12 +484,19 @@ namespace Needle
                     EditorGUI.indentLevel++;
                     foreach (var kw in localKeywords)
                     {
-                        EditorGUILayout.TextField(kw, EditorStyles.miniLabel);
+#if UNITY_2021_2_OR_NEWER
+                        var title = kw.Value.name + "  " + (kw.Value.type != ShaderKeywordType.UserDefined ? "[" + kw.Value.type + "]" : "") + (kw.Value.isOverridable ? " [Overridable]" : "");
+                        var isOn = targetMat.shaderKeywords.Contains(kw.Value.name);
+#else
+                        var title = kw;
+                        var isOn = targetMat.shaderKeywords.Contains(kw);
+#endif
+                        EditorGUILayout.TextField(title, EditorStyles.miniLabel);
                         var lastRect = GUILayoutUtility.GetLastRect();
                         lastRect.xMin -= 32;
                         lastRect.xMax = lastRect.xMin += 16;
                         EditorGUI.BeginDisabledGroup(true);
-                        EditorGUI.ToggleLeft(lastRect, GUIContent.none, targetMat.shaderKeywords.Contains(kw));   
+                        EditorGUI.ToggleLeft(lastRect, GUIContent.none, isOn);   
                         EditorGUI.EndDisabledGroup();
                     }
                     EditorGUI.indentLevel--;
@@ -497,12 +506,19 @@ namespace Needle
                     EditorGUI.indentLevel++;
                     foreach (var kw in globalKeywords)
                     {
-                        EditorGUILayout.TextField(kw, EditorStyles.miniLabel);
+#if UNITY_2021_2_OR_NEWER
+                        var title = kw.Value.name;
+                        var isOn = Shader.IsKeywordEnabled(kw.Value);
+#else
+                        var title = kw;
+                        var isOn = Shader.IsKeywordEnabled(kw);
+#endif
+                        EditorGUILayout.TextField(title, EditorStyles.miniLabel);
                         var lastRect = GUILayoutUtility.GetLastRect();
                         lastRect.xMin -= 32;
                         lastRect.xMax = lastRect.xMin += 16;
                         EditorGUI.BeginDisabledGroup(true);
-                        EditorGUI.ToggleLeft(lastRect, GUIContent.none, Shader.IsKeywordEnabled(kw));  
+                        EditorGUI.ToggleLeft(lastRect, GUIContent.none, isOn);  
                         EditorGUI.EndDisabledGroup();
                     }
                     EditorGUI.indentLevel--;
@@ -846,7 +862,11 @@ namespace Needle
                                 {
                                     if (keywordProp == null)
                                     {
+#if UNITY_2021_2_OR_NEWER
+                                        if (globalKeywords.ContainsKey(keywordRef))   
+#else
                                         if (globalKeywords.Contains(keywordRef))
+#endif
                                         {
                                             EditorGUI.BeginChangeCheck();
                                             var newVal = EditorGUILayout.Toggle(keywordRef, Shader.IsKeywordEnabled(keywordRef));
@@ -1169,6 +1189,18 @@ namespace Needle
             return result;
         }
         
+        private void CollectLocalAndGlobalKeywords(Material material)
+        {
+            // TODO properly support keywordSpace and local/global keywords and overrides on 2021.2+            
+#if UNITY_2021_2_OR_NEWER
+            localKeywords = material.shader.keywordSpace.keywords.ToDictionary(x => x.name, x => x);
+            globalKeywords = Shader.globalKeywords.ToDictionary(x => x.name, x => x);
+#else
+            localKeywords = ((string[]) GetShaderLocalKeywords.Invoke(null, new object[] { material.shader })).ToList();
+            globalKeywords = ((string[]) GetShaderGlobalKeywords.Invoke(null, new object[] { material.shader })).ToList();
+#endif
+        }
+        
         protected virtual void MaterialChanged(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
             MaterialChangedMarker.Begin();
@@ -1180,15 +1212,18 @@ namespace Needle
 
                 if (!material.shader) return;
                 
-                // set keywords based on texture names
-                localKeywords = ((string[]) GetShaderLocalKeywords.Invoke(null, new object[] { material.shader })).ToList();
-                globalKeywords = ((string[]) GetShaderGlobalKeywords.Invoke(null, new object[] { material.shader })).ToList();
+                // get keywords for this shader.
+                CollectLocalAndGlobalKeywords(material);
                 
                 // loop through texture properties
                 foreach (var materialProperty in properties.Where(x => x.type == MaterialProperty.PropType.Texture))
                 {
                     var uppercaseName = materialProperty.name.ToUpperInvariant();
+#if UNITY_2021_2_OR_NEWER
+                    if (localKeywords.ContainsKey(uppercaseName))
+#else
                     if (localKeywords.Contains(uppercaseName))
+#endif
                     {
                         if (material.GetTexture(materialProperty.name))
                             material.EnableKeyword(uppercaseName);
@@ -1221,7 +1256,7 @@ namespace Needle
         private static readonly GUIContent PropertyDrawersAndDecorators = new GUIContent("Property Drawers and Decorators");
         private static readonly GUIContent GroupsAndCategories = new GUIContent("Groups and Categories");
         private static readonly GUIContent ResetFoldoutSessionState = new GUIContent("Reset Foldout SessionState");
-        private static readonly GUIContent LocalAndGlobalKeywords = new GUIContent("All Keywords", "All keywords that are defined/used by this shader.\nIn 2021.2+, local and global keywords listed here might be the same (new keyword system).");
+        private static readonly GUIContent LocalAndGlobalKeywords = new GUIContent("All Keywords", "All keywords that are defined/used by this shader and globally.");
         private static readonly string MarkdownToolsLabel = "Markdown Tools";
         private static readonly string AttributeDocumentationUrl = "https://github.com/needle-tools/shadergraph-markdown#attribute-reference";
         internal static readonly string PropertyRefactorDocumentationUrl = "https://github.com/needle-tools/shadergraph-markdown#refactoring-shader-properties";
