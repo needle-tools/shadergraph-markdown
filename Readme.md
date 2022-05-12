@@ -127,11 +127,51 @@ A context menu entry on every Shader Graph-based material allows to quickly swit
 
 ### Custom Drawers
 
-You can totally make your own and go crazy, the system is pretty extendable. The shipped ones (`MinMaxDrawer`, `VectorSlidersDrawer`, `GradientDrawer` etc.) should be a pretty good starting point. 
+You can totally make your own and go crazy, the system is pretty extendable. The shipped ones (`MinMaxDrawer`, `VectorSliderDrawer`, `GradientDrawer` etc.) should be a pretty good starting point. 
 When referencing a custom drawer, you can both use `!DRAWER DoSomethingDrawer` and `!DRAWER DoSomething`.  
-Drawers are ScriptableObjects and can thus have persistent settings.
+Drawers are ScriptableObjects and can thus have persistent settings.  
 
 Feel free to jump into our support discord and let us know if you need help or something isn't working as expected!
+
+#### MinMax
+`!DRAWER MinMax _MyVector`  
+Draws a min-max slider that goes from `_MyVector.z` to `_MyVector.w` with `min = _MyVector.x` and `max = _MyVector.y`.
+
+`!DRAWER MinMax _MyVector DisplayName`  
+Uses DisplayName as label for the property.  
+
+`!DRAWER MinMax _MyVector.x _MyVector.y`  
+Draws a min-max slider that goes from 0 to 1 with `min = _MyVector.x` and `max = _MyVector.y`.
+
+`!DRAWER MinMax _MyVector.x _MyVector.y DisplayName`  
+Uses DisplayName as label for the property. This is useful when using multiple parts of the same vector, e.g.
+```
+!DRAWER MinMax _MyVector.x _MyVector.y MetallicRemap
+!DRAWER MinMax _MyVector.z _MyVector.w SmoothnessRemap
+```
+
+#### VectorSlider
+
+`!DRAWER VectorSlider _MyVector (First Slider, Second Slider, Third Slider)`  
+Draws separate 0..1 sliders for the invidiual vector properties.  
+The display name will come from _MyVector.  
+
+VectorSlider drawers can be used with a shorthand (`&`):  
+`My Vector (First Slider, Second Slider, Third Slider) &`
+
+You can also use this to hide parts of a vector:  
+`My Vector (R, G)` will only draw R and G sliders and ignore the remaining ZW values.
+
+#### Gradient
+
+`!DRAWER Gradient _MyRampTextureSlot`  
+Draws a gradient field that automatically generates a gradient lookup texture whenever the value is changed.
+
+#### MultiProperty (experimental)
+
+`!DRAWER MultiProperty _Color1 _Color2 _Color3`
+Draws all properties in the same line.  
+This works pretty well for combining a couple of colors or numbers into inline drawers – please note that there's a good amount of combinations where this will fail, simply because there's not enough space on one line to hold the data you might want to show. 
 
 ## Attribute Reference
 1. `# Foldout`  
@@ -142,7 +182,7 @@ Feel free to jump into our support discord and let us know if you need help or s
    A regular label, not bold and with no extra space.   
    Useful before indented properties.
 1. Append `&&` to Texture properties
-    - this will render the _next_ property inline (most useful for Color or Float properties)
+    - this will render the _next_ property inline (most useful for Color or Float properties)<a href="#footnote-2"><sup>2</sup></a>  
     - if the next property is named `_MyTex_ST` (with `_MyTex` matching the texture property name), a tiling/offset field will be drawn
 3. Append `&` to Vector properties to have them display as 0..1 sliders
     - You can optionally specify the slider names: `Vector with Sliders (Amplitude, Frequency, Pattern) &`
@@ -156,17 +196,20 @@ Feel free to jump into our support discord and let us know if you need help or s
 8. `[Link Text](URL)`<a href="#footnote-1"><sup>1</sup></a>  
    A web link.  
 9. `!TOOLTIP Any text`</a>  
-   Tooltip for the following property.
+   Tooltip for the following property. `!TIP` has the same effect.
 10. `!REF KEYWORD_NAME`  
-  A reference to a bool/enum keyword to be drawn here - by default they end up at the end of your shader, with this you can control exactly where they go.
+  A reference to a bool/enum keyword to be drawn here - by default they end up at the end of your shader, with this you can control exactly where they go.  
+  You can also reference and thus edit a global keyword, but be aware that changing that value will change it, well, globally!  
 4. Conditional properties: Append `[SOME_KEYWORD]` to your foldouts, drawers or properties to only make them show up when the condition is met. Conditions can be
     - boolean keywords (make sure to include the `_ON` part)
+    - global keywords
     - enum keywords
     - texture properties (when the texture is not null)
     - boolean properties (when the bool is true)
     - float properties (compare using `<, >, ==` etc.)
     - color properties (max(r,g,b) is used as comparison value)
     - vector properties (vector length is used as comparison value)
+    Conditions always come _last_, even for inline properties.<a href="#footnote-2"><sup>2</sup></a>    
 7. `!DRAWER MyDrawer`  
   This will draw custom code, similar to a `PropertyDrawer` for the Inspector. Drawers are specified as subclasses of `MarkdownMaterialPropertyDrawer`.
     Examples:
@@ -176,7 +219,8 @@ Feel free to jump into our support discord and let us know if you need help or s
 8. `#`  (hash with nothing else)  
    End the current foldout. This is useful if you want to show properties outside a foldout, in the main area, again.
 
-<sup>[1](footnote-1)</sup>: Will not be shown if the previous property was conditionally excluded.
+<sup>[1](footnote-1)</sup>: Will not be shown if the previous property was conditionally excluded.  
+<sup>[2](footnote-2)</sup>: When you're using conditional properties as well, conditions come after inlining, and the next property needs to have the same condition. `_MyTex && [_SOME_CONDITION]` and on the next line `_MyColor [_SOME_CONDITION]`.  
 
 A lot of the above can be combined - so you can totally do `--!DRAWER MinMax _MinMaxVector.x _MinMaxVector.y [_OPTIONAL_KEYWORD && _Value > 0.5]` and that will give you a double-indented minmax slider that only shows up when _OPTIONAL_KEYWORD is set and `_Value` has a value of greater than 0.5.
 
