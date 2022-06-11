@@ -484,10 +484,22 @@ namespace Needle.ShaderGraphMarkdown
                     continue;
                 }
                 var text = File.ReadAllText(path);
+                
                 // TODO this will only properly work for ShaderGraph files right now, as these have "" around properties.
                 // The general case is more complex! We'd have to parse the file properly and check if something is "_VarName=" or "_VarName2" (the former would be replaced, the latter is a separate field)
-                text = text.Replace($"\"{data.sourceReferenceName}\"", $"\"{data.targetReferenceName}\"");
-                File.WriteAllText(path, text);
+                
+                var lines = File.ReadAllLines(path);
+                for (int l = 0; l < lines.Length; l++)
+                {
+                    var start = lines[l].TrimStart();
+                    if (start.StartsWith("\"m_DisplayName") || start.StartsWith("\"m_ShaderOutputName") || start.StartsWith("\"m_Name"))
+                    {
+                        continue;
+                    }
+
+                    lines[l] = lines[l].Replace($"\"{data.sourceReferenceName}\"", $"\"{data.targetReferenceName}\"");
+                }
+                File.WriteAllLines(path, lines);
             }
 
             foreach (var mat in materialsThatCanBeUpdated)
@@ -496,8 +508,9 @@ namespace Needle.ShaderGraphMarkdown
                 var lines = File.ReadAllLines(path);
                 for(int l = 0; l < lines.Length; l++)
                 {
+                    var start = lines[l].TrimStart();
                     // migrate shader keywords
-                    if (lines[l].StartsWith("m_ShaderKeywords: ", StringComparison.Ordinal))
+                    if (start.StartsWith("m_ShaderKeywords: ", StringComparison.Ordinal))
                     {
                         lines[l] = lines[l].Replace(" " + data.sourceReferenceName + " ", " " + data.targetReferenceName + " ");
                         lines[l] = lines[l].Replace(" " + data.sourceReferenceName + "\n", " " + data.targetReferenceName + "\n"); // last item
@@ -577,7 +590,7 @@ namespace Needle.ShaderGraphMarkdown
         {
             var strings = (groupByName ? objects.ToLookup(x => x.name).Select(x => $"{x.Key} [{x.Count()}]") : objects.Select(x => x.name)).OrderBy(x => x).ToList();
             
-            if (returnShortStringIfTooManyElements && strings.Count > 150)
+            if (returnShortStringIfTooManyElements && strings.Count > 50)
                 return singleLine ? " " : "\n" + "(too many items to display: " + strings.Count + ")";
             
             const int MaxPrettyObjectsCount = 40;
