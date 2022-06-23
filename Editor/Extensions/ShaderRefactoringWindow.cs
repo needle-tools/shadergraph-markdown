@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
+using UnityEditor.Presets;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -56,8 +57,14 @@ namespace Needle.ShaderGraphMarkdown
             {
                 shaderPath = shaderAssetPath,
                 shader = AssetDatabase.LoadAssetAtPath<Shader>(shaderAssetPath),
-                sourceReferenceName = inputReferenceName,
-                targetReferenceName = inputReferenceName,
+                refactoringData = new List<ShaderPropertyRefactoringData>()
+                {
+                    new ShaderPropertyRefactoringData()
+                    {
+                        sourceReferenceName = inputReferenceName, 
+                        targetReferenceName = inputReferenceName
+                    }
+                },
             };
             wnd.minSize = new Vector2(800, 200);
             wnd.Show();
@@ -120,17 +127,11 @@ namespace Needle.ShaderGraphMarkdown
             var splitter = new VisualElement() { style = { flexDirection = FlexDirection.Row } };
             var left = new VisualElement() { style = { width = Length.Percent(50), marginRight = 20 } };
             var right = new VisualElement() { style = { width = Length.Percent(50), marginLeft = 20  } };
-            var center = new VisualElement() { style = { position = Position.Absolute, left = Length.Percent(50), top = 22, fontSize = 16, marginLeft = -8 } };
-            center.Add(new Label("→"));
-            rootVisualElement.Add(splitter);
-            rootVisualElement.Add(center);
-            splitter.Add(left);
-            splitter.Add(right);
             
             var rightActionsContainer = new VisualElement();
             var leftActionsContainer = new VisualElement();
             
-            if(so == null || so.targetObject != this)
+            if (so == null || so.targetObject != this)
                 so = new SerializedObject(this);
             so.Update();
             var prop = so.FindProperty(nameof(data));
@@ -141,121 +142,179 @@ namespace Needle.ShaderGraphMarkdown
 //             propField.RegisterCallback<ChangeEvent<UnityEngine.Object>>(evt => UpdatePopupField());
 // #endif
             propField.Bind(so);
-            left.Add(propField);
+            var splitter2 = new VisualElement() { style = { flexDirection = FlexDirection.Row } };
+            splitter2.Add(propField);
             
-            // refactorArea.Add(popupFieldContainer);
-            left.Add(new StringPropertyFieldWithDropdown(this, so, prop.FindPropertyRelative(nameof(ShaderRefactoringData.sourceReferenceName)), "Source Property",(() =>
+            // List implementation
+            var list = new ListView(data.refactoringData, 30, 
+            makeItem: () =>
             {
-                var properties = new List<(string referenceName, string displayName)>();
-                if(data.shader)
+                var splitter = new VisualElement() { style = { flexDirection = FlexDirection.Row } };
+                var left = new VisualElement() { style = { width = Length.Percent(50), marginRight = 20 }, name = "LeftSection" };
+                var right = new VisualElement() { style = { width = Length.Percent(50), marginLeft = 20  }, name = "RightSection"  };
+                // left.Add(new TextField() { name = "From" });
+                // right.Add(new TextField() { name = "To" });
+                splitter.Add(left);
+                splitter.Add(right);
+                return splitter;
+            }, 
+            bindItem: (element, i) =>
+            {
+                var el = data.refactoringData[i];
+                if (el == null)
                 {
-                    var propertyCount = data.shader.GetPropertyCount();
-                    for (int i = 0; i < propertyCount; i++)
-                    {
-                        if(ShaderUtil.IsShaderPropertyHidden(data.shader, i)) continue;
-                        properties.Add((data.shader.GetPropertyName(i), data.shader.GetPropertyDescription(i)));
-                    }
+                    el = new ShaderPropertyRefactoringData() { };
+                    data.refactoringData[i] = el;
+                    so.Update();
                 }
-
-                var menu = new GenericMenu();
-
-                if (!data.shader)
-                    menu.AddItem(new GUIContent("Set a Shader to pick properties from"), false, null);
-                else 
-                    menu.AddItem(new GUIContent("Shader Properties"), false, null);
+                var from = element.Q<VisualElement>("LeftSection");
+                var to = element.Q<VisualElement>("RightSection");
+                var p1 = prop.FindPropertyRelative(nameof(ShaderRefactoringData.refactoringData)).GetArrayElementAtIndex(i);
                 
-                foreach(var tuple in properties)
+                var refactorFrom = new StringPropertyFieldWithDropdown(this, so, p1.FindPropertyRelative(nameof(ShaderPropertyRefactoringData.sourceReferenceName)), "Source Property",(() =>
                 {
-                    menu.AddItem(new GUIContent(tuple.referenceName + " (" + tuple.displayName + ")"), tuple.referenceName == data.sourceReferenceName, o =>
+                    var properties = new List<(string referenceName, string displayName)>();
+                    if(data.shader)
                     {
-                        var t = o as string;
-                        data.sourceReferenceName = t;
-                    }, tuple.referenceName);
-                }
-                menu.ShowAsContext();
-            }), () =>
-            {
-                leftActionsContainer.SetEnabled(
-                    !string.IsNullOrWhiteSpace(data.sourceReferenceName) && data.sourceReferenceName.Length >= 2);
-            }));
-            
-            var refactorTo = new StringPropertyFieldWithDropdown(this, so, prop.FindPropertyRelative(nameof(ShaderRefactoringData.targetReferenceName)), "Replace With", () =>
-            {
-                var shaderInfo = ShaderUtil.GetAllShaderInfo();
-                List<(string referenceName, string displayName)> properties = shaderInfo.SelectMany(x =>
+                        var propertyCount = data.shader.GetPropertyCount();
+                        for (int i = 0; i < propertyCount; i++)
+                        {
+                            if(ShaderUtil.IsShaderPropertyHidden(data.shader, i)) continue;
+                            properties.Add((data.shader.GetPropertyName(i), data.shader.GetPropertyDescription(i)));
+                        }
+                    }
+
+                    var menu = new GenericMenu();
+
+                    if (!data.shader)
+                        menu.AddItem(new GUIContent("Set a Shader to pick properties from"), false, null);
+                    else 
+                        menu.AddItem(new GUIContent("Shader Properties"), false, null);
+                
+                    foreach(var tuple in properties)
+                    {
+                        menu.AddItem(new GUIContent(tuple.referenceName + " (" + tuple.displayName + ")"), tuple.referenceName == el.sourceReferenceName, o =>
+                        {
+                            var t = o as string;
+                            el.sourceReferenceName = t;
+                        }, tuple.referenceName);
+                    }
+                    menu.ShowAsContext();
+                }), () =>
                 {
-                    // exclude hidden shaders?
-                    if (x.name.StartsWith("Hidden/")) return Enumerable.Empty<(string, string)>();
-                    
-                    var shader = Shader.Find(x.name);
-                    var propertyCount = ShaderUtil.GetPropertyCount(shader);
-                    return Enumerable.Range(0, propertyCount)
-                        .Where(idx => !ShaderUtil.IsShaderPropertyHidden(shader, idx))
+                    leftActionsContainer.SetEnabled(
+                        !string.IsNullOrWhiteSpace(el.sourceReferenceName) && el.sourceReferenceName.Length >= 2);
+                });
+                
+                var refactorTo = new StringPropertyFieldWithDropdown(this, so, p1.FindPropertyRelative(nameof(ShaderPropertyRefactoringData.targetReferenceName)), "Replace With", () =>
+                {
+                    var shaderInfo = ShaderUtil.GetAllShaderInfo();
+                    List<(string referenceName, string displayName)> properties = shaderInfo.SelectMany(x =>
+                    {
+                        // exclude hidden shaders?
+                        if (x.name.StartsWith("Hidden/")) return Enumerable.Empty<(string, string)>();
+                        
+                        var shader = Shader.Find(x.name);
+                        var propertyCount = ShaderUtil.GetPropertyCount(shader);
+                        return Enumerable.Range(0, propertyCount)
+                            .Where(idx => !ShaderUtil.IsShaderPropertyHidden(shader, idx))
+                            // .Where(x =>
+                            // {
+                            //     if (ShaderUtil.GetPropertyName(shader, x) == "_A")
+                            //     {
+                            //         Debug.Log("Shader has property " + "_A" + ": " + shader, shader);
+                            //     }
+                            //     return true;
+                            // })
+                            .Select(idx => (ShaderUtil.GetPropertyName(shader, idx), ShaderUtil.GetPropertyDescription(shader, idx)));
+                    })
+                        .ToLookup(x => x.Item1)
+                        .OrderByDescending(x => x.Count())
                         // .Where(x =>
                         // {
-                        //     if (ShaderUtil.GetPropertyName(shader, x) == "_A")
-                        //     {
-                        //         Debug.Log("Shader has property " + "_A" + ": " + shader, shader);
-                        //     }
+                        //     if(x.Count() > 10)
+                        //         Debug.Log("Property " + x.Key + " found in " + string.Join("\n", x));
                         //     return true;
                         // })
-                        .Select(idx => (ShaderUtil.GetPropertyName(shader, idx), ShaderUtil.GetPropertyDescription(shader, idx)));
-                })
-                    .ToLookup(x => x.Item1)
-                    .OrderByDescending(x => x.Count())
-                    // .Where(x =>
-                    // {
-                    //     if(x.Count() > 10)
-                    //         Debug.Log("Property " + x.Key + " found in " + string.Join("\n", x));
-                    //     return true;
-                    // })
-                    .Select(x => (x.Key, x.Count().ToString()))
-                    .ToList();
-                
-                const int ItemsInMainSection = 25;
-                var menu = new GenericMenu();
+                        .Select(x => (x.Key, x.Count().ToString()))
+                        .ToList();
+                    
+                    const int ItemsInMainSection = 25;
+                    var menu = new GenericMenu();
 
-                menu.AddItem(new GUIContent("Common Names"), false, null);
-                foreach (var tuple in commonNamePairs)
-                {
-                    menu.AddItem(new GUIContent(tuple.referenceName + " (" + tuple.displayName + ")"), tuple.referenceName == data.targetReferenceName, o =>
+                    menu.AddItem(new GUIContent("Common Names"), false, null);
+                    foreach (var tuple in commonNamePairs)
                     {
-                        var t = o as string;
-                        data.targetReferenceName = t;
-                    }, tuple.referenceName);
-                }
+                        menu.AddItem(new GUIContent(tuple.referenceName + " (" + tuple.displayName + ")"), tuple.referenceName == el.targetReferenceName, o =>
+                        {
+                            var t = o as string;
+                            el.targetReferenceName = t;
+                        }, tuple.referenceName);
+                    }
+                    
+                    menu.AddSeparator("");
+                    menu.AddItem(new GUIContent("Most Used Properties"), false, null);
+                    foreach(var tuple in properties.Take(ItemsInMainSection))
+                    {
+                        menu.AddItem(new GUIContent(tuple.referenceName + "\t(" + tuple.displayName + ")"), tuple.referenceName == el.targetReferenceName, o =>
+                        {
+                            var t = o as string;
+                            el.targetReferenceName = t;
+                        }, tuple.referenceName);
+                    }
+                    menu.AddSeparator("");
+                    menu.AddItem(new GUIContent("All Properties"), false, null);
+                    foreach (var tuple in properties.Select(x => (char.ToUpperInvariant(x.referenceName.TrimStart('_').FirstOrDefault()),x)).OrderBy(x => x.Item1))
+                    {
+                        menu.AddItem(new GUIContent("Alphabetic/" + tuple.Item1 + "/" + tuple.x.referenceName + "\t(" + tuple.x.displayName + ")"), tuple.x.referenceName == el.targetReferenceName, o =>
+                        {
+                            var t = o as string;
+                            el.targetReferenceName = t;
+                        }, tuple.x.referenceName);
+                    }
+                    menu.ShowAsContext();
+                }, () =>
+                {
+                    rightActionsContainer.SetEnabled(
+                        !string.IsNullOrWhiteSpace(el.sourceReferenceName) && el.sourceReferenceName.Length >= 2 &&
+                        !string.IsNullOrWhiteSpace(el.targetReferenceName) && el.targetReferenceName.Length >= 2);
+                });
                 
-                menu.AddSeparator("");
-                menu.AddItem(new GUIContent("Most Used Properties"), false, null);
-                foreach(var tuple in properties.Take(ItemsInMainSection))
-                {
-                    menu.AddItem(new GUIContent(tuple.referenceName + "\t(" + tuple.displayName + ")"), tuple.referenceName == data.targetReferenceName, o =>
-                    {
-                        var t = o as string;
-                        data.targetReferenceName = t;
-                    }, tuple.referenceName);
-                }
-                menu.AddSeparator("");
-                menu.AddItem(new GUIContent("All Properties"), false, null);
-                foreach (var tuple in properties.Select(x => (char.ToUpperInvariant(x.referenceName.TrimStart('_').FirstOrDefault()),x)).OrderBy(x => x.Item1))
-                {
-                    menu.AddItem(new GUIContent("Alphabetic/" + tuple.Item1 + "/" + tuple.x.referenceName + "\t(" + tuple.x.displayName + ")"), tuple.x.referenceName == data.targetReferenceName, o =>
-                    {
-                        var t = o as string;
-                        data.targetReferenceName = t;
-                    }, tuple.x.referenceName);
-                }
-                menu.ShowAsContext();
-            }, () =>
-            {
-                rightActionsContainer.SetEnabled(
-                    !string.IsNullOrWhiteSpace(data.sourceReferenceName) && data.sourceReferenceName.Length >= 2 &&
-                    !string.IsNullOrWhiteSpace(data.targetReferenceName) && data.targetReferenceName.Length >= 2);
+                from.Clear();
+                to.Clear();
+                from.Add(refactorFrom);
+                to.Add(refactorTo);
             });
+            list.showAddRemoveFooter = true;
+            list.showAlternatingRowBackgrounds = AlternatingRowBackground.None;
+            list.reorderMode = ListViewReorderMode.Simple;
+            list.showBoundCollectionSize = true;
+            list.showBorder = true;
+            list.headerTitle = "Properties";
+            list.Bind(so);
 
-            right.Add(new VisualElement() { style = { height = 20 }});
-            right.Add(refactorTo);
-
+            rootVisualElement.Add(new IMGUIContainer(() =>
+            {
+                var rect = new Rect(0, 0, 100, 20);
+                if (PresetSelector.DrawPresetButton(rect, new UnityEngine.Object[] { this }))
+                {
+                    Repaint();
+                    
+                    if (so == null || so.targetObject != this)
+                        so = new SerializedObject(this);
+                    so.Update();
+                    
+                    list.Bind(so);
+                }
+            }) { style = { height = 20 }});
+            
+            rootVisualElement.Add(splitter2);
+            
+            rootVisualElement.Add(list);
+            rootVisualElement.Add(splitter);
+            splitter.Add(left);
+            splitter.Add(right);
+            
             so.ApplyModifiedProperties();
 
             rightActionsContainer.Add(new Label("Replace") { style = { marginTop = 10, marginLeft = 3, unityFontStyleAndWeight = FontStyle.Bold}});
@@ -289,6 +348,14 @@ namespace Needle.ShaderGraphMarkdown
 
         private void FindAnimationClips()
         {
+            foreach (var dat in data.refactoringData)
+            {
+                FindAnimationClips(dat);
+            }
+        }
+
+        private void FindAnimationClips(ShaderPropertyRefactoringData data)
+        {
             var clipsThatNeedUpdating = new List<AnimationClip>();
             var allClips = GetAllAssets<AnimationClip>();
             var i = 0;
@@ -313,6 +380,14 @@ namespace Needle.ShaderGraphMarkdown
         }
 
         private void FindScripts()
+        {
+            foreach (var dat in data.refactoringData)
+            {
+                FindScripts(dat);
+            }
+        }
+
+        private void FindScripts(ShaderPropertyRefactoringData data)
         {
             // find all scripts
             var scripts = GetAllAssets<MonoScript>();
@@ -341,8 +416,16 @@ namespace Needle.ShaderGraphMarkdown
             }
             EditorUtility.ClearProgressBar();
         }
+
+        void FindMaterials()
+        {
+            foreach (var dat in data.refactoringData)
+            {
+                FindMaterials(dat);
+            }
+        }
         
-        private void FindMaterials()
+        private void FindMaterials(ShaderPropertyRefactoringData data)
         {
             var allMaterials = GetAllAssets<Material>();
             var i = 0;
@@ -364,6 +447,14 @@ namespace Needle.ShaderGraphMarkdown
         }
 
         private void FixMaterialsAndShaders()
+        {
+            foreach (var dat in data.refactoringData)
+            {
+                FixMaterialsAndShaders(data, dat);
+            }
+        }
+        
+        private void FixMaterialsAndShaders(ShaderRefactoringData refactoringData, ShaderPropertyRefactoringData data)
         {
             if (string.IsNullOrWhiteSpace(data.sourceReferenceName))
             {
@@ -394,7 +485,7 @@ namespace Needle.ShaderGraphMarkdown
                     var path = AssetDatabase.GetAssetPath(shader);
                     // if the shader field is set, we want to explicitly only upgrade that shader;
                     // if the shader field isn't set, we want to upgrade all shaders.
-                    var shouldUpdateThisShader = !data.shader || shader == data.shader;
+                    var shouldUpdateThisShader = !refactoringData.shader || shader == refactoringData.shader;
                     var couldUpdateThisShader = path.EndsWith(".shadergraph", StringComparison.OrdinalIgnoreCase) && AssetDatabase.IsOpenForEdit(path);
                     if (!couldUpdateThisShader)
                     {
@@ -530,6 +621,14 @@ namespace Needle.ShaderGraphMarkdown
 
         private void FixAnimationClips()
         {
+            foreach (var dat in data.refactoringData)
+            {
+                FixAnimationClips(dat);
+            }
+        }
+
+        private void FixAnimationClips(ShaderPropertyRefactoringData data)
+        {
             var clipsThatNeedUpdating = new List<AnimationClip>();
             var allClips = GetAllAssets<AnimationClip>();
             var i = 0;
@@ -606,6 +705,14 @@ namespace Needle.ShaderGraphMarkdown
     {
         public string shaderPath;
         public Shader shader;
+        public List<ShaderPropertyRefactoringData> refactoringData = new List<ShaderPropertyRefactoringData>();
+        // public string sourceReferenceName;
+        // public string targetReferenceName;
+    }
+
+    [Serializable]
+    public class ShaderPropertyRefactoringData
+    {
         public string sourceReferenceName;
         public string targetReferenceName;
     }
