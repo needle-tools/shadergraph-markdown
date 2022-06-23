@@ -153,14 +153,14 @@ namespace Needle.ShaderGraphMarkdown
             var list = new ListView(data.refactoringData, 24, 
             makeItem: () =>
             {
-                var splitter = new VisualElement() { style = { flexDirection = FlexDirection.Row } };
-                var left = new VisualElement() { style = { width = Length.Percent(50), marginRight = 20 }, name = "LeftSection" };
-                var right = new VisualElement() { style = { width = Length.Percent(50), marginLeft = 20  }, name = "RightSection"  };
+                var splitter3 = new VisualElement() { style = { flexDirection = FlexDirection.Row } };
+                var left2 = new VisualElement() { style = { width = Length.Percent(50), marginRight = 20 }, name = "LeftSection" };
+                var right2 = new VisualElement() { style = { width = Length.Percent(50), marginLeft = 20  }, name = "RightSection"  };
                 // left.Add(new TextField() { name = "From" });
                 // right.Add(new TextField() { name = "To" });
-                splitter.Add(left);
-                splitter.Add(right);
-                return splitter;
+                splitter3.Add(left2);
+                splitter3.Add(right2);
+                return splitter3;
             }, 
             bindItem: (element, i) =>
             {
@@ -181,10 +181,10 @@ namespace Needle.ShaderGraphMarkdown
                     if(data.shader)
                     {
                         var propertyCount = data.shader.GetPropertyCount();
-                        for (int i = 0; i < propertyCount; i++)
+                        for (int j = 0; j < propertyCount; j++)
                         {
-                            if(ShaderUtil.IsShaderPropertyHidden(data.shader, i)) continue;
-                            properties.Add((data.shader.GetPropertyName(i), data.shader.GetPropertyDescription(i)));
+                            if(ShaderUtil.IsShaderPropertyHidden(data.shader, j)) continue;
+                            properties.Add((data.shader.GetPropertyName(j), data.shader.GetPropertyDescription(j)));
                         }
                     }
 
@@ -289,11 +289,13 @@ namespace Needle.ShaderGraphMarkdown
                 from.Add(refactorFrom);
                 to.Add(refactorTo);
             }) { style = { flexShrink = 500 }};
+#if UNITY_2021_2_OR_NEWER
             list.showAddRemoveFooter = true;
             list.showAlternatingRowBackgrounds = AlternatingRowBackground.None;
             list.reorderMode = ListViewReorderMode.Simple;
             list.showBoundCollectionSize = true;
             list.showBorder = true;
+#endif
             list.Bind(so);
 
             var toolbar = new Toolbar();
@@ -304,7 +306,7 @@ namespace Needle.ShaderGraphMarkdown
             toolbar.Add(new ToolbarButton(() =>
             {
                 var str = GUIUtility.systemCopyBuffer;
-                var lines = str.Split("\n");
+                var lines = str.Split('\n');
                 data.refactoringData.Clear();
                 foreach (var t in lines)
                 {
@@ -313,7 +315,11 @@ namespace Needle.ShaderGraphMarkdown
                     data.refactoringData.Add(new ShaderPropertyRefactoringData() { sourceReferenceName = parts[0].Trim(), targetReferenceName = parts[1].Trim() });
                 }
                 so.Update();
+#if UNITY_2021_2_OR_NEWER
                 list.Rebuild();
+#else
+                list.Bind(so);
+#endif
             }) { text = "Paste Property List from Clipboard", tooltip = "Plain text with comma separation: \"source, target\""});
             rootVisualElement.Add(toolbar);
             
