@@ -2,6 +2,12 @@
 All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.5.1] 2022-06-24
+- fixed weird crash when text displayed in DialogueWindowComplex was too long
+- added: refactor multiple properties in one go to the PropertyRefactor window
+- added: copy list of properties to be refactored from/to clipboard as plain text format
+- added ability to refactor property names in scripts as well
+
 ## [1.5.0] 2022-05-12
 - fixed indenting issue with `VectorSlider` drawer
 - fixed property name warnings showing in SubGraphs
