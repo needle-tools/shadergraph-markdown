@@ -725,17 +725,24 @@ namespace Needle.ShaderGraphMarkdown
             foreach (var script in scripts)
             {
                 i++;
-                if(!AssetDatabase.IsOpenForEdit(script)) continue;
+                if (!AssetDatabase.IsOpenForEdit(script)) continue;
                 EditorUtility.DisplayProgressBar("Parsing Scripts", "Script " + i + "/" + count + ": " + script.name, (float)i / count);
-                var fullText = File.ReadAllLines(AssetDatabase.GetAssetPath(script));
-                for(int line = 0; line < fullText.Length; line++)
+                var path = AssetDatabase.GetAssetPath(script);
+                var fullText = File.ReadAllLines(path);
+                bool didAChange = false;
+                for (int line = 0; line < fullText.Length; line++)
                 {
                     var text = fullText[line];
-                    foreach(var data in data.refactoringData)
+                    foreach (var data in data.refactoringData)
                         text = text.Replace("\"" + data.sourceReferenceName + "\"", "\"" + data.targetReferenceName + "\"");
+                    if (fullText[line] != text)
+                        didAChange = true;
                     fullText[line] = text;
                 }
+                if (didAChange)
+                    File.WriteAllLines(path, fullText);
             }
+            AssetDatabase.Refresh();
             EditorUtility.ClearProgressBar();
         }
 
@@ -743,10 +750,10 @@ namespace Needle.ShaderGraphMarkdown
         {
             var strings = (groupByName ? objects.ToLookup(x => x.name).Select(x => $"{x.Key} [{x.Count()}]") : objects.Select(x => x.name)).OrderBy(x => x).ToList();
             
-            if (returnShortStringIfTooManyElements && strings.Count > 50)
+            if (returnShortStringIfTooManyElements && strings.Count > 5)
                 return singleLine ? " " : "\n" + "(too many items to display: " + strings.Count + ")";
             
-            const int MaxPrettyObjectsCount = 40;
+            const int MaxPrettyObjectsCount = 10;
             var makeSingleLineBecauseOfTooManyElements = returnShortStringIfTooManyElements && strings.Count > MaxPrettyObjectsCount;
             var firstSeparator = singleLine ? "" : makeSingleLineBecauseOfTooManyElements ? "\n" : "\n  · ";
             var separator = singleLine || makeSingleLineBecauseOfTooManyElements ? ", " : "\n  · ";
