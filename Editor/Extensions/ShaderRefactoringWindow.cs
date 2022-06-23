@@ -164,6 +164,9 @@ namespace Needle.ShaderGraphMarkdown
             }, 
             bindItem: (element, i) =>
             {
+                while (data.refactoringData.Count < i)
+                    data.refactoringData.Add(new ShaderPropertyRefactoringData());
+                
                 var el = data.refactoringData[i];
                 if (el == null)
                 {
