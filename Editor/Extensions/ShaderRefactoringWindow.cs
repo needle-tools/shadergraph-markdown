@@ -302,9 +302,13 @@ namespace Needle.ShaderGraphMarkdown
             var addRemove = new VisualElement() { style = { flexDirection = FlexDirection.Row } };
             addRemove.Add(new Button(() =>
             {
+#if UNITY_2020_1_OR_NEWER
                 var selected = list.selectedItems;
                 foreach (ShaderPropertyRefactoringData sel in selected)
                     data.refactoringData.Remove(sel);
+#else
+                data.refactoringData.Remove(list.selectedItem as ShaderPropertyRefactoringData);
+#endif
                 so.Update();
                 list.Bind(so);
                 list.Refresh();
