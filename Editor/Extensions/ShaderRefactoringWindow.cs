@@ -288,13 +288,31 @@ namespace Needle.ShaderGraphMarkdown
                 to.Clear();
                 from.Add(refactorFrom);
                 to.Add(refactorTo);
-            }) { style = { flexShrink = 500 }};
+            }) { style = { flexShrink = 500, flexGrow = 1 }};
 #if UNITY_2021_2_OR_NEWER
             list.showAddRemoveFooter = true;
             list.showAlternatingRowBackgrounds = AlternatingRowBackground.None;
             list.reorderMode = ListViewReorderMode.Simple;
             list.showBoundCollectionSize = true;
             list.showBorder = true;
+#else
+            var addRemove = new VisualElement() { style = { flexDirection = FlexDirection.Row } };
+            addRemove.Add(new Button(() =>
+            {
+                var selected = list.selectedItems;
+                foreach (ShaderPropertyRefactoringData sel in selected)
+                    data.refactoringData.Remove(sel);
+                so.Update();
+                list.Bind(so);
+                list.Refresh();
+            }) { text = "-" });
+            addRemove.Add(new Button(() =>
+            {
+                data.refactoringData.Add(new ShaderPropertyRefactoringData());
+                so.Update();
+                list.Bind(so);
+                list.Refresh();
+            }) { text = "+" });
 #endif
             list.Bind(so);
 
@@ -326,6 +344,10 @@ namespace Needle.ShaderGraphMarkdown
             rootVisualElement.Add(splitter2);
             
             rootVisualElement.Add(list);
+#if !UNITY_2021_2_OR_NEWER
+            rootVisualElement.Add(addRemove);
+#endif
+
             rootVisualElement.Add(splitter);
             splitter.Add(left);
             splitter.Add(right);
@@ -486,13 +508,13 @@ namespace Needle.ShaderGraphMarkdown
                 {   
                     if (string.IsNullOrWhiteSpace(data.sourceReferenceName))
                     {
-                        Debug.LogWarning("Can't refactor: source reference name is empty. Please select a source property.");
+                        // Debug.LogWarning("Can't refactor: source reference name is empty. Please select a source property.");
                         continue;
                     }
             
                     if (string.IsNullOrWhiteSpace(data.targetReferenceName))
                     {
-                        Debug.LogWarning("Can't refactor: target reference name is empty. Please set a new reference name for " + data.sourceReferenceName);
+                        // Debug.LogWarning("Can't refactor: target reference name is empty. Please set a new reference name for " + data.sourceReferenceName);
                         continue;
                     }
                     
