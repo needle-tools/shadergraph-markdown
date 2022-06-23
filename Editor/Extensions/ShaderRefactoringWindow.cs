@@ -288,7 +288,7 @@ namespace Needle.ShaderGraphMarkdown
                 to.Clear();
                 from.Add(refactorFrom);
                 to.Add(refactorTo);
-            });
+            }) { style = { flexShrink = 500 }};
             list.showAddRemoveFooter = true;
             list.showAlternatingRowBackgrounds = AlternatingRowBackground.None;
             list.reorderMode = ListViewReorderMode.Simple;
