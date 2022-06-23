@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEditor;
-using UnityEditor.Presets;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -86,7 +85,7 @@ namespace Needle.ShaderGraphMarkdown
             public StringPropertyFieldWithDropdown(ShaderRefactoringWindow window, SerializedObject so, SerializedProperty prop, string label, Action dropdownEvent, Action changeEvent)
             {
                 style.flexDirection = FlexDirection.Row;
-                var refactorFrom = new PropertyField(prop, label) { style = { flexGrow = 1, fontSize = 16 } };
+                var refactorFrom = new PropertyField(prop, label) { style = { flexGrow = 1 } };
 #if UNITY_2020_2_OR_NEWER
                 refactorFrom.RegisterValueChangeCallback(evt => changeEvent?.Invoke());
 #else
@@ -120,6 +119,11 @@ namespace Needle.ShaderGraphMarkdown
             ("_Metallic", "Metallic"),
             ("_Cutoff", "Alpha Cutoff"),
         };
+
+        private void AddPropertyItem()
+        {
+            
+        }
         
         private void CreateGUI()
         {
@@ -146,7 +150,7 @@ namespace Needle.ShaderGraphMarkdown
             splitter2.Add(propField);
             
             // List implementation
-            var list = new ListView(data.refactoringData, 30, 
+            var list = new ListView(data.refactoringData, 24, 
             makeItem: () =>
             {
                 var splitter = new VisualElement() { style = { flexDirection = FlexDirection.Row } };
@@ -290,23 +294,28 @@ namespace Needle.ShaderGraphMarkdown
             list.reorderMode = ListViewReorderMode.Simple;
             list.showBoundCollectionSize = true;
             list.showBorder = true;
-            list.headerTitle = "Properties";
             list.Bind(so);
 
-            rootVisualElement.Add(new IMGUIContainer(() =>
+            var toolbar = new Toolbar();
+            toolbar.Add(new ToolbarButton(() =>
             {
-                var rect = new Rect(0, 0, 100, 20);
-                if (PresetSelector.DrawPresetButton(rect, new UnityEngine.Object[] { this }))
+                GUIUtility.systemCopyBuffer = string.Join("\n", data.refactoringData.Select(x => x.sourceReferenceName + ", " + x.targetReferenceName));
+            }) { text = "Copy Property List to Clipboard" });
+            toolbar.Add(new ToolbarButton(() =>
+            {
+                var str = GUIUtility.systemCopyBuffer;
+                var lines = str.Split("\n");
+                data.refactoringData.Clear();
+                foreach (var t in lines)
                 {
-                    Repaint();
-                    
-                    if (so == null || so.targetObject != this)
-                        so = new SerializedObject(this);
-                    so.Update();
-                    
-                    list.Bind(so);
+                    var parts = t.Split(new char[] { ',', ';' });
+                    if (parts.Length != 2) continue;
+                    data.refactoringData.Add(new ShaderPropertyRefactoringData() { sourceReferenceName = parts[0].Trim(), targetReferenceName = parts[1].Trim() });
                 }
-            }) { style = { height = 20 }});
+                so.Update();
+                list.Rebuild();
+            }) { text = "Paste Property List from Clipboard", tooltip = "Plain text with comma separation: \"source, target\""});
+            rootVisualElement.Add(toolbar);
             
             rootVisualElement.Add(splitter2);
             
@@ -322,9 +331,11 @@ namespace Needle.ShaderGraphMarkdown
             {
                 FixMaterialsAndShaders();
                 FixAnimationClips();
+                FixScripts();
             }) { text = "Replace all Usages", tooltip = "Replace in materials, shaders and animation clips", style = { height = 30 } });
             rightActionsContainer.Add(new Button(FixMaterialsAndShaders) { text = "Replace in materials and shaders" });
             rightActionsContainer.Add(new Button(FixAnimationClips) { text = "Replace in animations" });
+            rightActionsContainer.Add(new Button(FixScripts) { text = "Replace in scripts" });
 #if HAVE_UITOOLKIT_HELPBOX
             rightActionsContainer.Add(new HelpBox("Please make sure to have a backup before running these operations!", HelpBoxMessageType.Warning));
 #endif
@@ -448,26 +459,11 @@ namespace Needle.ShaderGraphMarkdown
 
         private void FixMaterialsAndShaders()
         {
-            foreach (var dat in data.refactoringData)
-            {
-                FixMaterialsAndShaders(data, dat);
-            }
+            FixMaterialsAndShaders(data.shader, data.refactoringData);
         }
         
-        private void FixMaterialsAndShaders(ShaderRefactoringData refactoringData, ShaderPropertyRefactoringData data)
+        private void FixMaterialsAndShaders(Shader sourceShader, List<ShaderPropertyRefactoringData> propertyList)
         {
-            if (string.IsNullOrWhiteSpace(data.sourceReferenceName))
-            {
-                Debug.LogError("Can't refactor: source reference name is empty. Please select a source property.");
-                return;
-            }
-            
-            if (string.IsNullOrWhiteSpace(data.targetReferenceName))
-            {
-                Debug.LogError("Can't refactor: target reference name is empty. Please set a new reference name for " + data.sourceReferenceName);
-                return;
-            }
-            
             var allShaders = GetAllAssets<Shader>();
             var shadersThatNeedUpdating = new List<Shader>();
             var shadersThatCannotBeUpdated = new List<Shader>();
@@ -479,27 +475,43 @@ namespace Needle.ShaderGraphMarkdown
                 i++;
                 EditorUtility.DisplayProgressBar("Parsing Shader", "Shader " + i + "/" + count + ": " + shader.name, (float)i / count);
                 if(!shader) continue;
-                var propertyIndex = shader.FindPropertyIndex(data.sourceReferenceName);
-                if (propertyIndex >= 0)
-                {
-                    var path = AssetDatabase.GetAssetPath(shader);
-                    // if the shader field is set, we want to explicitly only upgrade that shader;
-                    // if the shader field isn't set, we want to upgrade all shaders.
-                    var shouldUpdateThisShader = !refactoringData.shader || shader == refactoringData.shader;
-                    var couldUpdateThisShader = path.EndsWith(".shadergraph", StringComparison.OrdinalIgnoreCase) && AssetDatabase.IsOpenForEdit(path);
-                    if (!couldUpdateThisShader)
+                
+                foreach(var data in propertyList)
+                {   
+                    if (string.IsNullOrWhiteSpace(data.sourceReferenceName))
                     {
-                        shadersThatCannotBeUpdated.Add(shader);
+                        Debug.LogWarning("Can't refactor: source reference name is empty. Please select a source property.");
+                        continue;
                     }
-                    else if (shouldUpdateThisShader)
+            
+                    if (string.IsNullOrWhiteSpace(data.targetReferenceName))
                     {
-                        // Debug.Log($"Shader has property {data.sourceReferenceName} and will be updated: {shader.name}", shader);
-                        shadersThatNeedUpdating.Add(shader);                            
+                        Debug.LogWarning("Can't refactor: target reference name is empty. Please set a new reference name for " + data.sourceReferenceName);
+                        continue;
                     }
-                    else
+                    
+                    var propertyIndex = shader.FindPropertyIndex(data.sourceReferenceName);
+                    if (propertyIndex >= 0)
                     {
-                        // Debug.LogWarning($"Shader has property {data.sourceReferenceName} but will NOT be updated: {shader.name}. Clear the shader field if you want to update all shaders with this property.", shader);
-                        shadersThatWouldNeedUpdatingButAreExcluded.Add(shader);
+                        var path = AssetDatabase.GetAssetPath(shader);
+                        // if the shader field is set, we want to explicitly only upgrade that shader;
+                        // if the shader field isn't set, we want to upgrade all shaders.
+                        var shouldUpdateThisShader = !sourceShader || shader == sourceShader;
+                        var couldUpdateThisShader = path.EndsWith(".shadergraph", StringComparison.OrdinalIgnoreCase) && AssetDatabase.IsOpenForEdit(path);
+                        if (!couldUpdateThisShader)
+                        {
+                            shadersThatCannotBeUpdated.Add(shader);
+                        }
+                        else if (shouldUpdateThisShader)
+                        {
+                            // Debug.Log($"Shader has property {data.sourceReferenceName} and will be updated: {shader.name}", shader);
+                            shadersThatNeedUpdating.Add(shader);                            
+                        }
+                        else
+                        {
+                            // Debug.LogWarning($"Shader has property {data.sourceReferenceName} but will NOT be updated: {shader.name}. Clear the shader field if you want to update all shaders with this property.", shader);
+                            shadersThatWouldNeedUpdatingButAreExcluded.Add(shader);
+                        }
                     }
                 }
             }
@@ -507,7 +519,7 @@ namespace Needle.ShaderGraphMarkdown
 
             if(!shadersThatNeedUpdating.Any() && !shadersThatWouldNeedUpdatingButAreExcluded.Any() && !shadersThatCannotBeUpdated.Any())
             {
-                Debug.Log($"Property {data.sourceReferenceName} hasn't been found in any shaders. No changes necessary.");
+                Debug.Log($"Properties haven't been found in any shaders. No changes necessary.");
                 return;
             }
 
@@ -515,7 +527,7 @@ namespace Needle.ShaderGraphMarkdown
             {
                 var selectedShadersNeedUpdating = shadersThatNeedUpdating.Any();
                 switch (EditorUtility.DisplayDialogComplex(
-                    "Property " + data.sourceReferenceName + " also exists in other shaders!",
+                    "Properties also exist in other shaders!",
                     (selectedShadersNeedUpdating ? "This property exists in this shader that is selected for updating:" + ObjectNames(shadersThatNeedUpdating) : "This property doesn't exist in the selected shader(s).") +
                     "\n\n" +
                     "but also exists in these shaders that won't be updated because they're not selected:" + ObjectNames(shadersThatWouldNeedUpdatingButAreExcluded) +
@@ -557,7 +569,7 @@ namespace Needle.ShaderGraphMarkdown
             }
 
             if (!EditorUtility.DisplayDialog(
-                "Refactor shader property " + data.sourceReferenceName + " → " + data.targetReferenceName,
+                "Refactor shader properties",
                 "Shaders that will be changed [" + shadersThatNeedUpdating.Count + "]:" + ObjectNames(shadersThatNeedUpdating) + "\n\n" +
                 "Materials that will be changed [" + materialsThatCanBeUpdated.Count + "]:" + ObjectNames(materialsThatCanBeUpdated) + "\n\n" +
                 (shadersThatCannotBeUpdated.Any() ? ("Shaders that can't be changed [" + shadersThatCannotBeUpdated.Count + "]:" + ObjectNames(shadersThatCannotBeUpdated) + "\n\n") : "") +
@@ -588,7 +600,16 @@ namespace Needle.ShaderGraphMarkdown
                         continue;
                     }
 
-                    lines[l] = lines[l].Replace($"\"{data.sourceReferenceName}\"", $"\"{data.targetReferenceName}\"");
+                    foreach (var data in propertyList)
+                    {
+                        if (string.IsNullOrWhiteSpace(data.sourceReferenceName))
+                            continue;
+            
+                        if (string.IsNullOrWhiteSpace(data.targetReferenceName))
+                            continue;
+                        
+                        lines[l] = lines[l].Replace($"\"{data.sourceReferenceName}\"", $"\"{data.targetReferenceName}\"");
+                    }
                 }
                 File.WriteAllLines(path, lines);
             }
@@ -600,16 +621,26 @@ namespace Needle.ShaderGraphMarkdown
                 for(int l = 0; l < lines.Length; l++)
                 {
                     var start = lines[l].TrimStart();
-                    // migrate shader keywords
-                    if (start.StartsWith("m_ShaderKeywords: ", StringComparison.Ordinal))
+
+                    foreach (var data in propertyList)
                     {
-                        lines[l] = lines[l].Replace(" " + data.sourceReferenceName + " ", " " + data.targetReferenceName + " ");
-                        lines[l] = lines[l].Replace(" " + data.sourceReferenceName + "\n", " " + data.targetReferenceName + "\n"); // last item
-                    }
-                    else
-                    {
-                        // we're directly operating on the serialized YAML here, what could possibly go wrong
-                        lines[l] = lines[l].Replace("- " + data.sourceReferenceName + ":", "- " + data.targetReferenceName + ":");
+                        if (string.IsNullOrWhiteSpace(data.sourceReferenceName))
+                            continue;
+            
+                        if (string.IsNullOrWhiteSpace(data.targetReferenceName))
+                            continue;
+                        
+                        // migrate shader keywords
+                        if (start.StartsWith("m_ShaderKeywords: ", StringComparison.Ordinal))
+                        {
+                            lines[l] = lines[l].Replace(" " + data.sourceReferenceName + " ", " " + data.targetReferenceName + " ");
+                            lines[l] = lines[l].Replace(" " + data.sourceReferenceName + "\n", " " + data.targetReferenceName + "\n"); // last item
+                        }
+                        else
+                        {
+                            // we're directly operating on the serialized YAML here, what could possibly go wrong
+                            lines[l] = lines[l].Replace("- " + data.sourceReferenceName + ":", "- " + data.targetReferenceName + ":");
+                        }
                     }
                 }
                 File.WriteAllLines(path, lines);
@@ -685,6 +716,29 @@ namespace Needle.ShaderGraphMarkdown
             }
         }
         
+        private void FixScripts()
+        {
+            // find all scripts
+            var scripts = GetAllAssets<MonoScript>();
+            var i = 0;
+            var count = scripts.Count;
+            foreach (var script in scripts)
+            {
+                i++;
+                if(!AssetDatabase.IsOpenForEdit(script)) continue;
+                EditorUtility.DisplayProgressBar("Parsing Scripts", "Script " + i + "/" + count + ": " + script.name, (float)i / count);
+                var fullText = File.ReadAllLines(AssetDatabase.GetAssetPath(script));
+                for(int line = 0; line < fullText.Length; line++)
+                {
+                    var text = fullText[line];
+                    foreach(var data in data.refactoringData)
+                        text = text.Replace("\"" + data.sourceReferenceName + "\"", "\"" + data.targetReferenceName + "\"");
+                    fullText[line] = text;
+                }
+            }
+            EditorUtility.ClearProgressBar();
+        }
+
         private static string ObjectNames<T>(IReadOnlyCollection<T> objects, bool singleLine = false, bool returnShortStringIfTooManyElements = true, bool groupByName = false) where T : UnityEngine.Object
         {
             var strings = (groupByName ? objects.ToLookup(x => x.name).Select(x => $"{x.Key} [{x.Count()}]") : objects.Select(x => x.name)).OrderBy(x => x).ToList();
