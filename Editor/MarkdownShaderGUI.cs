@@ -686,7 +686,7 @@ namespace Needle
                     
                     // if the material exposes _EMISSION as user-changeable property, we only want to draw the lightmap settings when its on.
                     // otherwise, we always draw it when the known emission properties exist
-                    if (targetMat.HasProperty(EmissionColorPropertyName) || targetMat.HasProperty(EmissionMapPropertyName))
+                    if (targetMat.HasProperty(EmissionColorPropertyName) || targetMat.HasProperty(EmissionMapPropertyName) || targetMat.HasProperty(EmissionColorPropertyName2) || targetMat.HasProperty(EmissionMapPropertyName2))
                         if (!(targetMat.HasProperty(EmissionKeyword) || targetMat.HasProperty("_Emission")) || targetMat.IsKeywordEnabled(EmissionKeyword))
                             materialEditor.LightmapEmissionFlagsProperty(0, true, true);
                     
@@ -1275,6 +1275,8 @@ namespace Needle
         private const string EmissionKeyword = "_EMISSION";
         private const string EmissionColorPropertyName = "_EmissionColor";
         private const string EmissionMapPropertyName = "_EmissionMap";
+        private const string EmissionColorPropertyName2 = "emissiveFactor";
+        private const string EmissionMapPropertyName2 = "emissiveTexture";
 
         private bool ShowDevelopmentOptions
         {
@@ -1332,7 +1334,7 @@ namespace Needle
 #endif
             // if the material has an emission keyword, this is explicitly controlled;
             // if it doesn't, GI only works when _EmissionColor is present
-            if (!(material.HasProperty(EmissionKeyword) || material.HasProperty("_Emission")) && material.HasProperty(EmissionColorPropertyName))
+            if (!(material.HasProperty(EmissionKeyword) || material.HasProperty("_Emission")) && (material.HasProperty(EmissionColorPropertyName) || material.HasProperty(EmissionColorPropertyName2)))
             {
                 MaterialEditor.FixupEmissiveFlag(material);
                 bool state = (material.globalIlluminationFlags & MaterialGlobalIlluminationFlags.EmissiveIsBlack) == MaterialGlobalIlluminationFlags.None;

@@ -394,13 +394,10 @@ namespace Needle.ShaderGraphMarkdown
 
         private void FindAnimationClips()
         {
-            foreach (var dat in data.refactoringData)
-            {
-                FindAnimationClips(dat);
-            }
+            FindAnimationClips(data.refactoringData);
         }
 
-        private void FindAnimationClips(ShaderPropertyRefactoringData data)
+        private void FindAnimationClips(List<ShaderPropertyRefactoringData> dat)
         {
             var clipsThatNeedUpdating = new List<AnimationClip>();
             var allClips = GetAllAssets<AnimationClip>();
@@ -412,13 +409,16 @@ namespace Needle.ShaderGraphMarkdown
                 EditorUtility.DisplayProgressBar("Parsing AnimationClips", "Clip " + i + "/" + count + ": " + clip.name, (float)i / count);
                 foreach (var binding in AnimationUtility.GetCurveBindings(clip))
                 {
-                    if (binding.propertyName == "material." + data.sourceReferenceName) // TODO what if the animated material is not at index 0?
+                    foreach (var data in dat)
                     {
-                        if(clipsThatNeedUpdating.Contains(clip))
-                            continue;
-                            
-                        clipsThatNeedUpdating.Add(clip);
-                        Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, clip, $"AnimationClip targets this shader property: {clip.name} ({binding.path})");
+                        if (binding.propertyName.StartsWith("material." + data.sourceReferenceName, StringComparison.Ordinal)) // TODO what if the animated material is not at index 0?
+                        {
+                            if(clipsThatNeedUpdating.Contains(clip))
+                                continue;
+                                
+                            clipsThatNeedUpdating.Add(clip);
+                            Debug.LogFormat(LogType.Log, LogOption.NoStacktrace, clip, $"AnimationClip targets this shader property: {clip.name} ({binding.path})");
+                        }
                     }
                 }   
             }
@@ -687,13 +687,10 @@ namespace Needle.ShaderGraphMarkdown
 
         private void FixAnimationClips()
         {
-            foreach (var dat in data.refactoringData)
-            {
-                FixAnimationClips(dat);
-            }
+            FixAnimationClips(data.refactoringData);
         }
 
-        private void FixAnimationClips(ShaderPropertyRefactoringData data)
+        private void FixAnimationClips(List<ShaderPropertyRefactoringData> dat)
         {
             var clipsThatNeedUpdating = new List<AnimationClip>();
             var allClips = GetAllAssets<AnimationClip>();
@@ -705,12 +702,15 @@ namespace Needle.ShaderGraphMarkdown
                 EditorUtility.DisplayProgressBar("Parsing AnimationClips", "Clip " + i + "/" + count + ": " + clip.name, (float)i / count);
                 foreach (var binding in AnimationUtility.GetCurveBindings(clip))
                 {
-                    if (binding.propertyName == "material." + data.sourceReferenceName) // TODO what if the animated material is not at index 0?
+                    foreach(var data in dat)
                     {
-                        if(clipsThatNeedUpdating.Contains(clip))
-                            continue;
-                            
-                        clipsThatNeedUpdating.Add(clip);
+                        if (binding.propertyName.StartsWith("material." + data.sourceReferenceName, StringComparison.Ordinal)) // TODO what if the animated material is not at index 0?
+                        {
+                            if(clipsThatNeedUpdating.Contains(clip))
+                                continue;
+                                
+                            clipsThatNeedUpdating.Add(clip);
+                        }
                     }
                 }   
             }
@@ -723,14 +723,18 @@ namespace Needle.ShaderGraphMarkdown
                 for(int j = 0; j < currentBindings.Length; j++)
                 {
                     var binding = currentBindings[j];
-                    if (binding.propertyName == "material." + data.sourceReferenceName) // TODO what if the animated material is not at index 0?
+
+                    foreach (var data in dat)
                     {
-                        var curve = AnimationUtility.GetEditorCurve(clip, binding);
-                        AnimationUtility.SetEditorCurve(clip, binding, null);
-                        binding.propertyName = "material." + data.targetReferenceName;
-                        AnimationUtility.SetEditorCurve(clip, binding, curve);
+                        if (binding.propertyName.StartsWith("material." + data.sourceReferenceName, StringComparison.Ordinal)) // TODO what if the animated material is not at index 0?
+                        {
+                            var curve = AnimationUtility.GetEditorCurve(clip, binding);
+                            AnimationUtility.SetEditorCurve(clip, binding, null);
+                            binding.propertyName = binding.propertyName.Replace("material." + data.sourceReferenceName, "material." + data.targetReferenceName);
+                            AnimationUtility.SetEditorCurve(clip, binding, curve);
+                        }
                     }
-                    
+
                     // AnimationUtility.SetEditorCurve(clip, binding, null);
                 }
 
