@@ -1351,7 +1351,11 @@ namespace Needle
         internal static bool DrawHeaderFoldout(GUIContent title, bool state, bool isBoxed = false, Func<bool> hasMoreOptions = null, Action toggleMoreOptions = null, string documentationURL = "", Action<Vector2> contextAction = null)
         {
 #if HAVE_HEADER_FOLDOUT_WITH_DOCS
+#if UNITY_2023_1_OR_NEWER
+            return CoreEditorUtils.DrawHeaderFoldout(title, state, isBoxed, hasMoreOptions, toggleMoreOptions, false, documentationURL, contextAction);
+#else
             return CoreEditorUtils.DrawHeaderFoldout(title, state, isBoxed, hasMoreOptions, toggleMoreOptions, documentationURL, contextAction);
+#endif
 #else
             return CoreEditorUtilsShim.DrawHeaderFoldout(title, state, isBoxed, hasMoreOptions, toggleMoreOptions, documentationURL, contextAction);
 #endif
