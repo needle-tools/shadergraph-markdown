@@ -1,11 +1,13 @@
 # Shader Graph Markdown
 
-![Unity Version Compatibility](https://img.shields.io/badge/Unity-2019.4%20%E2%80%94%202022.1-brightgreen) 
+![Unity Version Compatibility](https://img.shields.io/badge/Unity-2019.4%20%E2%80%94%202023.3-brightgreen) 
 
 ## License
 
 Shader Graph Markdown is [available on the Asset Store](http://u3d.as/2was) for commercial use.  
-Other versions are only allowed to be used non-commercially and only if you're entitled to use Unity Personal (the same restrictions apply).
+Other versions (git, OpenUPM) are only allowed to be used **non-commercially** and **only if you're entitled to use Unity Personal** (the same restrictions apply).  
+
+For all other uses, **please buy a commercial license** to ensure continued support! Thank you.
 
 ## What's this?
 
@@ -32,6 +34,11 @@ The Shader Graph UI and blackboard are modified to render all "markdown dummy pr
 ## Quick Start
 Install via OpenUPM: https://openupm.com/packages/com.needle.shadergraph-markdown/
 
+The ⚡ **️Fast Way** to switch your Shader Graph to Markdown:
+  1. Select a material using your shader
+  2. Right-click the material header and select `Toggle ShaderGraph Markdown`.
+
+The 🐌 **Slow Way** to switch your Shader Graph to Markdown:
 1. In Shader Graph, tell your shader to use the custom ShaderGUI `Needle.MarkdownShaderGUI`.  
 
 ![ShaderGUI 10.x](https://github.com/needle-tools/shadergraph-markdown/wiki/Images/06_ShaderGUI_URP10.png)  
