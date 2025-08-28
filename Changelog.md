@@ -2,6 +2,9 @@
 All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/) and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.5.2] 2025-08-28
+- fixed: Unity 6000.2+ API changes
+
 ## [1.5.1] 2022-06-24
 - fixed weird crash when text displayed in DialogueWindowComplex was too long
 - added: refactor multiple properties in one go to the PropertyRefactor window
