@@ -44,7 +44,11 @@ namespace Needle.ShaderGraphMarkdown
                 {
                     throw new System.ArgumentException("Parameter " + i + " is invalid: " + parameters.Get(i, ""));
                 }
+#if UNITY_6000_2_OR_NEWER
+                if (param.propertyType == UnityEngine.Rendering.ShaderPropertyType.Texture)
+#else
                 if (param.type == MaterialProperty.PropType.Texture)
+#endif
                 {
                     var miniTexRect = partRect;
                     miniTexRect.width += 100;

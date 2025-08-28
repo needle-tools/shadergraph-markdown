@@ -8,6 +8,39 @@ namespace Needle.ShaderGraphMarkdown
 {
     public class MinMaxDrawer : MarkdownMaterialPropertyDrawer
     {
+#if UNITY_6000_2_OR_NEWER
+        float GetValue(MaterialProperty property, char swizzle)
+        {
+            switch (property.propertyType)
+            {
+                case UnityEngine.Rendering.ShaderPropertyType.Float:
+                case UnityEngine.Rendering.ShaderPropertyType.Range:
+                    return property.floatValue;
+                case UnityEngine.Rendering.ShaderPropertyType.Vector:
+                    return GetValue(property.vectorValue, swizzle);
+                default:
+                    return 0;
+            }
+        }
+
+        void SetValue(MaterialProperty property, char swizzle, float value)
+        {
+            switch (property.propertyType)
+            {
+                case UnityEngine.Rendering.ShaderPropertyType.Float:
+                case UnityEngine.Rendering.ShaderPropertyType.Range:
+                    property.floatValue = value;
+                    break;
+                case UnityEngine.Rendering.ShaderPropertyType.Vector:
+                    var val = property.vectorValue;
+                    SetValue(ref val, swizzle, value);
+                    property.vectorValue = val;
+                    break;
+                default:
+                    return;
+            }
+        }
+#else
         float GetValue(MaterialProperty property, char swizzle)
         {
             switch (property.type)
@@ -39,6 +72,8 @@ namespace Needle.ShaderGraphMarkdown
                     return;
             }
         }
+
+#endif
         
         float GetValue(Vector4 vector, char swizzle)
         {
@@ -112,7 +147,11 @@ namespace Needle.ShaderGraphMarkdown
                 // parameter 1 must be a vector, no swizzles
                 // we're using zw as limits
                 var vectorProp = properties.FirstOrDefault(x => x.name.Equals(parameterName1, StringComparison.Ordinal));
+#if UNITY_6000_2_OR_NEWER                
+                if (vectorProp == null || vectorProp.propertyType != UnityEngine.Rendering.ShaderPropertyType.Vector)
+#else
                 if (vectorProp == null || vectorProp.type != MaterialProperty.PropType.Vector)
+#endif
                 {
                     if(!isInline)
                         EditorGUILayout.HelpBox(nameof(MinMaxDrawer) + ": Parameter is not a Vector property (" + parameterName1 + ")", MessageType.Error);
@@ -202,7 +241,11 @@ namespace Needle.ShaderGraphMarkdown
             if (parameterName1 != null && parameterName2 == null)
             {
                 var vectorProp = properties.FirstOrDefault(x => x.name.Equals(parameterName1, StringComparison.Ordinal));
+#if UNITY_6000_2_OR_NEWER
+                if (vectorProp == null || vectorProp.propertyType != UnityEngine.Rendering.ShaderPropertyType.Vector)
+#else
                 if (vectorProp == null || vectorProp.type != MaterialProperty.PropType.Vector)
+#endif
                     return null;
 
                 return new [] { vectorProp };

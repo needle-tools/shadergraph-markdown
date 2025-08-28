@@ -19,13 +19,26 @@ namespace Needle.ShaderGraphMarkdown
             if (vectorProperty == null)
                 throw new System.ArgumentNullException("No property named " + parameters.Get(0, ""));
 
+#if UNITY_6000_2_OR_NEWER
+            switch (vectorProperty.propertyType)
+#else
             switch (vectorProperty.type)
+#endif
             {
+#if UNITY_6000_2_OR_NEWER
+                case UnityEngine.Rendering.ShaderPropertyType.Vector:
+#else
                 case MaterialProperty.PropType.Vector:
+#endif
                     OnDrawerGUI(materialEditor, vectorProperty, new GUIContent(parameters.ShowPropertyNames ? vectorProperty.name : vectorProperty.displayName, parameters.Tooltip));
                     break;
+#if UNITY_6000_2_OR_NEWER
+                case UnityEngine.Rendering.ShaderPropertyType.Float:
+                case UnityEngine.Rendering.ShaderPropertyType.Range:
+#else
                 case MaterialProperty.PropType.Float:
                 case MaterialProperty.PropType.Range:
+#endif
                     EditorGUILayout.LabelField("Vector Group");
                     EditorGUI.indentLevel++;
                     for (int i = 0; i < parameters.Count; i++)
@@ -133,12 +146,25 @@ namespace Needle.ShaderGraphMarkdown
             var vectorProperty = parameters.Get(0, properties);
             if (vectorProperty == null) return null;
 
+#if UNITY_6000_2_OR_NEWER
+            switch (vectorProperty.propertyType)
+#else
             switch (vectorProperty.type)
+#endif
             {
+#if UNITY_6000_2_OR_NEWER
+                case UnityEngine.Rendering.ShaderPropertyType.Vector:
+#else
                 case MaterialProperty.PropType.Vector:
+#endif
                     return new[] { vectorProperty };
+#if UNITY_6000_2_OR_NEWER
+                case UnityEngine.Rendering.ShaderPropertyType.Float:
+                case UnityEngine.Rendering.ShaderPropertyType.Range:
+#else
                 case MaterialProperty.PropType.Float:
                 case MaterialProperty.PropType.Range:
+#endif
                     var parameterList = new List<MaterialProperty>();
                     for (int i = 0; i < parameters.Count; i++)
                     {

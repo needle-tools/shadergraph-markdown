@@ -44,7 +44,11 @@ namespace Needle.ShaderGraphMarkdown
                 lastInlineTextureRect.x += EditorGUIUtility.labelWidth;
                 lastInlineTextureRect.width -= EditorGUIUtility.labelWidth;
             }
+#if UNITY_6000_2_OR_NEWER
+            else if(extraProperty.propertyType == UnityEngine.Rendering.ShaderPropertyType.Vector && (extraProperty.name.Equals(textureProperty.name + "_ST", StringComparison.Ordinal)))
+#else
             else if(extraProperty.type == MaterialProperty.PropType.Vector && (extraProperty.name.Equals(textureProperty.name + "_ST", StringComparison.Ordinal)))
+#endif
             {
                 if (_GetPropertyRect == null)
                 {
@@ -70,7 +74,12 @@ namespace Needle.ShaderGraphMarkdown
             }
             
             // workaround for Unity being weird
-            if(extraProperty != null && extraProperty.type == MaterialProperty.PropType.Texture) {
+#if UNITY_6000_2_OR_NEWER
+            if(extraProperty != null && extraProperty.propertyType == UnityEngine.Rendering.ShaderPropertyType.Texture)
+#else
+            if(extraProperty != null && extraProperty.type == MaterialProperty.PropType.Texture)
+#endif
+            {
                 EditorGUILayout.Space(45);
             }
         }

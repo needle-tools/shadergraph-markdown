@@ -279,7 +279,11 @@ namespace Needle
                     hashCode = (hashCode * 397) ^ prop.name.GetHashCode();
                     hashCode = (hashCode * 397) ^ prop.displayName.GetHashCode();
                     hashCode = (hashCode * 397) ^ prop.rangeLimits.GetHashCode();
+#if UNITY_6000_2_OR_NEWER
+                    hashCode = (hashCode * 397) ^ prop.propertyFlags.GetHashCode();
+#else
                     hashCode = (hashCode * 397) ^ prop.flags.GetHashCode();
+#endif
                     
                     // need to hash values as well since it seems MaterialProperties are changing whenever a value is changed/undone etc.
                     hashCode = (hashCode * 397) ^ prop.floatValue.GetHashCode();
@@ -602,7 +606,11 @@ namespace Needle
                                 List<MaterialPropertyDrawer> decoratorDrawers = (List<MaterialPropertyDrawer>) m_DecoratorDrawers.GetValue(handler);
                                 if (propertyDrawer != null || decoratorDrawers != null)
                                 {
+#if UNITY_6000_2_OR_NEWER
+                                    EditorGUILayout.LabelField($@"{prop.name}(""{prop.displayName}"", {prop.propertyType})");
+#else
                                     EditorGUILayout.LabelField($@"{prop.name}(""{prop.displayName}"", {prop.type})");
+#endif
                                 }
                                 EditorGUI.indentLevel++;
                                 if(propertyDrawer != null)
@@ -702,7 +710,11 @@ namespace Needle
                         baseShaderGui?.OnGUI(materialEditor, showOriginalPropertyList 
                             ? properties
                             : properties
+#if UNITY_6000_2_OR_NEWER                                    
+                                .Where(x => x.propertyFlags.HasFlag(ShaderPropertyFlags.HideInInspector))
+#else
                                 .Where(x => x.flags.HasFlag(MaterialProperty.PropFlags.HideInInspector))
+#endif
                                 .ToArray());
                         CoreEditorUtils.DrawSplitter();
                     }
@@ -900,12 +912,18 @@ namespace Needle
                                 previousPropertyWasDrawn = false;
                                 break;
                             }
-
-                            if(prop.flags.HasFlag(MaterialProperty.PropFlags.HideInInspector))
+#if UNITY_6000_2_OR_NEWER
+                            if(prop.propertyFlags.HasFlag(ShaderPropertyFlags.HideInInspector))
                                 break;
                             
+                            if(prop.propertyFlags.HasFlag(ShaderPropertyFlags.PerRendererData))
+                                break;
+#else
+                            if(prop.flags.HasFlag(MaterialProperty.PropFlags.HideInInspector))
+                                break;
                             if(prop.flags.HasFlag(MaterialProperty.PropFlags.PerRendererData))
                                 break;
+#endif
                             
                             // check if drawer shorthand + parameters
                             var indexOfShorthand = display.IndexOf("&&", StringComparison.Ordinal);
@@ -913,7 +931,11 @@ namespace Needle
                             
                             // drawer shorthands
                             if (isShorthandWithParameters || display.EndsWith("&", StringComparison.Ordinal) ||
+#if UNITY_6000_2_OR_NEWER
+                                (prop.propertyType == ShaderPropertyType.Texture && prop.propertyFlags.HasFlag(ShaderPropertyFlags.NonModifiableTextureData))) // display non-modifiable textures inlined by default
+#else
                                 (prop.type == MaterialProperty.PropType.Texture && prop.flags.HasFlag(MaterialProperty.PropFlags.NonModifiableTextureData))) // display non-modifiable textures inlined by default
+#endif
                             {
                                 bool shouldDrawMultiplePropertiesInline = display.EndsWith("&&", StringComparison.Ordinal);
                                 var parameters = default(MarkdownMaterialPropertyDrawer.DrawerParameters);
@@ -927,7 +949,11 @@ namespace Needle
                                 }
                                 
                                 var trimmedDisplay = display.Trim(' ', '&');
+#if UNITY_6000_2_OR_NEWER
+                                if(prop.propertyType == ShaderPropertyType.Texture)
+#else
                                 if(prop.type == MaterialProperty.PropType.Texture)
+#endif
                                 {
                                     var drawer = (InlineTextureDrawer) GetCachedDrawer(nameof(InlineTextureDrawer));
                                     if (drawer)
@@ -954,7 +980,11 @@ namespace Needle
 
                                                 if (extraProperty != null)
                                                 {
+#if UNITY_6000_2_OR_NEWER
+                                                    if (extraProperty.propertyFlags.HasFlag(ShaderPropertyFlags.HideInInspector))
+#else
                                                     if (extraProperty.flags.HasFlag(MaterialProperty.PropFlags.HideInInspector))
+#endif
                                                     {
                                                         extraProperty = null;
                                                     }
@@ -982,7 +1012,11 @@ namespace Needle
                                         }
                                     }
                                 }
+#if UNITY_6000_2_OR_NEWER
+                                else if (prop.propertyType == ShaderPropertyType.Vector)
+#else
                                 else if (prop.type == MaterialProperty.PropType.Vector)
+#endif
                                 {
                                     var drawer = (VectorSliderDrawer) GetCachedDrawer(nameof(VectorSliderDrawer)); 
                                     if (drawer)
@@ -1216,7 +1250,11 @@ namespace Needle
                 CollectLocalAndGlobalKeywords(material);
                 
                 // loop through texture properties
+#if UNITY_6000_2_OR_NEWER
+                foreach (var materialProperty in properties.Where(x => x.propertyType == ShaderPropertyType.Texture))
+#else
                 foreach (var materialProperty in properties.Where(x => x.type == MaterialProperty.PropType.Texture))
+#endif
                 {
                     var uppercaseName = materialProperty.name.ToUpperInvariant();
 #if UNITY_2021_2_OR_NEWER

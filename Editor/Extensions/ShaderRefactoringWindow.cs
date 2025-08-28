@@ -9,6 +9,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
+using UnityEngine.Rendering;
 using UnityEngine.UIElements;
 
 namespace Needle.ShaderGraphMarkdown
@@ -186,7 +187,11 @@ namespace Needle.ShaderGraphMarkdown
                         var propertyCount = data.shader.GetPropertyCount();
                         for (int j = 0; j < propertyCount; j++)
                         {
+#if UNITY_6000_2_OR_NEWER
+                            if (data.shader.GetPropertyFlags(j).HasFlag(ShaderPropertyFlags.HideInInspector)) continue;
+#else
                             if(ShaderUtil.IsShaderPropertyHidden(data.shader, j)) continue;
+#endif
                             properties.Add((data.shader.GetPropertyName(j), data.shader.GetPropertyDescription(j)));
                         }
                     }
@@ -222,9 +227,17 @@ namespace Needle.ShaderGraphMarkdown
                         if (x.name.StartsWith("Hidden/")) return Enumerable.Empty<(string, string)>();
                         
                         var shader = Shader.Find(x.name);
+#if UNITY_6000_2_OR_NEWER
+                        var propertyCount = shader.GetPropertyCount();
+#else
                         var propertyCount = ShaderUtil.GetPropertyCount(shader);
+#endif
                         return Enumerable.Range(0, propertyCount)
+#if UNITY_6000_2_OR_NEWER
+                            .Where(idx => !shader.GetPropertyFlags(idx).HasFlag(ShaderPropertyFlags.HideInInspector)) 
+#else
                             .Where(idx => !ShaderUtil.IsShaderPropertyHidden(shader, idx))
+#endif
                             // .Where(x =>
                             // {
                             //     if (ShaderUtil.GetPropertyName(shader, x) == "_A")
@@ -233,7 +246,11 @@ namespace Needle.ShaderGraphMarkdown
                             //     }
                             //     return true;
                             // })
+#if UNITY_6000_2_OR_NEWER
+                            .Select(idx => (shader.GetPropertyName(idx), shader.GetPropertyDescription(idx)));
+#else
                             .Select(idx => (ShaderUtil.GetPropertyName(shader, idx), ShaderUtil.GetPropertyDescription(shader, idx)));
+#endif
                     })
                         .ToLookup(x => x.Item1)
                         .OrderByDescending(x => x.Count())

@@ -15,7 +15,11 @@ namespace Needle.ShaderGraphMarkdown
         {
             var targetProperty = parameters.Get(0, properties);
             var targetPropertyName = texturePropertyName;
+#if UNITY_6000_2_OR_NEWER
+            if(targetProperty != null && targetProperty.propertyType == UnityEngine.Rendering.ShaderPropertyType.Texture)
+#else
             if(targetProperty != null && targetProperty.type == MaterialProperty.PropType.Texture)
+#endif
             {
                 targetPropertyName = targetProperty.name;
                 if (string.IsNullOrEmpty(targetPropertyName)) targetPropertyName = texturePropertyName;
@@ -121,7 +125,11 @@ namespace Needle.ShaderGraphMarkdown
         public override IEnumerable<MaterialProperty> GetReferencedProperties(MaterialEditor materialEditor, MaterialProperty[] properties, DrawerParameters parameters)
         {
             var textureProperty = parameters.Get(0, properties);
+#if UNITY_6000_2_OR_NEWER
+            if (textureProperty != null && textureProperty.propertyType == UnityEngine.Rendering.ShaderPropertyType.Texture)
+#else
             if (textureProperty != null && textureProperty.type == MaterialProperty.PropType.Texture)
+#endif
                 yield return textureProperty;
         }
 
