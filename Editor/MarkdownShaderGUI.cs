@@ -11,6 +11,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Reflection;
+using Needle.Editors;
 using UnityEngine;
 using UnityEditor;
 using UnityEditor.Rendering;
@@ -30,6 +31,38 @@ using UnityEditor.Rendering.HighDefinition;
 // has to be included in the ShaderGraph custom ui field.
 namespace Needle
 {
+    [InitializeOnLoadAttribute]
+    static class EditorHeaderNeedleIcon
+    {
+        static EditorHeaderNeedleIcon()
+        {
+            Editor.finishedDefaultHeaderGUI += DisplayGUIDIfPersistent;
+        }
+
+        static void DisplayGUIDIfPersistent(Editor editor)
+        {
+            if (editor is MaterialEditor matEditor && matEditor.customShaderGUI is MarkdownShaderGUI)
+            {
+                var logo = MarkdownNeedleIcons.LogoButton;
+                if (logo)
+                {
+                    var rect = new Rect();
+                    rect.width = 20;
+                    rect.height = 20;
+                    rect.y = 2;
+                    rect.x = EditorGUIUtility.currentViewWidth - 70;
+
+                    if (Event.current.type == EventType.Repaint)
+                        GUI.DrawTexture(rect, logo, ScaleMode.ScaleToFit);
+
+                    EditorGUIUtility.AddCursorRect(rect, MouseCursor.Link);
+                    if (Event.current.type == EventType.MouseUp && rect.Contains(Event.current.mousePosition))
+                        Application.OpenURL("https://needle.tools");
+                }
+            }
+        }
+    }
+    
     // ReSharper disable once ClassNeverInstantiated.Global
     public class MarkdownShaderGUI : ShaderGUI
     {
@@ -1118,6 +1151,8 @@ namespace Needle
             }
             
             OnGUIMarker.End();
+            
+            MarkdownNeedleIcons.DrawGUILogo(); 
         }
 
         private bool IsDeveloperMode()
