@@ -36,10 +36,10 @@ namespace Needle
     {
         static EditorHeaderNeedleIcon()
         {
-            Editor.finishedDefaultHeaderGUI += DisplayGUIDIfPersistent;
+            Editor.finishedDefaultHeaderGUI += DisplayLogoInHeader;
         }
 
-        static void DisplayGUIDIfPersistent(Editor editor)
+        static void DisplayLogoInHeader(Editor editor)
         {
             if (editor is MaterialEditor matEditor && matEditor.customShaderGUI is MarkdownShaderGUI)
             {
