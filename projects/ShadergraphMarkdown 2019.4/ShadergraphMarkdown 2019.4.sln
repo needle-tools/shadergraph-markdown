@@ -27,6 +27,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.CollabProxy.Editor", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Unity.VSCode.Editor", "Unity.VSCode.Editor.csproj", "{c44477d1-fcf7-c1d2-2143-e3602580701e}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "asset-store-tools-editor", "asset-store-tools-editor.csproj", "{d469768b-1c05-3bfd-cd20-c23000c1cced}"
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Needle.ShaderGraphMarkdown", "Needle.ShaderGraphMarkdown.csproj", "{5aab080a-3fb1-3311-4ff4-1b0039125a8f}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Needle.ShaderGraphMarkdown.Internal", "Needle.ShaderGraphMarkdown.Internal.csproj", "{e41029f8-bdde-85e1-030f-d12531e633bb}"
@@ -62,6 +64,8 @@ Global
 		{471de364-656e-3648-5a99-c4c5d4332df2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{c44477d1-fcf7-c1d2-2143-e3602580701e}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{c44477d1-fcf7-c1d2-2143-e3602580701e}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{d469768b-1c05-3bfd-cd20-c23000c1cced}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{d469768b-1c05-3bfd-cd20-c23000c1cced}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5aab080a-3fb1-3311-4ff4-1b0039125a8f}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5aab080a-3fb1-3311-4ff4-1b0039125a8f}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{e41029f8-bdde-85e1-030f-d12531e633bb}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
