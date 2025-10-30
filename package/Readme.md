@@ -1,6 +1,6 @@
 # Shader Graph Markdown
 
-![Unity Version Compatibility](https://img.shields.io/badge/Unity-2019.4%20%E2%80%94%202023.3-brightgreen) 
+![Unity Version Compatibility](https://img.shields.io/badge/Unity-2019.4%20%E2%80%94%206000.2-brightgreen) 
 
 ## License
 
