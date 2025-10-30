@@ -3,7 +3,7 @@
 
 ## License
 
-Shader Graph Markdown is [available on the Asset Store](https://assetstore.unity.com/packages/tools/gui/shadergraph-markdown-better-shader-inspectors-for-artists-194781) for commercial use.  
+Shader Graph Markdown is [available on the Asset Store](http://u3d.as/2was) for commercial use.  
 Other versions (git, OpenUPM) are only allowed to be used **non-commercially** and **only if you're entitled to use Unity Personal** (the same restrictions apply).  
 
 For all other uses, **please buy a commercial license** to ensure continued support! Thank you.
@@ -31,7 +31,7 @@ The Shader Graph UI and blackboard are modified to render all "markdown dummy pr
 ![Shader Graph Blackboard](https://github.com/needle-tools/shadergraph-markdown/wiki/Images/03_ShaderGraphUI.png)  
 
 ## Install
-Install via OpenUPM: https://openupm.com/packages/com.needle.shadergraph-markdown/
+[Get on the Asset Store](http://u3d.as/2was)
 
 ## How To Use 💡
 Please open the <a href="package/Readme.md">Package Readme</a> for more information.
